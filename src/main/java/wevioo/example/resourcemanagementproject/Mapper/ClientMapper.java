@@ -3,7 +3,6 @@ package wevioo.example.resourcemanagementproject.Mapper;
 import wevioo.example.resourcemanagementproject.DTO.ClientDTO;
 import wevioo.example.resourcemanagementproject.Entity.Client;
 
-import java.util.List;
 
 public class ClientMapper {
     public static ClientDTO toDTO(Client entity) {

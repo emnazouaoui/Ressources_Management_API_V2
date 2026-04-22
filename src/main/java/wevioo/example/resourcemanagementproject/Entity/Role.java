@@ -2,11 +2,13 @@ package wevioo.example.resourcemanagementproject.Entity;
 
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
 @Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "role")
 public class Role extends Auditable{
@@ -14,9 +16,18 @@ public class Role extends Auditable{
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
+    /** Unique role name e.g. ROLE_ADMIN */
+    @Column(nullable = false, unique = true, length = 50)
     private String name;
+
+    /** Human-readable description of what this role can do */
+    @Column(length = 255)
     private String description;
-    private Boolean active;
+
+    /** Whether this role is currently active in the system */
+    @Column(nullable = false)
+    @Builder.Default
+    private Boolean active = true;
 
 //    @ManyToOne
 //    @JoinColumn(name = "created_by")

@@ -1,5 +1,6 @@
 package wevioo.example.resourcemanagementproject.Service;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -15,13 +16,14 @@ import java.util.stream.Collectors;
 
 
 @Service
+@RequiredArgsConstructor
 public class ClientService {
 
     private final ClientRepository clientRepository;
 
-    public ClientService(ClientRepository repository) {
-        this.clientRepository = repository;
-    }
+//    public ClientService(ClientRepository repository) {
+//        this.clientRepository = repository;
+//    }
 
     // ✅ CREATE
     public ClientDTO create(ClientDTO dto) {

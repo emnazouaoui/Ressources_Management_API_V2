@@ -1,11 +1,13 @@
 package wevioo.example.resourcemanagementproject.Entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
 @Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "technology")
 public class Technology extends Auditable{
@@ -13,6 +15,8 @@ public class Technology extends Auditable{
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
+    /** Technology name — unique, e.g. "Spring Boot", "React", "Docker" */
+    @Column(nullable = false, unique = true, length = 155)
     private String name;
 
 //    @ManyToOne
