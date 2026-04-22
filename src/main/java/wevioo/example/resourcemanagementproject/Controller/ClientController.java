@@ -2,6 +2,7 @@ package wevioo.example.resourcemanagementproject.Controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
@@ -24,13 +25,13 @@ public class ClientController {
 
     @Operation(summary = "Create new client")
     @PostMapping
-    public ClientDTO create(@RequestBody ClientDTO dto) {
+    public ClientDTO create(@Valid @RequestBody ClientDTO dto) {
         return clientService.create(dto);
     }
 
     @Operation(summary = "Update client")
     @PutMapping("/{id}")
-    public ClientDTO update(@PathVariable Long id, @RequestBody ClientDTO dto) {
+    public ClientDTO update(@Valid @PathVariable Long id, @RequestBody ClientDTO dto) {
         return clientService.update(id, dto);
     }
 

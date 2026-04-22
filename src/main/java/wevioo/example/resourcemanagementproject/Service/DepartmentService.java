@@ -6,10 +6,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import wevioo.example.resourcemanagementproject.DTO.ClientDTO;
 import wevioo.example.resourcemanagementproject.DTO.DepartmentDTO;
 import wevioo.example.resourcemanagementproject.Entity.Department;
-import wevioo.example.resourcemanagementproject.Mapper.ClientMapper;
 import wevioo.example.resourcemanagementproject.Mapper.DepartmentMapper;
 import wevioo.example.resourcemanagementproject.Repository.DepartmentRepository;
 

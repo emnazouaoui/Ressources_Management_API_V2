@@ -2,6 +2,7 @@ package wevioo.example.resourcemanagementproject.Controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
@@ -20,7 +21,7 @@ public class RoleController {
 
     @PostMapping
     @Operation(summary = "Create role")
-    public RoleDTO create(@RequestBody RoleDTO dto) {
+    public RoleDTO create(@Valid @RequestBody RoleDTO dto) {
         return service.create(dto);
     }
 
@@ -32,7 +33,7 @@ public class RoleController {
 
     @PutMapping("/{id}")
     @Operation(summary = "Update role")
-    public RoleDTO update(@PathVariable Long id, @RequestBody RoleDTO dto) {
+    public RoleDTO update(@Valid @PathVariable Long id, @RequestBody RoleDTO dto) {
         return service.update(id, dto);
     }
 

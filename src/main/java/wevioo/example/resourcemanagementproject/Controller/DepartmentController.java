@@ -2,6 +2,7 @@ package wevioo.example.resourcemanagementproject.Controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
@@ -20,7 +21,7 @@ public class DepartmentController {
 
     @PostMapping
     @Operation(summary = "Create department")
-    public DepartmentDTO create(@RequestBody DepartmentDTO dto) {
+    public DepartmentDTO create(@Valid @RequestBody DepartmentDTO dto) {
         return service.create(dto);
     }
 
@@ -42,7 +43,7 @@ public class DepartmentController {
 
     @PutMapping("/{id}")
     @Operation(summary = "Update department")
-    public DepartmentDTO update(@PathVariable Long id, @RequestBody DepartmentDTO dto) {
+    public DepartmentDTO update(@Valid @PathVariable Long id, @RequestBody DepartmentDTO dto) {
         return service.update(id, dto);
     }
 

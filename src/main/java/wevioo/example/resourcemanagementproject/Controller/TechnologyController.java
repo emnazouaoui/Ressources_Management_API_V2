@@ -2,6 +2,7 @@ package wevioo.example.resourcemanagementproject.Controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
@@ -21,7 +22,7 @@ public class TechnologyController {
 
     @PostMapping
     @Operation(summary = "Create technology")
-    public TechnologyDTO create(@RequestBody TechnologyDTO dto) {
+    public TechnologyDTO create(@Valid @RequestBody TechnologyDTO dto) {
         return service.create(dto);
     }
 
@@ -33,7 +34,7 @@ public class TechnologyController {
 
     @PutMapping("/{id}")
     @Operation(summary = "Update technology")
-    public TechnologyDTO update(@PathVariable Long id, @RequestBody TechnologyDTO dto) {
+    public TechnologyDTO update(@Valid @PathVariable Long id, @RequestBody TechnologyDTO dto) {
         return service.update(id, dto);
     }
 
