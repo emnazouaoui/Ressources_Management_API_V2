@@ -1,5 +1,11 @@
 package wevioo.example.resourcemanagementproject.Controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
 import wevioo.example.resourcemanagementproject.DTO.ClientDTO;
 import wevioo.example.resourcemanagementproject.Service.ClientService;
@@ -8,41 +14,53 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/clients")
+@Tag(name = "Client API", description = "CRUD operations for clients")
 public class ClientController {
 
-    private final ClientService service;
+    private final ClientService clientService;
 
     public ClientController(ClientService service) {
-        this.service = service;
+        this.clientService = service;
     }
 
+    @Operation(summary = "Create new client")
     @PostMapping
     public ClientDTO create(@RequestBody ClientDTO dto) {
-        return service.create(dto);
+        return clientService.create(dto);
     }
 
+    @Operation(summary = "Update client")
     @PutMapping("/{id}")
     public ClientDTO update(@PathVariable Long id, @RequestBody ClientDTO dto) {
-        return service.update(id, dto);
+        return clientService.update(id, dto);
     }
 
+    @Operation(summary = "Get client by id")
     @GetMapping("/{id}")
     public ClientDTO getById(@PathVariable Long id) {
-        return service.getById(id);
+        return clientService.getById(id);
     }
 
+    @Operation(summary = "Get all clients with pagination")
     @GetMapping
-    public List<ClientDTO> getAll() {
-        return service.getAll();
+    public Page<ClientDTO> getAll(
+            //@RequestBody()
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size,
+            @RequestParam(defaultValue = "id") String sortBy
+    ) {
+        return clientService.getAll(page, size,sortBy);
     }
 
+    @Operation(summary = "Delete client")
     @DeleteMapping("/{id}")
     public void delete(@PathVariable Long id) {
-        service.delete(id);
+        clientService.delete(id);
     }
 
+    @Operation(summary = "Search clients with keyword")
     @GetMapping("/search")
     public List<ClientDTO> search(@RequestParam String keyword) {
-        return service.search(keyword);
+        return clientService.search(keyword);
     }
 }

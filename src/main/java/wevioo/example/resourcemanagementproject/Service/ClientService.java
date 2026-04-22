@@ -1,5 +1,9 @@
 package wevioo.example.resourcemanagementproject.Service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import wevioo.example.resourcemanagementproject.DTO.ClientDTO;
 import wevioo.example.resourcemanagementproject.Entity.Client;
@@ -8,6 +12,7 @@ import wevioo.example.resourcemanagementproject.Repository.ClientRepository;
 
 import java.util.List;
 import java.util.stream.Collectors;
+
 
 @Service
 public class ClientService {
@@ -51,12 +56,19 @@ public class ClientService {
         return ClientMapper.toDTO(client);
     }
 
+//    // ✅ GET ALL
+//    public List<ClientDTO> getAll() {
+//        return clientRepository.findAll()
+//                .stream()
+//                .map(ClientMapper::toDTO)
+//                .collect(Collectors.toList());
+//    }
+
     // ✅ GET ALL
-    public List<ClientDTO> getAll() {
-        return clientRepository.findAll()
-                .stream()
-                .map(ClientMapper::toDTO)
-                .collect(Collectors.toList());
+    public Page<ClientDTO> getAll(int page, int size,String sortBy) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
+        return clientRepository.findAll(pageable)
+                .map(ClientMapper::toDTO);
     }
 
     // ✅ DELETE
@@ -77,4 +89,6 @@ public class ClientService {
                 .collect(Collectors.toList());
 
     }
+
+
 }
