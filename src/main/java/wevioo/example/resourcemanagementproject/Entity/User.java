@@ -42,6 +42,7 @@ public class User extends Auditable{
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<UserTechnology> usersTechnologyList;
 
+
 //    @ManyToOne
 //    @JoinColumn(name = "created_by")
 //    private User createdBy;

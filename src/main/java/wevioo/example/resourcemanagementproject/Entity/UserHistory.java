@@ -4,6 +4,7 @@ package wevioo.example.resourcemanagementproject.Entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import wevioo.example.resourcemanagementproject.Enums.UserField;
 
 @Getter
 @Setter
@@ -15,11 +16,16 @@ public class UserHistory extends Auditable{
     private long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "users", nullable = false)
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    private String fieldChanged;
+    @Enumerated(EnumType.STRING)
+    private UserField fieldChanged;
+
+    @Column(columnDefinition = "TEXT")
     private String oldValue;
+
+    @Column(columnDefinition = "TEXT")
     private String newValue;
 
 //    @ManyToOne

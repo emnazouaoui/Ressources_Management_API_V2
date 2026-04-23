@@ -23,6 +23,13 @@ public class UserMapper {
                 .roleId(user.getRole() != null ? user.getRole().getId() : null)
                 .departmentId(user.getDepartment() != null ? user.getDepartment().getId() : null)
                 .managerId(user.getManager() != null ? user.getManager().getId() : null)
+                .technologyIds(
+                        user.getUsersTechnologyList() != null ?
+                                user.getUsersTechnologyList().stream()
+                                        .map(ut -> ut.getTechnology().getId())
+                                        .toList()
+                                : null
+                )
                 .build();
     }
 
@@ -53,4 +60,5 @@ public class UserMapper {
         user.setActive(dto.getActive());
         user.setLevel(dto.getLevel());
     }
+
 }

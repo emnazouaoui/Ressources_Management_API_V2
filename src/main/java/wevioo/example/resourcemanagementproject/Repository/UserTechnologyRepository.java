@@ -1,0 +1,21 @@
+package wevioo.example.resourcemanagementproject.Repository;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import wevioo.example.resourcemanagementproject.Entity.UserTechnology;
+
+import java.util.List;
+
+public interface UserTechnologyRepository extends JpaRepository<UserTechnology, Long> {
+
+    boolean existsByUserIdAndTechnologyId(Long userId, Long techId);
+
+    void deleteByUserIdAndTechnologyId(Long userId, Long techId);
+
+    @Query("""
+        SELECT ut FROM UserTechnology ut
+        WHERE ut.user.id = :userId
+    """)
+    List<UserTechnology> findByUserId(Long userId);
+
+}

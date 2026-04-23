@@ -7,6 +7,8 @@ import jakarta.validation.constraints.Size;
 import lombok.*;
 import wevioo.example.resourcemanagementproject.Enums.Level;
 
+import java.util.List;
+
 @Getter
 @Setter
 @Builder
@@ -50,6 +52,9 @@ public class UserDTO {
     private Long departmentId;
 
     private Long managerId;
+
+    // 🔥 relation
+    private List<Long> technologyIds;
 
 
 }

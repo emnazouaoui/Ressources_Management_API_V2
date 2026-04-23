@@ -22,4 +22,20 @@ public interface UserRepository extends JpaRepository<User, Long> {
         OR LOWER(d.name) LIKE LOWER(CONCAT('%', :keyword, '%'))
     """)
     List<User> searchUsers(@Param("keyword") String keyword);
+
+    @Query("""
+    SELECT DISTINCT u FROM User u
+    JOIN u.usersTechnologyList ut
+    JOIN ut.technology t
+    WHERE LOWER(t.name) LIKE LOWER(CONCAT('%', :name, '%'))
+""")
+    List<User> findUsersByTechnologyName(@Param("name") String name);
+
+//    @Query("""
+//        SELECT DISTINCT u FROM User u
+//        JOIN u.usersTechnologyList ut
+//        WHERE ut.technology.id = :techId
+//    """)
+//    List<User> findUsersByTechnology(@Param("techId") Long techId);
+
 }

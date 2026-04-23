@@ -15,12 +15,13 @@ public class UserTechnology extends Auditable{
     private long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "users", nullable = false)
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "technology", nullable = false)
+    @JoinColumn(name = "technology_id", nullable = false)
     private Technology technology;
+
 
 //    @ManyToOne
 //    @JoinColumn(name = "created_by")

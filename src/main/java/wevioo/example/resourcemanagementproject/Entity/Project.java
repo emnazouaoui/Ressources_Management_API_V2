@@ -37,15 +37,19 @@ public class Project extends Auditable{
     @JoinColumn(name = "client", nullable = false)
     private Client client;
 
+    /** All tasks within this project */
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Task> tasksList;
 
+    /** Team members assigned to this project */
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<UserProject> userProjectsList;
 
+    /** Technologies used in this project */
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProjectTechnology> ProjectsTechnologyList;
 
+    /** Timeline events (milestones, deliveries, reviews…) */
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Project_Timeline> Projects_TimelineList;
 
