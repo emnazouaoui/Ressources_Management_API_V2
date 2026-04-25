@@ -27,7 +27,7 @@ public class Project extends Auditable{
     @Enumerated(EnumType.STRING)
     private ProjectStatus status;
 
-    private BigDecimal progressPercent;
+    private BigDecimal progressPercent= BigDecimal.ZERO;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "projectManager", nullable = false)
@@ -51,7 +51,7 @@ public class Project extends Auditable{
 
     /** Timeline events (milestones, deliveries, reviews…) */
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Project_Timeline> Projects_TimelineList;
+    private List<ProjectTimeLine> ProjectsTimelineList;
 
 //    @ManyToOne
 //    @JoinColumn(name = "created_by")

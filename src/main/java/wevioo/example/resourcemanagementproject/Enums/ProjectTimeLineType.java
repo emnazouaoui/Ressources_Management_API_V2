@@ -1,6 +1,6 @@
 package wevioo.example.resourcemanagementproject.Enums;
 
-public enum ProjectTimelineType {
+public enum ProjectTimeLineType {
     CREATION,
     DELIVERY,
     PROGRESS,

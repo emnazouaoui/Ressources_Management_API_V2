@@ -1,11 +1,13 @@
 package wevioo.example.resourcemanagementproject.Mapper;
 
+import org.springframework.stereotype.Component;
 import wevioo.example.resourcemanagementproject.DTO.DepartmentDTO;
 import wevioo.example.resourcemanagementproject.Entity.Department;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Component
 public class DepartmentMapper {
     public static DepartmentDTO toDto(Department d) {
         if (d == null) return null;

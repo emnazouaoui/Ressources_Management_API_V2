@@ -2,10 +2,19 @@ package wevioo.example.resourcemanagementproject.Mapper;
 
 import org.springframework.stereotype.Component;
 import wevioo.example.resourcemanagementproject.DTO.ProjectDTO;
+import wevioo.example.resourcemanagementproject.DTO.ProjectTimeLineDTO;
 import wevioo.example.resourcemanagementproject.Entity.Project;
+
+import java.util.List;
 
 @Component
 public class ProjectMapper {
+
+    private final ProjectTimeLineMapper timelineMapper;
+
+    public ProjectMapper(ProjectTimeLineMapper timelineMapper) {
+        this.timelineMapper = timelineMapper;
+    }
 
     public ProjectDTO toDTO(Project p) {
         return ProjectDTO.builder()
@@ -36,6 +45,15 @@ public class ProjectMapper {
                                         .toList()
                                 : null
                 )
+                // 🔥 TIMELINES
+                .timelines(
+                        p.getProjectsTimelineList() != null ?
+                                p.getProjectsTimelineList().stream()
+                                        .map(timelineMapper::toDTO)
+                                        .toList()
+                                : List.of()
+                )
+
 
                 .build();
     }

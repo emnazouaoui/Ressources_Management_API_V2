@@ -7,6 +7,7 @@ import jakarta.validation.constraints.Size;
 import lombok.*;
 import wevioo.example.resourcemanagementproject.Enums.Level;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -56,5 +57,10 @@ public class UserDTO {
     // 🔥 relation
     private List<Long> technologyIds;
 
+    private Long createdById;
+    private LocalDateTime createdDate;
+
+    private Long updatedById;
+    private LocalDateTime updatedDate;
 
 }

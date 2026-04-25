@@ -4,7 +4,9 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
+import wevioo.example.resourcemanagementproject.DTO.ClientDTO;
 import wevioo.example.resourcemanagementproject.DTO.ProjectDTO;
 import wevioo.example.resourcemanagementproject.Service.ProjectService;
 
@@ -35,11 +37,18 @@ public class ProjectController {
         return service.update(id, dto);
     }
 
-    @Operation(summary = "Get all projects")
+    @Operation(summary = "Get all projects with pagination")
     @GetMapping
-    public List<ProjectDTO> getAll() {
-        return service.getAll();
+    public Page<ProjectDTO> getAll(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size,
+            @RequestParam(defaultValue = "id") String sortBy
+    ) {
+
+        return service.getAll(page, size,sortBy);
     }
+
+
 
     @Operation(summary = "Search projects by keyword ")
     @GetMapping("/search")
@@ -87,6 +96,22 @@ public class ProjectController {
             @Parameter(description = "Project ID") @PathVariable Long id,
             @Parameter(description = "User ID") @PathVariable Long userId) {
         service.removeUser(id, userId);
+    }
+
+    // 🔥 ADD Timeline to project
+    @Operation(summary = "ADD Timeline to project")
+    @PostMapping("/{projectId}/timelines/{timelineId}")
+    public void addTimeline(@PathVariable Long projectId,
+                            @PathVariable Long timelineId) {
+        service.addTimeline(projectId, timelineId);
+    }
+
+    // 🔥 REMOVE Timeline from project
+    @Operation(summary = "REMOVE Timeline from project")
+    @DeleteMapping("/{projectId}/timelines/{timelineId}")
+    public void removeTimeline(@PathVariable Long projectId,
+                               @PathVariable Long timelineId) {
+        service.removeTimeline(projectId, timelineId);
     }
 
 

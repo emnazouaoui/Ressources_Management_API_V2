@@ -3,6 +3,7 @@ package wevioo.example.resourcemanagementproject.Entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import wevioo.example.resourcemanagementproject.Enums.ProjectField;
 
 @Getter
 @Setter
@@ -17,8 +18,13 @@ public class ProjectHistory extends Auditable{
     @JoinColumn(name = "project", nullable = false)
     private Project project;
 
-    private String fieldChanged;
+    @Enumerated(EnumType.STRING)
+    private ProjectField fieldChanged;
+
+    @Column(columnDefinition = "TEXT")
     private String oldValue;
+
+    @Column(columnDefinition = "TEXT")
     private String newValue;
 
 //    @ManyToOne

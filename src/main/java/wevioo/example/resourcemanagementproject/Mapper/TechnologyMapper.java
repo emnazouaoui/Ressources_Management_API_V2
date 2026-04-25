@@ -1,11 +1,13 @@
 package wevioo.example.resourcemanagementproject.Mapper;
 
+import org.springframework.stereotype.Component;
 import wevioo.example.resourcemanagementproject.DTO.TechnologyDTO;
 import wevioo.example.resourcemanagementproject.Entity.Technology;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Component
 public class TechnologyMapper {
 
     public static TechnologyDTO toDto(Technology t) {

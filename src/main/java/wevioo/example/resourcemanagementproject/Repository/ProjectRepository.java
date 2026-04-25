@@ -3,10 +3,12 @@ package wevioo.example.resourcemanagementproject.Repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 import wevioo.example.resourcemanagementproject.Entity.Project;
 
 import java.util.List;
 
+@Repository
 public interface ProjectRepository extends JpaRepository<Project, Long> {
 
     @Query("""

@@ -1,9 +1,10 @@
 package wevioo.example.resourcemanagementproject.Mapper;
 
+import org.springframework.stereotype.Component;
 import wevioo.example.resourcemanagementproject.DTO.ClientDTO;
 import wevioo.example.resourcemanagementproject.Entity.Client;
 
-
+@Component
 public class ClientMapper {
     public static ClientDTO toDTO(Client entity) {
         ClientDTO dto = new ClientDTO();
