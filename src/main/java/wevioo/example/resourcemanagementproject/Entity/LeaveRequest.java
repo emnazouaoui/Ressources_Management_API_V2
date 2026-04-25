@@ -26,16 +26,16 @@ public class LeaveRequest extends Auditable{
     private String reason;
 
     @Enumerated(EnumType.STRING)
-    private LeaveRequestStatus status;
+    private LeaveRequestStatus status= LeaveRequestStatus.PENDING;
 
     //private Date requestDate;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "projectManager", nullable = false)
+    @JoinColumn(name = "project_manager_id", nullable = false)
     private User projectManager;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "users", nullable = false)
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
 //    @ManyToOne
