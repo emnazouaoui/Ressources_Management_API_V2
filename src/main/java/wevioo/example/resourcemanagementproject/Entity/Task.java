@@ -31,8 +31,8 @@ public class Task extends Auditable{
 
     private LocalDate startDate;
     private LocalDate endDate;
-    private BigDecimal estimatedHours;
-    private BigDecimal consumedHours;
+    private BigDecimal estimatedHours= BigDecimal.ZERO;
+    private BigDecimal consumedHours= BigDecimal.ZERO;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "project", nullable = false)
@@ -42,6 +42,7 @@ public class Task extends Auditable{
     @JoinColumn(name = "assignedUser", nullable = false)
     private User assignedUser;
 
+    //Not done for this relation
     @OneToMany(mappedBy = "task", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Imputation> imputationsList;
 

@@ -1,11 +1,14 @@
 package wevioo.example.resourcemanagementproject.Entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
+import wevioo.example.resourcemanagementproject.Enums.TaskField;
 
 @Getter
 @Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "task_history")
 public class TaskHistory extends Auditable{
@@ -17,8 +20,13 @@ public class TaskHistory extends Auditable{
     @JoinColumn(name = "task", nullable = false)
     private Task task;
 
-    private String fieldChanged;
+    @Enumerated(EnumType.STRING)
+    private TaskField fieldChanged;
+
+    @Column(columnDefinition = "TEXT")
     private String oldValue;
+
+    @Column(columnDefinition = "TEXT")
     private String newValue;
 
 //    @ManyToOne
