@@ -115,4 +115,24 @@ public class ProjectController {
     }
 
 
+    // 🔥 ASSIGN TASK TO PROJECT
+    @Operation(summary = "Assign task to project")
+    @PostMapping("/{projectId}/tasks/{taskId}")
+    public void assignTask(@PathVariable Long projectId,
+                           @PathVariable Long taskId) {
+
+        service.assignTask(projectId, taskId);
+    }
+
+    // 🔥 REMOVE TASK FROM PROJECT
+    @Operation(summary = "REMOVE task from project")
+    @DeleteMapping("/{projectId}/tasks/{taskId}")
+    public void removeTask(@PathVariable Long projectId,
+                           @PathVariable Long taskId) {
+
+        service.removeTask(projectId, taskId);
+    }
+
+
+
 }

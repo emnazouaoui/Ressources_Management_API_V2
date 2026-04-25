@@ -40,6 +40,7 @@ public class ProjectDTO {
     private List<Long> userIds;        // team members (UserProject)
     private List<Long> technologyIds;// ProjectTechnology
     private List<ProjectTimeLineDTO> timelines; // TimeLines project
+    private List<Long> taskIds;
 
     private Long createdById;
     private LocalDateTime createdDate;

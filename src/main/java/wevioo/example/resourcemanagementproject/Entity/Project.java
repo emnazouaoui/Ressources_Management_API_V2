@@ -8,6 +8,7 @@ import wevioo.example.resourcemanagementproject.Enums.ProjectStatus;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -39,7 +40,7 @@ public class Project extends Auditable{
 
     /** All tasks within this project */
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Task> tasksList;
+    private List<Task> tasksList= new ArrayList<>();
 
     /** Team members assigned to this project */
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)

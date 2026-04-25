@@ -35,7 +35,7 @@ public class Task extends Auditable{
     private BigDecimal consumedHours= BigDecimal.ZERO;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "project", nullable = false)
+    @JoinColumn(name = "project_id", nullable = true)
     private Project project;
 
     @ManyToOne(fetch = FetchType.LAZY)

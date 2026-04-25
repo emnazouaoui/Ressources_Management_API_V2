@@ -30,10 +30,12 @@ public class ProjectService {
     private final UserProjectRepository userProjectRepository;
     private final ProjectTechnologyRepository projectTechnologyRepository;
     private final ProjectTimeLineRepository projectTimeLineRepository;
+    private final TaskRepository taskRepository;
 
     private final ProjectMapper mapper;
 
     private final ProjectHistoryService projectHistoryService;
+
 
     // 🔥 CREATE
     public ProjectDTO create(ProjectDTO dto) {
@@ -247,6 +249,21 @@ public ProjectDTO update(Long id, ProjectDTO dto) {
         projectTimeLineRepository.save(timeline);
     }
 
+    // 🔥 ASSIGN ONE TASK
+    public void assignTask(Long projectId, Long taskId) {
+
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new RuntimeException("Project not found"));
+
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new RuntimeException("Task not found"));
+
+        task.setProject(project);
+        taskRepository.save(task);
+    }
+
+
+
     // remove
     public void removeTechnology(Long projectId, Long techId) {
         projectTechnologyRepository.deleteByProjectIdAndTechnologyId(projectId, techId);
@@ -267,6 +284,21 @@ public ProjectDTO update(Long id, ProjectDTO dto) {
         }
 
         projectTimeLineRepository.delete(timeline);
+    }
+
+    // 🔥 REMOVE TASK (with validation)
+    public void removeTask(Long projectId, Long taskId) {
+
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new RuntimeException("Task not found"));
+
+        // ✅ check task belongs to project
+        if (task.getProject() == null || task.getProject().getId() != projectId) {
+            throw new RuntimeException("Task does not belong to this project");
+        }
+
+        task.setProject(null); // ⚠️ nullable = true
+        taskRepository.save(task);
     }
 
 }

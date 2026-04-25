@@ -45,6 +45,14 @@ public class ProjectMapper {
                                         .toList()
                                 : null
                 )
+                // 🔥 TASKS (NEW 🔥)
+                .taskIds(
+                        p.getTasksList() != null ?
+                                p.getTasksList().stream()
+                                        .map(task -> task.getId())
+                                        .toList()
+                                : List.of()
+                )
                 // 🔥 TIMELINES
                 .timelines(
                         p.getProjectsTimelineList() != null ?
