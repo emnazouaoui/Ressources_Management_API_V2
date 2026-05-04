@@ -22,12 +22,12 @@ public class Imputation extends Auditable{
     private String comment;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "task", nullable = false)
+    @JoinColumn(name = "task_id", nullable = false)
     private Task task;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "users", nullable = false)
-    private User User;
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
 //    @ManyToOne
 //    @JoinColumn(name = "created_by")
