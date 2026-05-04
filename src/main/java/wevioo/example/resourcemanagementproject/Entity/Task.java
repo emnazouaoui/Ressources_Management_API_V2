@@ -9,6 +9,7 @@ import wevioo.example.resourcemanagementproject.Enums.TaskStatus;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -42,9 +43,9 @@ public class Task extends Auditable{
     @JoinColumn(name = "assignedUser", nullable = false)
     private User assignedUser;
 
-    //Not done for this relation
-    @OneToMany(mappedBy = "task", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Imputation> imputationsList;
+    // relation
+    @OneToMany(mappedBy = "task", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<Imputation> imputations = new ArrayList<>();
 
 //    @ManyToOne
 //    @JoinColumn(name = "created_by")

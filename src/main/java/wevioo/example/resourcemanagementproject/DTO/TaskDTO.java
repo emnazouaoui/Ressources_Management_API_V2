@@ -11,6 +11,7 @@ import wevioo.example.resourcemanagementproject.Enums.TaskStatus;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
@@ -43,6 +44,8 @@ public class TaskDTO {
 
     @NotNull(message = "User assigned is required")
     private Long assignedUserId;
+
+    private List<Long> imputationIds;
 
     private Long createdById;
     private LocalDateTime createdDate;

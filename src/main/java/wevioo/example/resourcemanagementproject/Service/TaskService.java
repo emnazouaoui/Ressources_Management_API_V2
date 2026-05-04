@@ -8,15 +8,18 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import wevioo.example.resourcemanagementproject.DTO.TaskDTO;
+import wevioo.example.resourcemanagementproject.Entity.Imputation;
 import wevioo.example.resourcemanagementproject.Entity.Project;
 import wevioo.example.resourcemanagementproject.Entity.Task;
 import wevioo.example.resourcemanagementproject.Entity.User;
 import wevioo.example.resourcemanagementproject.Enums.TaskField;
 import wevioo.example.resourcemanagementproject.Mapper.TaskMapper;
+import wevioo.example.resourcemanagementproject.Repository.ImputationRepository;
 import wevioo.example.resourcemanagementproject.Repository.ProjectRepository;
 import wevioo.example.resourcemanagementproject.Repository.TaskRepository;
 import wevioo.example.resourcemanagementproject.Repository.UserRepository;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Service
@@ -28,6 +31,7 @@ public class TaskService {
     private final ProjectRepository projectRepository;
     private final UserRepository userRepository;
     private final TaskHistoryService taskHistoryService;
+    private final ImputationRepository imputationRepository;
 
 
     // ================= CREATE =================
@@ -179,5 +183,55 @@ public class TaskService {
         return taskRepository.searchTasks(keyword)
                 .stream().map(TaskMapper::toDTO).toList();
     }
+    // ================= Relations =================
+
+
+    // ➕ ADD IMPUTATION TO TASK
+    public TaskDTO addImputationToTask(Long taskId, Long imputationId) {
+
+        Task task = taskRepository.findByIdWithImputations(taskId)
+                .orElseThrow(() -> new RuntimeException("Task not found"));
+
+        Imputation imputation = imputationRepository.findById(imputationId)
+                .orElseThrow(() -> new RuntimeException("Imputation not found"));
+
+        // ربط
+        imputation.setTask(task);
+        task.getImputations().add(imputation);
+
+        // recalcul consumedHours
+        recalculateConsumedHours(task);
+
+        return TaskMapper.toDTO(taskRepository.save(task));
+    }
+
+    // ➖ REMOVE IMPUTATION FROM TASK
+    public TaskDTO removeImputationFromTask(Long taskId, Long imputationId) {
+
+        Task task = taskRepository.findByIdWithImputations(taskId)
+                .orElseThrow(() -> new RuntimeException("Task not found"));
+
+        Imputation imputation = imputationRepository.findById(imputationId)
+                .orElseThrow(() -> new RuntimeException("Imputation not found"));
+
+        // حذف
+        task.getImputations().remove(imputation);
+        imputation.setTask(null);
+
+        recalculateConsumedHours(task);
+
+        return TaskMapper.toDTO(taskRepository.save(task));
+    }
+
+    // 🔥 recalcul propre
+    private void recalculateConsumedHours(Task task) {
+        BigDecimal total = task.getImputations()
+                .stream()
+                .map(Imputation::getHours)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        task.setConsumedHours(total);
+    }
+
 
 }

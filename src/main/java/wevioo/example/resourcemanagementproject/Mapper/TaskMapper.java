@@ -2,7 +2,10 @@ package wevioo.example.resourcemanagementproject.Mapper;
 
 import org.springframework.stereotype.Component;
 import wevioo.example.resourcemanagementproject.DTO.TaskDTO;
+import wevioo.example.resourcemanagementproject.Entity.Imputation;
 import wevioo.example.resourcemanagementproject.Entity.Task;
+
+import java.util.ArrayList;
 
 @Component
 public class TaskMapper {
@@ -22,6 +25,11 @@ public class TaskMapper {
         dto.setEndDate(task.getEndDate());
         dto.setEstimatedHours(task.getEstimatedHours());
         dto.setConsumedHours(task.getConsumedHours());
+        dto.setImputationIds(
+                task.getImputations() != null
+                        ? task.getImputations().stream().map(Imputation::getId).toList()
+                        : null
+        );
 
         if (task.getProject() != null)
             dto.setProjectId(task.getProject().getId());
@@ -47,6 +55,7 @@ public class TaskMapper {
         task.setEndDate(dto.getEndDate());
         task.setEstimatedHours(dto.getEstimatedHours());
         task.setConsumedHours(dto.getConsumedHours());
+        task.setImputations(new ArrayList<>());
 
         return task;
     }

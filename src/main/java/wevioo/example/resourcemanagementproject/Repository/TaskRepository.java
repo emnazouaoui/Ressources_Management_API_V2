@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 import wevioo.example.resourcemanagementproject.Entity.Task;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface TaskRepository extends JpaRepository<Task, Long> {
@@ -26,6 +27,8 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
     """)
     List<Task> searchTasks(@Param("keyword") String keyword);
 
+    @Query("SELECT t FROM Task t LEFT JOIN FETCH t.imputations WHERE t.id = :id")
+    Optional<Task> findByIdWithImputations(Long id);
 
 //    OR CAST(t.estimatedHours AS TEXT) LIKE CONCAT('%', :keyword, '%')
 //    OR CAST(t.consumedHours AS TEXT) LIKE CONCAT('%', :keyword, '%')

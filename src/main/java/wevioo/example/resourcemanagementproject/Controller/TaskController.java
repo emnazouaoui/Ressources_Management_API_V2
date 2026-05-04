@@ -60,4 +60,26 @@ public class TaskController {
             @Parameter(description = "Keyword for search") @RequestParam String keyword) {
         return taskService.search(keyword);
     }
+
+    // ================= RELATIONS =================
+
+    // ➕ ADD IMPUTATION
+    @Operation(summary = "Assign imputation to task ")
+    @PostMapping("/{taskId}/imputations/{imputationId}")
+    public TaskDTO addImputation(
+            @PathVariable Long taskId,
+            @PathVariable Long imputationId) {
+
+        return taskService.addImputationToTask(taskId, imputationId);
+    }
+
+    // ➖ REMOVE IMPUTATION
+    @Operation(summary = "Remove imputation from task")
+    @DeleteMapping("/{taskId}/imputations/{imputationId}")
+    public TaskDTO removeImputation(
+            @PathVariable Long taskId,
+            @PathVariable Long imputationId) {
+
+        return taskService.removeImputationFromTask(taskId, imputationId);
+    }
 }
