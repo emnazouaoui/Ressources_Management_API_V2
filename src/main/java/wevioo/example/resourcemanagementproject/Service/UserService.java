@@ -2,6 +2,7 @@ package wevioo.example.resourcemanagementproject.Service;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -15,6 +16,10 @@ import wevioo.example.resourcemanagementproject.Enums.UserField;
 import wevioo.example.resourcemanagementproject.Mapper.UserMapper;
 import wevioo.example.resourcemanagementproject.Repository.*;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.web.multipart.MultipartFile;
+import java.nio.file.*;
+import java.io.IOException;
+import org.springframework.core.io.Resource;
 
 import java.util.List;
 
@@ -256,7 +261,63 @@ public class UserService {
                 .toList();
     }
 
+    // =========================
+    // 🔥 Upload photo
+    // =========================
 
 
+    public String uploadPhoto(MultipartFile file) {
+
+        try {
+            String uploadDir = "uploads/";
+            String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+            Path path = Paths.get(uploadDir + fileName);
+            Files.createDirectories(path.getParent());
+            Files.write(path, file.getBytes());
+            return fileName;
+        } catch (IOException e) {
+            throw new RuntimeException("Error uploading file");
+        }
+    }
+
+    public UserDTO uploadUserPhoto(Long userId, MultipartFile file) {
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        String fileName = uploadPhoto(file);
+        user.setPhoto(fileName);
+        return userMapper.toDTO(userRepository.save(user));
+    }
+
+    //-------------------------------- Get photo -------------------------//
+
+    //GET PHOTO BY USER ID
+    public Resource getUserPhoto(Long userId) {
+
+        try {
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+
+            if (user.getPhoto() == null || user.getPhoto().isBlank()) {
+                throw new RuntimeException("User has no photo");
+            }
+
+            Path filePath = Paths.get("uploads")
+                    .resolve(user.getPhoto())
+                    .normalize();
+
+            Resource resource = new UrlResource(filePath.toUri());
+
+            if (!resource.exists() || !resource.isReadable()) {
+                throw new RuntimeException("Image not found");
+            }
+
+            return resource;
+
+        } catch (Exception e) {
+            throw new RuntimeException("Error loading user photo");
+        }
+    }
 
 }

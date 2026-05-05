@@ -2,14 +2,24 @@ package wevioo.example.resourcemanagementproject.Controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+//import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import wevioo.example.resourcemanagementproject.DTO.UserDTO;
 import wevioo.example.resourcemanagementproject.Entity.UserHistory;
 import wevioo.example.resourcemanagementproject.Repository.UserHistoryRepository;
 import wevioo.example.resourcemanagementproject.Service.UserService;
+import org.springframework.core.io.Resource;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import java.util.List;
 
@@ -108,6 +118,39 @@ public class UserController {
                 .stream()
                 .filter(h -> h.getUser().getId() == id)
                 .toList();
+    }
+
+    //------------------------- Upload photo user-----------------------------//
+
+    @Operation(summary = "Upload photo user")
+    @PostMapping(value ="/{id}/photo", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public UserDTO uploadPhoto(@PathVariable Long id,
+                               @RequestParam MultipartFile file) {
+        return userService.uploadUserPhoto(id, file);
+    }
+
+    @GetMapping("/{id}/photo")
+    public ResponseEntity<Resource> getUserPhoto(@PathVariable Long id) {
+
+        Resource resource = userService.getUserPhoto(id);
+
+        try {
+            Path filePath = Paths.get("uploads")
+                    .resolve(resource.getFilename())
+                    .normalize();
+
+            String contentType = Files.probeContentType(filePath);
+            if (contentType == null) {
+                contentType = "application/octet-stream";
+            }
+            return ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType(contentType))
+                    .header(HttpHeaders.CONTENT_DISPOSITION,
+                            "inline; filename=\"" + resource.getFilename() + "\"")
+                    .body(resource);
+        } catch (Exception e) {
+            throw new RuntimeException("Error returning image");
+        }
     }
 
 

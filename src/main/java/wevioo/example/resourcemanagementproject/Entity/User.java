@@ -29,6 +29,8 @@ public class User extends Auditable{
 
     private Boolean active;
 
+    private String photo;
+
     @Enumerated(EnumType.STRING)
     private Level level;
 

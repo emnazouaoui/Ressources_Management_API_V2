@@ -19,6 +19,7 @@ public class UserMapper {
                 .email(user.getEmail())
               //  .password(user.getPassword()) // (اختياري حسب security)
                 .active(user.getActive())
+                .photo(user.getPhoto())
                 .level(user.getLevel())
                 .roleId(user.getRole() != null ? user.getRole().getId() : null)
                 .departmentId(user.getDepartment() != null ? user.getDepartment().getId() : null)
@@ -44,6 +45,7 @@ public class UserMapper {
         user.setEmail(dto.getEmail());
       //  user.setPassword(dto.getPassword()); // 🔐
         user.setActive(dto.getActive());
+        user.setPhoto(dto.getPhoto());
         user.setLevel(dto.getLevel());
 
         return user;
@@ -58,6 +60,7 @@ public class UserMapper {
         user.setEmail(dto.getEmail());
       //  user.setPassword(dto.getPassword()); // 🔐
         user.setActive(dto.getActive());
+        user.setPhoto(dto.getPhoto());
         user.setLevel(dto.getLevel());
     }
 
