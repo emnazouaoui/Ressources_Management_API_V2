@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 import wevioo.example.resourcemanagementproject.DTO.LeaveRequestDTO;
+import wevioo.example.resourcemanagementproject.Enums.LeaveRequestStatus;
 import wevioo.example.resourcemanagementproject.Service.LeaveRequestService;
 
 import java.util.List;
@@ -59,4 +60,17 @@ public class LeaveRequestController {
     public List<LeaveRequestDTO> search(@RequestParam String keyword) {
         return service.search(keyword);
     }
+
+    //----------------------- Approve/Reject leave request -------------------------//
+
+    @PutMapping("/{id}/status")
+    @Operation(summary = "Update status for leave request ")
+    public LeaveRequestDTO updateStatus(
+            @PathVariable Long id,
+            @RequestParam LeaveRequestStatus status
+    ) {
+        return service.updateStatus(id, status);
+    }
+
+
 }

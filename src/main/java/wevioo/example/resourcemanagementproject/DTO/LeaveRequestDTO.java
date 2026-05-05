@@ -1,5 +1,6 @@
 package wevioo.example.resourcemanagementproject.DTO;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
@@ -19,6 +20,8 @@ public class LeaveRequestDTO {
     private LocalDate startDate;
     private LocalDate endDate;
     private String reason;
+
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private String status;
 
     @NotNull(message = "Project Manager is required")

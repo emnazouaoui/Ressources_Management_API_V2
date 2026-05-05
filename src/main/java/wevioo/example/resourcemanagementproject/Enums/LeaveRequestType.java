@@ -3,8 +3,8 @@ package wevioo.example.resourcemanagementproject.Enums;
 public enum LeaveRequestType {
     ANNUAL,
     SICK,
-    UNPAID,
+    //UNPAID,
     MATERNITY,
     PATERNITY,
-    EMERGENCY
+   // EMERGENCY
 }
