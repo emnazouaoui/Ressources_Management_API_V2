@@ -17,7 +17,7 @@ public class UserMapper {
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
                 .email(user.getEmail())
-                .password(user.getPassword()) // (اختياري حسب security)
+              //  .password(user.getPassword()) // (اختياري حسب security)
                 .active(user.getActive())
                 .level(user.getLevel())
                 .roleId(user.getRole() != null ? user.getRole().getId() : null)
@@ -42,7 +42,7 @@ public class UserMapper {
         user.setFirstName(dto.getFirstName());
         user.setLastName(dto.getLastName());
         user.setEmail(dto.getEmail());
-        user.setPassword(dto.getPassword()); // 🔐
+      //  user.setPassword(dto.getPassword()); // 🔐
         user.setActive(dto.getActive());
         user.setLevel(dto.getLevel());
 
@@ -56,7 +56,7 @@ public class UserMapper {
         user.setFirstName(dto.getFirstName());
         user.setLastName(dto.getLastName());
         user.setEmail(dto.getEmail());
-        user.setPassword(dto.getPassword()); // 🔐
+      //  user.setPassword(dto.getPassword()); // 🔐
         user.setActive(dto.getActive());
         user.setLevel(dto.getLevel());
     }

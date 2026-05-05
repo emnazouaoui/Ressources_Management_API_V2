@@ -14,6 +14,7 @@ import wevioo.example.resourcemanagementproject.Entity.UserTechnology;
 import wevioo.example.resourcemanagementproject.Enums.UserField;
 import wevioo.example.resourcemanagementproject.Mapper.UserMapper;
 import wevioo.example.resourcemanagementproject.Repository.*;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.util.List;
 
@@ -29,10 +30,15 @@ public class UserService {
     private final TechnologyRepository technologyRepository;
     private final UserTechnologyRepository userTechnologyRepository;
 
+    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
 
     // CREATE
     public UserDTO create(UserDTO dto) {
         User user = userMapper.toEntity(dto);
+
+        // 🔥 CRYPT PASSWORD
+        user.setPassword(passwordEncoder.encode(dto.getPassword()));
 
         user.setRole(roleRepository.findById(dto.getRoleId())
                 .orElseThrow(() -> new RuntimeException("Role not found")));
@@ -104,6 +110,11 @@ public class UserService {
         // ✏️ UPDATE
         userMapper.updateEntityFromDTO(dto, user);
 
+        // 🔥 CRYPT PASSWORD ONLY IF PROVIDED
+        if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
+            user.setPassword(passwordEncoder.encode(dto.getPassword()));
+        }
+
         user.setRole(roleRepository.findById(dto.getRoleId())
                 .orElseThrow(() -> new RuntimeException("Role not found")));
 
@@ -124,7 +135,10 @@ public class UserService {
         userHistoryService.saveChange(id, UserField.FIRST_NAME, oldFirstName, saved.getFirstName());
         userHistoryService.saveChange(id, UserField.LAST_NAME, oldLastName, saved.getLastName());
         userHistoryService.saveChange(id, UserField.EMAIL, oldEmail, saved.getEmail());
-        userHistoryService.saveChange(id, UserField.PASSWORD, oldPassword, saved.getPassword());
+        //userHistoryService.saveChange(id, UserField.PASSWORD, oldPassword, saved.getPassword());
+        userHistoryService.saveChange(id, UserField.PASSWORD,
+                oldPassword != null ? "UPDATED" : null,
+                dto.getPassword() != null ? "UPDATED" : null);
 
         userHistoryService.saveChange(id, UserField.LEVEL,
                 oldLevel,

@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.Setter;
 import wevioo.example.resourcemanagementproject.Enums.Level;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.List;
 
 @Getter
@@ -21,7 +23,10 @@ public class User extends Auditable{
     private String firstName;
     private String lastName;
     private String email;
+
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)//️ تقبل password في request (POST / PUT)
     private String password;
+
     private Boolean active;
 
     @Enumerated(EnumType.STRING)
