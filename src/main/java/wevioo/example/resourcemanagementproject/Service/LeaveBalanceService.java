@@ -15,8 +15,9 @@ public class LeaveBalanceService {
 
     public LeaveBalanceDTO getBalanceByUserId(Long userId) {
 
+        // Just for annual leave request
         LeaveBalance lb = repository.findByUserId(userId)
-                .orElseThrow(() -> new RuntimeException("Leave balance not found"));
+                .orElseThrow(() -> new RuntimeException("Annual leave balance not found"));
 
         LeaveBalanceDTO dto = new LeaveBalanceDTO();
 

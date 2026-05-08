@@ -178,7 +178,7 @@ public class TaskService {
         return tasks.map(TaskMapper::toDTO);
     }
 
-    // 🔥 SEARCH
+    //  SEARCH
     public List<TaskDTO> search(String keyword) {
         return taskRepository.searchTasks(keyword)
                 .stream().map(TaskMapper::toDTO).toList();
@@ -186,7 +186,7 @@ public class TaskService {
     // ================= Relations =================
 
 
-    // ➕ ADD IMPUTATION TO TASK
+    //  ADD IMPUTATION TO TASK
     public TaskDTO addImputationToTask(Long taskId, Long imputationId) {
 
         Task task = taskRepository.findByIdWithImputations(taskId)
@@ -225,10 +225,10 @@ public class TaskService {
 
     // 🔥 recalcul propre
     private void recalculateConsumedHours(Task task) {
-        BigDecimal total = task.getImputations()
+        Double total = task.getImputations()
                 .stream()
                 .map(Imputation::getHours)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+                .reduce(0.0, Double::sum);
 
         task.setConsumedHours(total);
     }

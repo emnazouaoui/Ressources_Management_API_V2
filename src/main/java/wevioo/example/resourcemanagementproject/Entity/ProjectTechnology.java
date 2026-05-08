@@ -4,12 +4,16 @@ package wevioo.example.resourcemanagementproject.Entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
 @Entity
 @Table(name = "project_technology")
-public class ProjectTechnology extends Auditable{
+public class ProjectTechnology {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
@@ -21,6 +25,15 @@ public class ProjectTechnology extends Auditable{
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "technology", nullable = false)
     private Technology technology;
+
+    @CreatedDate
+    @Column(nullable = false, updatable = false)
+    @JoinColumn(name = "createdDate")
+    private LocalDateTime createdDate;
+
+    @LastModifiedDate
+    @JoinColumn(name = "updatedDate")
+    private LocalDateTime updatedDate;
 
 //    @ManyToOne
 //    @JoinColumn(name = "created_by")

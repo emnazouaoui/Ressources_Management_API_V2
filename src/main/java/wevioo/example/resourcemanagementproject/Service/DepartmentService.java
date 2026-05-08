@@ -22,6 +22,7 @@ public class DepartmentService {
     // CREATE
     public DepartmentDTO create(DepartmentDTO dto) {
         Department saved = repository.save(DepartmentMapper.toEntity(dto));
+
         return DepartmentMapper.toDto(saved);
     }
 

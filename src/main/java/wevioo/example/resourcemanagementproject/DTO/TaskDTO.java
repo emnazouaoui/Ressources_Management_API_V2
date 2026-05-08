@@ -4,12 +4,14 @@ import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import wevioo.example.resourcemanagementproject.Enums.Priority;
 import wevioo.example.resourcemanagementproject.Enums.TaskStatus;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -30,14 +32,14 @@ public class TaskDTO {
     private TaskStatus status;
     private Priority priority;
 
-    private LocalDate startDate;
-    private LocalDate endDate;
+    private LocalDateTime startDate;
+    private LocalDateTime endDate;
 
     @DecimalMin(value = "0.0") @DecimalMax(value = "20.0")
-    private BigDecimal estimatedHours;
+    private Double estimatedHours;
 
     @DecimalMin(value = "0.0") @DecimalMax(value = "20.0")
-    private BigDecimal consumedHours;
+    private Double consumedHours;
 
     @NotNull(message = "Project is required")
     private Long projectId;

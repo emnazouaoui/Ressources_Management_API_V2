@@ -2,7 +2,6 @@ package wevioo.example.resourcemanagementproject.Mapper;
 
 import org.springframework.stereotype.Component;
 import wevioo.example.resourcemanagementproject.DTO.ProjectDTO;
-import wevioo.example.resourcemanagementproject.DTO.ProjectTimeLineDTO;
 import wevioo.example.resourcemanagementproject.Entity.Project;
 
 import java.util.List;

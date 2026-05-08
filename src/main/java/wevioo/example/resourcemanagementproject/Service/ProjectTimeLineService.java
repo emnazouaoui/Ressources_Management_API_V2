@@ -7,12 +7,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import wevioo.example.resourcemanagementproject.DTO.ClientDTO;
-import wevioo.example.resourcemanagementproject.DTO.ProjectDTO;
 import wevioo.example.resourcemanagementproject.DTO.ProjectTimeLineDTO;
 import wevioo.example.resourcemanagementproject.Entity.Project;
 import wevioo.example.resourcemanagementproject.Entity.ProjectTimeLine;
-import wevioo.example.resourcemanagementproject.Mapper.ClientMapper;
 import wevioo.example.resourcemanagementproject.Mapper.ProjectTimeLineMapper;
 import wevioo.example.resourcemanagementproject.Repository.ProjectRepository;
 import wevioo.example.resourcemanagementproject.Repository.ProjectTimeLineRepository;
@@ -41,7 +38,7 @@ public class ProjectTimeLineService {
         t.setProject(project);
 
         if (t.getProgressPercent() == null) {
-            t.setProgressPercent(BigDecimal.ZERO);
+            t.setProgressPercent(null);
         }
 
         return mapper.toDTO(repository.save(t));

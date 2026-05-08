@@ -2,10 +2,13 @@ package wevioo.example.resourcemanagementproject.DTO;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import wevioo.example.resourcemanagementproject.Enums.ProjectTimeLineType;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Getter
@@ -26,11 +29,11 @@ public class ProjectTimeLineDTO {
     @NotNull(message = "Project is required")
     private Long projectId;
 
-    private BigDecimal progressPercent;
+    private Double progressPercent;
     private String version;
     private Boolean deliveredToClient;
 
-    private ProjectTimeLineType type; // ✅ ENUM
+    private ProjectTimeLineType type; //  ENUM
 
     private Long createdById;
     private LocalDateTime createdDate;

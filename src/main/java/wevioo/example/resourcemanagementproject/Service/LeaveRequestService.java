@@ -8,7 +8,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import wevioo.example.resourcemanagementproject.DTO.LeaveRequestDTO;
-import wevioo.example.resourcemanagementproject.DTO.ProjectDTO;
 import wevioo.example.resourcemanagementproject.Entity.LeaveBalance;
 import wevioo.example.resourcemanagementproject.Entity.LeaveRequest;
 import wevioo.example.resourcemanagementproject.Entity.User;
@@ -30,6 +29,8 @@ public class LeaveRequestService {
     private final LeaveRequestMapper mapper;
     private final UserRepository userRepository;
     private final LeaveBalanceRepository leaveBalanceRepository;
+    private final LeavePolicyService policyService;
+
 
     // CREATE
     public LeaveRequestDTO create(LeaveRequestDTO dto) {
@@ -147,6 +148,8 @@ public class LeaveRequestService {
                 lr.getStartDate(),
                 lr.getEndDate()
         ) + 1;
+
+        //int max = policyService.maxDays(lr.getType()); if (days > max) throw ...
 
         switch (lr.getType()) {
 

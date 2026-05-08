@@ -1,20 +1,35 @@
 package wevioo.example.resourcemanagementproject.Entity;
 
 
-import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 import wevioo.example.resourcemanagementproject.Enums.Level;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
 @Setter
 @Entity
 @Table(name = "users")
-public class User extends Auditable{
+public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,12 +39,12 @@ public class User extends Auditable{
     private String lastName;
     private String email;
 
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)//️ تقبل password في request (POST / PUT)
+    //@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)//️ تقبل password في request (POST / PUT)
     private String password;
 
     private Boolean active;
 
-    private String photo;
+    private String photo;// delete
 
     @Enumerated(EnumType.STRING)
     private Level level;
@@ -47,7 +62,16 @@ public class User extends Auditable{
     private User manager;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<UserTechnology> usersTechnologyList;
+    private List<UserTechnology> usersTechnologyList= new ArrayList<>();;
+
+    @CreatedDate
+    @Column(nullable = false, updatable = false)
+    @JoinColumn(name = "createdDate")
+    private LocalDateTime createdDate;
+
+    @LastModifiedDate
+    @JoinColumn(name = "updatedDate")
+    private LocalDateTime updatedDate;
 
 
 //    @ManyToOne
