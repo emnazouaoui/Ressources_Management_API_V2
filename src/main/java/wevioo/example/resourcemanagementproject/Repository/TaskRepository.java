@@ -17,20 +17,6 @@ import java.util.Optional;
 @Repository
 public interface TaskRepository extends JpaRepository<Task, Long> {
 
-//    @Query("""
-//        SELECT t FROM Task t
-//        LEFT JOIN t.assignedUser u
-//        LEFT JOIN t.project p
-//        WHERE LOWER(t.title) LIKE LOWER(CONCAT('%', :keyword, '%'))
-//        OR LOWER(t.description) LIKE LOWER(CONCAT('%', :keyword, '%'))
-//        OR LOWER(t.status) LIKE LOWER(CONCAT('%', :keyword, '%'))
-//        OR LOWER(t.priority) LIKE LOWER(CONCAT('%', :keyword, '%'))
-//        OR LOWER(u.username) LIKE LOWER(CONCAT('%', :keyword, '%'))
-//        OR LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%'))
-//        OR CAST(t.startDate AS string) LIKE CONCAT('%', :keyword, '%')
-//       OR CAST(t.endDate AS string) LIKE CONCAT('%', :keyword, '%')
-//    """)
-//    List<Task> searchTasks(@Param("keyword") String keyword);
 
     @Query("SELECT t FROM Task t LEFT JOIN FETCH t.imputations WHERE t.id = :id")
     Optional<Task> findByIdWithImputations(Long id);

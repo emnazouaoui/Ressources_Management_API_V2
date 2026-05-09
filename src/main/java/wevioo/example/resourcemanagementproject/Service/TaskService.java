@@ -181,12 +181,7 @@ public class TaskService {
         return tasks.map(TaskMapper::toDTO);
     }
 
-//    //  SEARCH
-//    public List<TaskDTO> search(String keyword) {
-//        return taskRepository.searchTasks(keyword)
-//                .stream().map(TaskMapper::toDTO).toList();
-//    }
-    // ✅ SEARCH
+    //  SEARCH
     public Page<TaskDTO> searchTasks(
             String title,
             String description,

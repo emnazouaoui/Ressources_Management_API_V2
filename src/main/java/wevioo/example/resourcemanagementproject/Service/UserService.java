@@ -12,6 +12,7 @@ import wevioo.example.resourcemanagementproject.DTO.UserDTO;
 import wevioo.example.resourcemanagementproject.Entity.Technology;
 import wevioo.example.resourcemanagementproject.Entity.User;
 import wevioo.example.resourcemanagementproject.Entity.UserTechnology;
+import wevioo.example.resourcemanagementproject.Enums.Level;
 import wevioo.example.resourcemanagementproject.Enums.UserField;
 import wevioo.example.resourcemanagementproject.Mapper.UserMapper;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -178,12 +179,58 @@ public class UserService {
         userRepository.deleteById(id);
     }
 
-    // SEARCH
-    public List<UserDTO> search(String keyword) {
-        return userRepository.searchUsers(keyword)
-                .stream()
-                .map(userMapper::toDTO)
-                .toList();
+//    // SEARCH
+//    public List<UserDTO> search(String keyword) {
+//        return userRepository.searchUsers(keyword)
+//                .stream()
+//                .map(userMapper::toDTO)
+//                .toList();
+//    }
+
+    //  SEARCH
+    public Page<UserDTO> searchUsers(
+            String username,
+            String firstName,
+            String lastName,
+            String email,
+            Boolean active,
+            Level level,
+            Long roleId,
+            String roleName,
+            Long departmentId,
+            String departmentName,
+            Long managerId,
+            String managerUsername,
+            int page,
+            int size,
+            String sortBy,
+            String sortDir
+    ) {
+        Sort sort = sortDir.equalsIgnoreCase("desc")
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        return userRepository.searchUsers(
+                normalize(username),
+                normalize(firstName),
+                normalize(lastName),
+                normalize(email),
+                active,
+                level,
+                roleId,
+                normalize(roleName),
+                departmentId,
+                normalize(departmentName),
+                managerId,
+                normalize(managerUsername),
+                pageable
+        ).map(userMapper::toDTO);
+    }
+
+    private String normalize(String value) {
+        return (value == null || value.isBlank()) ? null : value.trim();
     }
 
     public List<UserDTO> getUsersByTechnologyName(String name) {
@@ -202,6 +249,7 @@ public class UserService {
 //                .map(userMapper::toDTO)
 //                .toList();
 //    }
+
 
     public void assignTechnology(Long userId, Long techId) {
 
@@ -272,58 +320,58 @@ public class UserService {
     // =========================
 
 
-    public String uploadPhoto(MultipartFile file) {
-
-        try {
-            String uploadDir = "uploads/";
-            String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-            Path path = Paths.get(uploadDir + fileName);
-            Files.createDirectories(path.getParent());
-            Files.write(path, file.getBytes());
-            return fileName;
-        } catch (IOException e) {
-            throw new RuntimeException("Error uploading file");
-        }
-    }
-
-    public UserDTO uploadUserPhoto(Long userId, MultipartFile file) {
-
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        String fileName = uploadPhoto(file);
-        user.setPhoto(fileName);
-        return userMapper.toDTO(userRepository.save(user));
-    }
-
-    //-------------------------------- Get photo -------------------------//
-
-    //GET PHOTO BY USER ID
-    public Resource getUserPhoto(Long userId) {
-
-        try {
-            User user = userRepository.findById(userId)
-                    .orElseThrow(() -> new RuntimeException("User not found"));
-
-            if (user.getPhoto() == null || user.getPhoto().isBlank()) {
-                throw new RuntimeException("User has no photo");
-            }
-
-            Path filePath = Paths.get("uploads")
-                    .resolve(user.getPhoto())
-                    .normalize();
-
-            Resource resource = new UrlResource(filePath.toUri());
-
-            if (!resource.exists() || !resource.isReadable()) {
-                throw new RuntimeException("Image not found");
-            }
-
-            return resource;
-
-        } catch (Exception e) {
-            throw new RuntimeException("Error loading user photo");
-        }
-    }
+//    public String uploadPhoto(MultipartFile file) {
+//
+//        try {
+//            String uploadDir = "uploads/";
+//            String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+//            Path path = Paths.get(uploadDir + fileName);
+//            Files.createDirectories(path.getParent());
+//            Files.write(path, file.getBytes());
+//            return fileName;
+//        } catch (IOException e) {
+//            throw new RuntimeException("Error uploading file");
+//        }
+//    }
+//
+//    public UserDTO uploadUserPhoto(Long userId, MultipartFile file) {
+//
+//        User user = userRepository.findById(userId)
+//                .orElseThrow(() -> new RuntimeException("User not found"));
+//
+//        String fileName = uploadPhoto(file);
+//        user.setPhoto(fileName);
+//        return userMapper.toDTO(userRepository.save(user));
+//    }
+//
+//    //-------------------------------- Get photo -------------------------//
+//
+//    //GET PHOTO BY USER ID
+//    public Resource getUserPhoto(Long userId) {
+//
+//        try {
+//            User user = userRepository.findById(userId)
+//                    .orElseThrow(() -> new RuntimeException("User not found"));
+//
+//            if (user.getPhoto() == null || user.getPhoto().isBlank()) {
+//                throw new RuntimeException("User has no photo");
+//            }
+//
+//            Path filePath = Paths.get("uploads")
+//                    .resolve(user.getPhoto())
+//                    .normalize();
+//
+//            Resource resource = new UrlResource(filePath.toUri());
+//
+//            if (!resource.exists() || !resource.isReadable()) {
+//                throw new RuntimeException("Image not found");
+//            }
+//
+//            return resource;
+//
+//        } catch (Exception e) {
+//            throw new RuntimeException("Error loading user photo");
+//        }
+//    }
 
 }

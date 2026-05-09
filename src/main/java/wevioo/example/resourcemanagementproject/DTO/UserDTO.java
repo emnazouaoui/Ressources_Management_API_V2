@@ -49,18 +49,21 @@ public class UserDTO {
 
     private Boolean active;
 
-    private String photo;
+    //private String photo;
 
     @NotNull(message = "Role is required")
     private Long roleId;
+    private String roleName;
 
     @NotNull(message = "Level is required")
     private Level level;
 
     @NotNull(message = "Department is required")
     private Long departmentId;
+    private String departmentName;
 
     private Long managerId;
+    private String managerUsername;
 
     // 🔥 relation
     private List<Long> technologyIds;

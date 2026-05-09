@@ -19,11 +19,14 @@ public class UserMapper {
                 .email(user.getEmail())
               //  .password(user.getPassword()) // (اختياري حسب security)
                 .active(user.getActive())
-                .photo(user.getPhoto())
+                //.photo(user.getPhoto())
                 .level(user.getLevel())
                 .roleId(user.getRole() != null ? user.getRole().getId() : null)
+                .roleName(user.getRole() != null ? user.getRole().getName() : null)
                 .departmentId(user.getDepartment() != null ? user.getDepartment().getId() : null)
+                .departmentName(user.getDepartment() != null ? user.getDepartment().getName() : null)
                 .managerId(user.getManager() != null ? user.getManager().getId() : null)
+                .managerUsername(user.getManager() != null ? user.getManager().getUsername() : null)
                 .createdDate(user.getCreatedDate())
                 .updatedDate(user.getUpdatedDate())
                 .technologyIds(
@@ -47,7 +50,7 @@ public class UserMapper {
         user.setEmail(dto.getEmail());
       //  user.setPassword(dto.getPassword()); // 🔐
         user.setActive(dto.getActive());
-        user.setPhoto(dto.getPhoto());
+        //user.setPhoto(dto.getPhoto());
         user.setLevel(dto.getLevel());
         user.setCreatedDate(dto.getCreatedDate());
         user.setUpdatedDate(dto.getUpdatedDate());
@@ -64,7 +67,7 @@ public class UserMapper {
         user.setEmail(dto.getEmail());
       //  user.setPassword(dto.getPassword()); // 🔐
         user.setActive(dto.getActive());
-        user.setPhoto(dto.getPhoto());
+       // user.setPhoto(dto.getPhoto());
         user.setLevel(dto.getLevel());
         user.setUpdatedDate(dto.getUpdatedDate());
         user.setCreatedDate(dto.getCreatedDate());

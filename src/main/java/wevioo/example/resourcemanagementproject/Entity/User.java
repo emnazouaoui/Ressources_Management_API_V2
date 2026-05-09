@@ -44,7 +44,7 @@ public class User {
 
     private Boolean active;
 
-    private String photo;// delete
+    //private String photo;// delete
 
     @Enumerated(EnumType.STRING)
     private Level level;

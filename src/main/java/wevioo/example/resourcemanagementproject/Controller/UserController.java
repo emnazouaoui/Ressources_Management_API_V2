@@ -1,6 +1,7 @@
 package wevioo.example.resourcemanagementproject.Controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import wevioo.example.resourcemanagementproject.DTO.UserDTO;
 import wevioo.example.resourcemanagementproject.Entity.UserHistory;
+import wevioo.example.resourcemanagementproject.Enums.Level;
 import wevioo.example.resourcemanagementproject.Repository.UserHistoryRepository;
 import wevioo.example.resourcemanagementproject.Service.UserService;
 import org.springframework.core.io.Resource;
@@ -75,11 +77,11 @@ public class UserController {
         userService.delete(id);
     }
 
-    @GetMapping("/search")
-    @Operation(summary = "Search users by keyword")
-    public List<UserDTO> search(@RequestParam String keyword) {
-        return userService.search(keyword);
-    }
+//    @GetMapping("/search")
+//    @Operation(summary = "Search users by keyword")
+//    public List<UserDTO> search(@RequestParam String keyword) {
+//        return userService.search(keyword);
+//    }
 
     // 🔥 assign technology
     @Operation(summary = "Assign technology to User")
@@ -118,6 +120,74 @@ public class UserController {
         return userService.getUsersByTechnologyName(name);
     }
 
+    @Operation(
+            summary = "Recherche paginée des utilisateurs",
+            description = "Filtrer par username, nom, email, rôle, département, manager. Tous les champs sont optionnels."
+    )
+    @GetMapping("/search")
+    public ResponseEntity<Page<UserDTO>> searchUsers(
+
+            @Parameter(description = "Filtrer par username")
+            @RequestParam(required = false) String username,
+
+            @Parameter(description = "Filtrer par prénom")
+            @RequestParam(required = false) String firstName,
+
+            @Parameter(description = "Filtrer par nom")
+            @RequestParam(required = false) String lastName,
+
+            @Parameter(description = "Filtrer par email")
+            @RequestParam(required = false) String email,
+
+            @Parameter(description = "Filtrer par statut actif : true ou false")
+            @RequestParam(required = false) Boolean active,
+
+            @Parameter(description = "Filtrer par niveau (JUNIOR, MID, SENIOR…)")
+            @RequestParam(required = false) Level level,
+
+            @Parameter(description = "Filtrer par ID du rôle")
+            @RequestParam(required = false) Long roleId,
+
+            @Parameter(description = "Filtrer par nom du rôle")
+            @RequestParam(required = false) String roleName,
+
+            @Parameter(description = "Filtrer par ID du département")
+            @RequestParam(required = false) Long departmentId,
+
+            @Parameter(description = "Filtrer par nom du département")
+            @RequestParam(required = false) String departmentName,
+
+            @Parameter(description = "Filtrer par ID du manager")
+            @RequestParam(required = false) Long managerId,
+
+            @Parameter(description = "Filtrer par username du manager")
+            @RequestParam(required = false) String managerUsername,
+
+            @Parameter(description = "Numéro de page (0-indexed)", example = "0")
+            @RequestParam(defaultValue = "0") int page,
+
+            @Parameter(description = "Nombre de résultats par page", example = "10")
+            @RequestParam(defaultValue = "10") int size,
+
+            @Parameter(description = "Champ de tri (username, firstName, lastName, createdDate…)", example = "username")
+            @RequestParam(defaultValue = "username") String sortBy,
+
+            @Parameter(description = "Direction du tri : asc ou desc", example = "asc")
+            @RequestParam(defaultValue = "asc") String sortDir
+
+    ) {
+        return ResponseEntity.ok(
+                userService.searchUsers(
+                        username, firstName, lastName, email,
+                        active, level,
+                        roleId, roleName,
+                        departmentId, departmentName,
+                        managerId, managerUsername,
+                        page, size, sortBy, sortDir
+                )
+        );
+    }
+
     @Operation(summary = "Get history user for test")
     @GetMapping("/{id}/history")
     public List<UserHistory> getHistory(@PathVariable Long id) {
@@ -127,38 +197,38 @@ public class UserController {
                 .toList();
     }
 
-    //------------------------- Upload photo user-----------------------------//
-
-    @Operation(summary = "Upload photo user")
-    @PostMapping(value ="/{id}/photo", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public UserDTO uploadPhoto(@PathVariable Long id,
-                               @RequestParam MultipartFile file) {
-        return userService.uploadUserPhoto(id, file);
-    }
-
-    @GetMapping("/{id}/photo")
-    public ResponseEntity<Resource> getUserPhoto(@PathVariable Long id) {
-
-        Resource resource = userService.getUserPhoto(id);
-
-        try {
-            Path filePath = Paths.get("uploads")
-                    .resolve(resource.getFilename())
-                    .normalize();
-
-            String contentType = Files.probeContentType(filePath);
-            if (contentType == null) {
-                contentType = "application/octet-stream";
-            }
-            return ResponseEntity.ok()
-                    .contentType(MediaType.parseMediaType(contentType))
-                    .header(HttpHeaders.CONTENT_DISPOSITION,
-                            "inline; filename=\"" + resource.getFilename() + "\"")
-                    .body(resource);
-        } catch (Exception e) {
-            throw new RuntimeException("Error returning image");
-        }
-    }
+//    //------------------------- Upload photo user-----------------------------//
+//
+//    @Operation(summary = "Upload photo user")
+//    @PostMapping(value ="/{id}/photo", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+//    public UserDTO uploadPhoto(@PathVariable Long id,
+//                               @RequestParam MultipartFile file) {
+//        return userService.uploadUserPhoto(id, file);
+//    }
+//
+//    @GetMapping("/{id}/photo")
+//    public ResponseEntity<Resource> getUserPhoto(@PathVariable Long id) {
+//
+//        Resource resource = userService.getUserPhoto(id);
+//
+//        try {
+//            Path filePath = Paths.get("uploads")
+//                    .resolve(resource.getFilename())
+//                    .normalize();
+//
+//            String contentType = Files.probeContentType(filePath);
+//            if (contentType == null) {
+//                contentType = "application/octet-stream";
+//            }
+//            return ResponseEntity.ok()
+//                    .contentType(MediaType.parseMediaType(contentType))
+//                    .header(HttpHeaders.CONTENT_DISPOSITION,
+//                            "inline; filename=\"" + resource.getFilename() + "\"")
+//                    .body(resource);
+//        } catch (Exception e) {
+//            throw new RuntimeException("Error returning image");
+//        }
+//    }
 
 
 }
