@@ -16,6 +16,8 @@ public class TechnologyMapper {
         return TechnologyDTO.builder()
                 .id(t.getId())
                 .name(t.getName())
+                .createdDate(t.getCreatedDate())
+                .updatedDate(t.getUpdatedDate())
                 .build();
     }
 
@@ -25,6 +27,8 @@ public class TechnologyMapper {
         Technology t = new Technology();
         t.setId(dto.getId());
         t.setName(dto.getName());
+        t.setCreatedDate(dto.getCreatedDate());
+        t.setUpdatedDate(dto.getUpdatedDate());
 
         return t;
     }

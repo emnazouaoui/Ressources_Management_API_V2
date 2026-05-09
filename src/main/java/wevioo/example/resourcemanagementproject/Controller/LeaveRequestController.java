@@ -1,9 +1,12 @@
 package wevioo.example.resourcemanagementproject.Controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,8 +18,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import wevioo.example.resourcemanagementproject.DTO.LeaveRequestDTO;
 import wevioo.example.resourcemanagementproject.Enums.LeaveRequestStatus;
+import wevioo.example.resourcemanagementproject.Enums.LeaveRequestType;
 import wevioo.example.resourcemanagementproject.Service.LeaveRequestService;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -62,11 +67,62 @@ public class LeaveRequestController {
         service.delete(id);
     }
 
-    // 🔥 SEARCH API
+
+    @Operation(
+            summary = "Recherche paginée des demandes de congé",
+            description = "Filtrer par type, statut, utilisateur, manager, dates. Tous les champs sont optionnels."
+    )
     @GetMapping("/search")
-    @Operation(summary = "Search projects by keyword ")
-    public List<LeaveRequestDTO> search(@RequestParam String keyword) {
-        return service.search(keyword);
+    public ResponseEntity<Page<LeaveRequestDTO>> searchLeaveRequests(
+
+            @Parameter(description = "Filtrer par raison (recherche partielle)")
+            @RequestParam(required = false) String reason,
+
+            @Parameter(description = "Type de congé (ex: ANNUAL, SICK...)")
+            @RequestParam(required = false) LeaveRequestType type,
+
+            @Parameter(description = "Statut (PENDING, APPROVED, REJECTED)")
+            @RequestParam(required = false) LeaveRequestStatus status,
+
+            @Parameter(description = "Filtrer par ID utilisateur")
+            @RequestParam(required = false) Long userId,
+
+            @Parameter(description = "Filtrer par ID project manager")
+            @RequestParam(required = false) Long projectManagerId,
+
+            @Parameter(description = "Filtrer par nom utilisateur")
+            @RequestParam(required = false) String username,
+
+            @Parameter(description = "Date de début (yyyy-MM-dd'T'HH:mm:ss)", example = "2024-01-01T00:00:00")
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
+
+            @Parameter(description = "Date de fin (yyyy-MM-dd'T'HH:mm:ss)", example = "2024-12-31T23:59:59")
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate,
+
+            @Parameter(description = "Numéro de page (0-indexed)", example = "0")
+            @RequestParam(defaultValue = "0") int page,
+
+            @Parameter(description = "Nombre de résultats par page", example = "10")
+            @RequestParam(defaultValue = "10") int size,
+
+            @Parameter(description = "Champ de tri (startDate, endDate, status…)", example = "startDate")
+            @RequestParam(defaultValue = "startDate") String sortBy,
+
+            @Parameter(description = "Direction du tri : asc ou desc", example = "desc")
+            @RequestParam(defaultValue = "desc") String sortDir
+
+    ) {
+        return ResponseEntity.ok(
+                service.searchLeaveRequests(
+                        reason, type, status,
+                        userId, projectManagerId,
+                        username,
+                        startDate, endDate,
+                        page, size, sortBy, sortDir
+                )
+        );
     }
 
     //----------------------- Approve/Reject leave request -------------------------//

@@ -61,8 +61,35 @@ public class RoleService {
     }
 
 
-    // 🔎 SEARCH
-    public List<RoleDTO> search(String keyword) {
-        return RoleMapper.toDtoList(repository.searchByKeyword(keyword));
+    // SEARCH
+    public Page<RoleDTO> searchRoles(
+            String name,
+            String description,
+            int page,
+            int size,
+            String sortBy,
+            String sortDir
+    ) {
+        Sort sort = sortDir.equalsIgnoreCase("desc")
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        return repository.searchRoles(
+                normalize(name),
+                normalize(description),
+                pageable
+        ).map(RoleMapper::toDto);
     }
+
+    // -------------------------------------------------------------------------
+    // Helpers
+    // -------------------------------------------------------------------------
+    private String normalize(String value) {
+        return (value == null || value.isBlank()) ? null : value.trim();
+    }
+
+
+
 }

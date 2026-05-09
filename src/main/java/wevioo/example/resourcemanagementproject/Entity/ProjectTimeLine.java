@@ -44,12 +44,11 @@ public class ProjectTimeLine {
     private ProjectTimeLineType type;
 
     @CreatedDate
-    @Column(nullable = false, updatable = false)
-    @JoinColumn(name = "createdDate")
+    @Column(name = "created_date", nullable = false, updatable = false)
     private LocalDateTime createdDate;
 
     @LastModifiedDate
-    @JoinColumn(name = "updatedDate")
+    @Column(name = "updated_date")
     private LocalDateTime updatedDate;
 
 //    @ManyToOne

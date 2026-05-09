@@ -66,9 +66,34 @@ public class DepartmentService {
         repository.deleteById(id);
     }
 
-    // SEARCH (JPQL query)
-    public List<DepartmentDTO> search(String keyword) {
-        return DepartmentMapper.toDtoList(repository.searchByKeyword(keyword));
+
+    // SEARCH
+    public Page<DepartmentDTO> searchDepartments(
+            String name,
+            String description,
+            int page,
+            int size,
+            String sortBy,
+            String sortDir
+    ) {
+        Sort sort = sortDir.equalsIgnoreCase("desc")
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        return repository.searchDepartments(
+                normalize(name),
+                normalize(description),
+                pageable
+        ).map(DepartmentMapper::toDto);
+    }
+
+    // -------------------------------------------------------------------------
+    // Helpers
+    // -------------------------------------------------------------------------
+    private String normalize(String value) {
+        return (value == null || value.isBlank()) ? null : value.trim();
     }
 
 

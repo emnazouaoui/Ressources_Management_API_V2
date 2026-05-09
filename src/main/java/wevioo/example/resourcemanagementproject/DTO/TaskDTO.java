@@ -43,9 +43,11 @@ public class TaskDTO {
 
     @NotNull(message = "Project is required")
     private Long projectId;
+    private String projectName;
 
     @NotNull(message = "User assigned is required")
     private Long assignedUserId;
+    private String assignedUserUsername;
 
     private List<Long> imputationIds;
 

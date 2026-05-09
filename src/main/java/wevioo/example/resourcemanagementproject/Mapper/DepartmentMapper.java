@@ -16,6 +16,8 @@ public class DepartmentMapper {
                 .id(d.getId())
                 .name(d.getName())
                 .description(d.getDescription())
+                .createdDate(d.getCreatedDate())
+                .updatedDate(d.getUpdatedDate())
                 .build();
     }
 
@@ -26,6 +28,8 @@ public class DepartmentMapper {
         d.setId(dto.getId());
         d.setName(dto.getName());
         d.setDescription(dto.getDescription());
+        d.setCreatedDate(dto.getCreatedDate());
+        d.setUpdatedDate(dto.getUpdatedDate());
         return d;
     }
 

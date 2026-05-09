@@ -18,7 +18,11 @@ public class ImputationMapper {
                 .hours(entity.getHours())
                 .comment(entity.getComment())
                 .taskId(entity.getTask() != null ? entity.getTask().getId() : null)
+                .title(entity.getTask() != null ? entity.getTask().getTitle() : null)   // ← nouveau
                 .userId(entity.getUser() != null ? entity.getUser().getId() : null)
+                .username(entity.getUser() != null ? entity.getUser().getUsername() : null) // ← nouveau
+                .createdDate(entity.getCreatedDate())
+                .updatedDate(entity.getUpdatedDate())
                 .build();
     }
 
@@ -32,6 +36,10 @@ public class ImputationMapper {
         entity.setComment(dto.getComment());
         entity.setTask(task);
         entity.setUser(user);
+        entity.setUpdatedDate(dto.getUpdatedDate());
+        entity.setCreatedDate(dto.getCreatedDate());
+
+
 
         return entity;
     }
@@ -42,5 +50,6 @@ public class ImputationMapper {
         entity.setComment(dto.getComment());
         entity.setTask(task);
         entity.setUser(user);
+        entity.setUpdatedDate(dto.getUpdatedDate());
     }
 }

@@ -12,7 +12,9 @@ import wevioo.example.resourcemanagementproject.Entity.Imputation;
 import wevioo.example.resourcemanagementproject.Entity.Project;
 import wevioo.example.resourcemanagementproject.Entity.Task;
 import wevioo.example.resourcemanagementproject.Entity.User;
+import wevioo.example.resourcemanagementproject.Enums.Priority;
 import wevioo.example.resourcemanagementproject.Enums.TaskField;
+import wevioo.example.resourcemanagementproject.Enums.TaskStatus;
 import wevioo.example.resourcemanagementproject.Mapper.TaskMapper;
 import wevioo.example.resourcemanagementproject.Repository.ImputationRepository;
 import wevioo.example.resourcemanagementproject.Repository.ProjectRepository;
@@ -20,6 +22,7 @@ import wevioo.example.resourcemanagementproject.Repository.TaskRepository;
 import wevioo.example.resourcemanagementproject.Repository.UserRepository;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -178,11 +181,60 @@ public class TaskService {
         return tasks.map(TaskMapper::toDTO);
     }
 
-    //  SEARCH
-    public List<TaskDTO> search(String keyword) {
-        return taskRepository.searchTasks(keyword)
-                .stream().map(TaskMapper::toDTO).toList();
+//    //  SEARCH
+//    public List<TaskDTO> search(String keyword) {
+//        return taskRepository.searchTasks(keyword)
+//                .stream().map(TaskMapper::toDTO).toList();
+//    }
+    // ✅ SEARCH
+    public Page<TaskDTO> searchTasks(
+            String title,
+            String description,
+            TaskStatus status,
+            Priority priority,
+            Long projectId,
+            String projectName,
+            Long assignedUserId,
+            String assignedUserUsername,
+            LocalDateTime startDate,
+            LocalDateTime endDate,
+            Double estimatedHours,
+            Double consumedHours,
+            int page,
+            int size,
+            String sortBy,
+            String sortDir
+    ) {
+        Sort sort = sortDir.equalsIgnoreCase("desc")
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        return taskRepository.searchTasks(
+                normalize(title),
+                normalize(description),
+                status,
+                priority,
+                projectId,
+                normalize(projectName),
+                assignedUserId,
+                normalize(assignedUserUsername),
+                startDate,
+                endDate,
+                estimatedHours,
+                consumedHours,
+                pageable
+        ).map(TaskMapper::toDTO);
     }
+
+        // -------------------------------------------------------------------------
+        // Helpers
+        // -------------------------------------------------------------------------
+        private String normalize(String value) {
+            return (value == null || value.isBlank()) ? null : value.trim();
+        }
+
     // ================= Relations =================
 
 

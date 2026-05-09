@@ -25,17 +25,22 @@ public class TaskMapper {
         dto.setEndDate(task.getEndDate());
         dto.setEstimatedHours(task.getEstimatedHours());
         dto.setConsumedHours(task.getConsumedHours());
+        dto.setCreatedDate(task.getCreatedDate());
+        dto.setUpdatedDate(task.getUpdatedDate());
         dto.setImputationIds(
                 task.getImputations() != null
                         ? task.getImputations().stream().map(Imputation::getId).toList()
                         : null
         );
 
-        if (task.getProject() != null)
+        if (task.getProject() != null){
             dto.setProjectId(task.getProject().getId());
+            dto.setProjectName(task.getProject().getName());}
 
-        if (task.getAssignedUser() != null)
+        if (task.getAssignedUser() != null){
             dto.setAssignedUserId(task.getAssignedUser().getId());
+            dto.setAssignedUserUsername(task.getAssignedUser().getUsername());}
+
 
         return dto;
     }
@@ -56,6 +61,8 @@ public class TaskMapper {
         task.setEstimatedHours(dto.getEstimatedHours());
         task.setConsumedHours(dto.getConsumedHours());
         task.setImputations(new ArrayList<>());
+        task.setCreatedDate(dto.getCreatedDate());
+        task.setUpdatedDate(dto.getUpdatedDate());
 
         return task;
     }

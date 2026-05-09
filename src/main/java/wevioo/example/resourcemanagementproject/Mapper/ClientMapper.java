@@ -15,6 +15,8 @@ public class ClientMapper {
         dto.setPhone(entity.getPhone());
         dto.setEmail(entity.getEmail());
         dto.setTypeClient(entity.getTypeClient());
+        dto.setCreatedDate(entity.getCreatedDate());   // ← manquait
+        dto.setUpdatedDate(entity.getUpdatedDate());   // ← manquait
         return dto;
     }
 
@@ -27,6 +29,8 @@ public class ClientMapper {
         entity.setPhone(dto.getPhone());
         entity.setEmail(dto.getEmail());
         entity.setTypeClient(dto.getTypeClient());
+        entity.setCreatedDate(dto.getCreatedDate());   // ← manquait
+        entity.setUpdatedDate(dto.getUpdatedDate());   // ← manquait
         return entity;
     }
 }

@@ -8,6 +8,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import wevioo.example.resourcemanagementproject.DTO.ClientDTO;
 import wevioo.example.resourcemanagementproject.Entity.Client;
+import wevioo.example.resourcemanagementproject.Enums.ClientType;
 import wevioo.example.resourcemanagementproject.Mapper.ClientMapper;
 import wevioo.example.resourcemanagementproject.Repository.ClientRepository;
 
@@ -81,15 +82,36 @@ public class ClientService {
         clientRepository.delete(client);
     }
 
-    // ✅ SEARCH
-    public List<ClientDTO> search(String keyword) {
+    //  SEARCH with pagination
+    public Page<ClientDTO> searchClients(
+            String name,
+            String email,
+            String company,
+            String address,
+            String phone,
+            ClientType typeClient,
+            int page,
+            int size,
+            String sortBy,
+            String sortDir
+    ) {
+        Sort sort = sortDir.equalsIgnoreCase("desc")
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
 
-        List<Client> clients = clientRepository.searchClients(keyword);
+        Pageable pageable = PageRequest.of(page, size, sort);
 
-        return clients.stream()
-                .map(ClientMapper::toDTO)
-                .collect(Collectors.toList());
+        return clientRepository.searchClients(
+                        normalize(name), normalize(email), normalize(company),
+                        normalize(address), normalize(phone), typeClient,
+                        pageable
+                )
+                .map(ClientMapper::toDTO);  // Page<Client> → Page<ClientDTO> directement
+    }
 
+    /** Retourne null si la chaîne est null ou vide après trim. */
+    private String normalize(String value) {
+        return (value == null || value.isBlank()) ? null : value.trim();
     }
 
 

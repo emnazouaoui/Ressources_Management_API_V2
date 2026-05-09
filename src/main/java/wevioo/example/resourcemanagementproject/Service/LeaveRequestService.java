@@ -18,6 +18,7 @@ import wevioo.example.resourcemanagementproject.Repository.LeaveBalanceRepositor
 import wevioo.example.resourcemanagementproject.Repository.LeaveRequestRepository;
 import wevioo.example.resourcemanagementproject.Repository.UserRepository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -114,12 +115,46 @@ public class LeaveRequestService {
         repository.deleteById(id);
     }
 
-    // SEARCH
-    public List<LeaveRequestDTO> search(String keyword) {
-        return repository.search(keyword)
-                .stream()
-                .map(mapper::toDTO)
-                .toList();
+
+    // ✅ SEARCH
+    public Page<LeaveRequestDTO> searchLeaveRequests(
+            String reason,
+            LeaveRequestType type,
+            LeaveRequestStatus status,
+            Long userId,
+            Long projectManagerId,
+            String username,
+            LocalDateTime startDate,
+            LocalDateTime endDate,
+            int page,
+            int size,
+            String sortBy,
+            String sortDir
+    ) {
+        Sort sort = sortDir.equalsIgnoreCase("desc")
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        return repository.searchLeaveRequests(
+                normalize(reason),
+                type,
+                status,
+                userId,
+                projectManagerId,
+                normalize(username),
+                startDate,
+                endDate,
+                pageable
+        ).map(mapper::toDTO);
+    }
+
+    // -------------------------------------------------------------------------
+    // Helpers
+    // -------------------------------------------------------------------------
+    private String normalize(String value) {
+        return (value == null || value.isBlank()) ? null : value.trim();
     }
 
 

@@ -24,6 +24,8 @@ public class UserMapper {
                 .roleId(user.getRole() != null ? user.getRole().getId() : null)
                 .departmentId(user.getDepartment() != null ? user.getDepartment().getId() : null)
                 .managerId(user.getManager() != null ? user.getManager().getId() : null)
+                .createdDate(user.getCreatedDate())
+                .updatedDate(user.getUpdatedDate())
                 .technologyIds(
                         user.getUsersTechnologyList() != null ?
                                 user.getUsersTechnologyList().stream()
@@ -47,6 +49,8 @@ public class UserMapper {
         user.setActive(dto.getActive());
         user.setPhoto(dto.getPhoto());
         user.setLevel(dto.getLevel());
+        user.setCreatedDate(dto.getCreatedDate());
+        user.setUpdatedDate(dto.getUpdatedDate());
 
         return user;
     }
@@ -62,6 +66,8 @@ public class UserMapper {
         user.setActive(dto.getActive());
         user.setPhoto(dto.getPhoto());
         user.setLevel(dto.getLevel());
+        user.setUpdatedDate(dto.getUpdatedDate());
+        user.setCreatedDate(dto.getCreatedDate());
     }
 
 }

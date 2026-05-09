@@ -27,11 +27,16 @@ public class LeaveRequestDTO {
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private String status;
 
+    // Relations — on expose juste les IDs pour éviter les boucles infinies
     @NotNull(message = "Project Manager is required")
     private Long projectManagerId;
+    private String projectManagerName;   // utile pour l'affichage
+
 
     @NotNull(message = "User is required")
     private Long userId;
+    private String username;   // utile pour l'affichage
+
 
     private Long createdById;
     private LocalDateTime createdDate;

@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import wevioo.example.resourcemanagementproject.DTO.ProjectTimeLineDTO;
 import wevioo.example.resourcemanagementproject.Entity.Project;
 import wevioo.example.resourcemanagementproject.Entity.ProjectTimeLine;
+import wevioo.example.resourcemanagementproject.Enums.ProjectTimeLineType;
 import wevioo.example.resourcemanagementproject.Mapper.ProjectTimeLineMapper;
 import wevioo.example.resourcemanagementproject.Repository.ProjectRepository;
 import wevioo.example.resourcemanagementproject.Repository.ProjectTimeLineRepository;
@@ -82,12 +83,53 @@ public class ProjectTimeLineService {
                 .toList();
     }
 
-    // SEARCH
-    public List<ProjectTimeLineDTO> search(String keyword) {
-        return repository.search(keyword)
-                .stream()
-                .map(mapper::toDTO)
-                .toList();
+//    // SEARCH
+//    public List<ProjectTimeLineDTO> search(String keyword) {
+//        return repository.search(keyword)
+//                .stream()
+//                .map(mapper::toDTO)
+//                .toList();
+//    }
+
+    //  SEARCH
+    public Page<ProjectTimeLineDTO> searchProjectTimeLines(
+            String title,
+            String description,
+            String version,
+            ProjectTimeLineType type,
+            Boolean deliveredToClient,
+            Long projectId,
+            String name,
+            Double progressPercent,
+            int page,
+            int size,
+            String sortBy,
+            String sortDir
+    ) {
+        Sort sort = sortDir.equalsIgnoreCase("desc")
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        return repository.searchProjectTimeLines(
+                normalize(title),
+                normalize(description),
+                normalize(version),
+                type,
+                deliveredToClient,
+                projectId,
+                normalize(name),
+                progressPercent,
+                pageable
+        ).map(mapper::toDTO);
+    }
+
+    // -------------------------------------------------------------------------
+    // Helpers
+    // -------------------------------------------------------------------------
+    private String normalize(String value) {
+        return (value == null || value.isBlank()) ? null : value.trim();
     }
 
     // DELETE

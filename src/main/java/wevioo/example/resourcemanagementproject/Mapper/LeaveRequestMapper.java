@@ -18,8 +18,13 @@ public class LeaveRequestMapper {
                 .reason(lr.getReason())
                 .status(lr.getStatus() != null ? lr.getStatus().name() : null)
                 .projectManagerId(lr.getProjectManager() != null ? lr.getProjectManager().getId() : null)
+                .projectManagerName(lr.getProjectManager() != null ? lr.getProjectManager().getUsername() : null) // ← nouveau
                 .userId(lr.getUser() != null ? lr.getUser().getId() : null)
+                .username(lr.getUser() != null ? lr.getUser().getUsername() : null) // ← nouveau
+                .createdDate(lr.getCreatedDate())
+                .updatedDate(lr.getUpdatedDate())
                 .build();
+
     }
 
     public void toEntity(LeaveRequestDTO dto, LeaveRequest lr) {
@@ -27,6 +32,8 @@ public class LeaveRequestMapper {
         lr.setStartDate(dto.getStartDate());
         lr.setEndDate(dto.getEndDate());
         lr.setReason(dto.getReason());
+        lr.setCreatedDate(dto.getCreatedDate());
+        lr.setUpdatedDate(dto.getUpdatedDate());
 
         if (dto.getType() != null) {
             lr.setType(LeaveRequestType.valueOf(dto.getType()));

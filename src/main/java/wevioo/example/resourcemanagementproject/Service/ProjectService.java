@@ -14,6 +14,7 @@ import wevioo.example.resourcemanagementproject.Enums.ProjectStatus;
 import wevioo.example.resourcemanagementproject.Mapper.ProjectMapper;
 import wevioo.example.resourcemanagementproject.Repository.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -168,11 +169,49 @@ public ProjectDTO update(Long id, ProjectDTO dto) {
                 .map(mapper::toDTO);
     }
 
+    //  SEARCH
+    public Page<ProjectDTO> searchProjects(
+            String name,
+            String description,
+            ProjectStatus status,
+            Long projectManagerId,
+            String projectManagerUsername,
+            Long clientId,
+            String clientName,
+            LocalDateTime startDate,
+            LocalDateTime endDate,
+            Double progressPercent,
+            int page,
+            int size,
+            String sortBy,
+            String sortDir
+    ) {
+        Sort sort = sortDir.equalsIgnoreCase("desc")
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
 
-    // 🔥 SEARCH
-    public List<ProjectDTO> search(String keyword) {
-        return projectRepository.search(keyword)
-                .stream().map(mapper::toDTO).toList();
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        return projectRepository.searchProjects(
+                normalize(name),
+                normalize(description),
+                status,
+                projectManagerId,
+                normalize(projectManagerUsername),
+                clientId,
+                normalize(clientName),
+                startDate,
+                endDate,
+                progressPercent,
+                pageable
+        ).map(mapper::toDTO);
+    }
+
+    // -------------------------------------------------------------------------
+    // Helpers
+    // -------------------------------------------------------------------------
+    private String normalize(String value) {
+        return (value == null || value.isBlank()) ? null : value.trim();
     }
 
     // 🔥 DELETE

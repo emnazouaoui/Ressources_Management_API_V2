@@ -18,6 +18,9 @@ public class ProjectTimeLineMapper {
                 .deliveredToClient(t.getDeliveredToClient())
                 .type(t.getType())
                 .projectId(t.getProject() != null ? t.getProject().getId() : null)
+                .name(t.getProject() != null ? t.getProject().getName() : null) // ← nouveau
+                .createdDate(t.getCreatedDate())
+                .updatedDate(t.getUpdatedDate())
                 .build();
     }
 
@@ -29,6 +32,8 @@ public class ProjectTimeLineMapper {
         t.setVersion(dto.getVersion());
         t.setDeliveredToClient(dto.getDeliveredToClient());
         t.setType(dto.getType());
+        t.setCreatedDate(dto.getCreatedDate());
+        t.setUpdatedDate(dto.getUpdatedDate());
     }
 
 }

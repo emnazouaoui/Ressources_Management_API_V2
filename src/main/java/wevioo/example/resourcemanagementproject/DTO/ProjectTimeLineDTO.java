@@ -28,6 +28,7 @@ public class ProjectTimeLineDTO {
 
     @NotNull(message = "Project is required")
     private Long projectId;
+    private String name;   // utile pour l'affichage
 
     private Double progressPercent;
     private String version;

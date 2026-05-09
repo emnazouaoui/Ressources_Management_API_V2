@@ -1,5 +1,7 @@
 package wevioo.example.resourcemanagementproject.Repository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -11,9 +13,11 @@ import java.util.List;
 @Repository
 public interface TechnologyRepository extends JpaRepository<Technology, Long> {
 
-    // 🔎 Search by keyword (JPQL)
-    @Query("SELECT t FROM Technology t " +
-            "WHERE LOWER(t.name) LIKE LOWER(CONCAT('%', :keyword, '%'))")
-    List<Technology> searchByKeyword(@Param("keyword") String keyword);
+    @Query("SELECT t FROM Technology t "
+            + "WHERE (:name IS NULL OR t.name LIKE %:name%) ")
+    Page<Technology> searchTechnologies(
+            @Param("name")  String name,
+            Pageable pageable
+    );
 
 }

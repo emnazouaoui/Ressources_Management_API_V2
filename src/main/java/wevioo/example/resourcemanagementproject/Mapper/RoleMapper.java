@@ -18,6 +18,8 @@ public class RoleMapper {
                 .name(r.getName())
                 .description(r.getDescription())
                 .active(r.getActive())
+                .createdDate(r.getCreatedDate())
+                .updatedDate(r.getUpdatedDate())
                 .build();
     }
 
@@ -29,6 +31,8 @@ public class RoleMapper {
         r.setName(dto.getName());
         r.setDescription(dto.getDescription());
         r.setActive(dto.getActive());
+        r.setCreatedDate(dto.getCreatedDate());
+        r.setUpdatedDate(dto.getUpdatedDate());
 
         return r;
     }

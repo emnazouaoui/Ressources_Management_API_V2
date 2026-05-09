@@ -25,7 +25,12 @@ public class ProjectMapper {
                 .status(p.getStatus() != null ? p.getStatus().name() : null)
                 .progressPercent(p.getProgressPercent())
                 .projectManagerId(p.getProjectManager() != null ? p.getProjectManager().getId() : null)
+                .projectManagerUsername(p.getProjectManager() != null ? p.getProjectManager().getUsername() : null)
                 .clientId(p.getClient() != null ? p.getClient().getId() : null)
+                .clientName(p.getClient() != null ? p.getClient().getName() : null)
+                .createdDate(p.getCreatedDate())
+                .updatedDate(p.getUpdatedDate())
+
 
                 // 🔥 USERS
                 .userIds(
@@ -71,6 +76,8 @@ public class ProjectMapper {
         p.setStartDate(dto.getStartDate());
         p.setEndDate(dto.getEndDate());
         p.setProgressPercent(dto.getProgressPercent());
+        p.setUpdatedDate(dto.getUpdatedDate());
+        p.setCreatedDate(dto.getCreatedDate());
 
         // 🔥 status (string → enum)
         if (dto.getStatus() != null) {

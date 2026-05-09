@@ -11,7 +11,6 @@ import wevioo.example.resourcemanagementproject.Entity.Technology;
 import wevioo.example.resourcemanagementproject.Mapper.TechnologyMapper;
 import wevioo.example.resourcemanagementproject.Repository.TechnologyRepository;
 
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -59,8 +58,32 @@ public class TechnologyService {
     }
 
 
-    // 🔎 SEARCH
-    public List<TechnologyDTO> search(String keyword) {
-        return TechnologyMapper.toDtoList(repository.searchByKeyword(keyword));
+    // SEARCH
+    public Page<TechnologyDTO> searchTechnologies(
+            String name,
+            int page,
+            int size,
+            String sortBy,
+            String sortDir
+    ) {
+        Sort sort = sortDir.equalsIgnoreCase("desc")
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        return repository.searchTechnologies(
+                normalize(name),
+                pageable
+        ).map(TechnologyMapper::toDto);
     }
+
+    // -------------------------------------------------------------------------
+    // Helpers
+    // -------------------------------------------------------------------------
+    private String normalize(String value) {
+        return (value == null || value.isBlank()) ? null : value.trim();
+    }
+
+
 }

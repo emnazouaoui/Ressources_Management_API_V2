@@ -34,9 +34,12 @@ public class ProjectDTO {
     private Double progressPercent;
 
     private Long projectManagerId;
+    private String projectManagerUsername;
 
     @NotNull(message = "Client is required")
     private Long clientId;
+    private String clientName;
+
 
     // relations (IDs)
     private List<Long> userIds;        // team members (UserProject)

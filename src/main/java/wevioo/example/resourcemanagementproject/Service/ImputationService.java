@@ -15,6 +15,7 @@ import wevioo.example.resourcemanagementproject.Repository.ImputationRepository;
 import wevioo.example.resourcemanagementproject.Repository.TaskRepository;
 import wevioo.example.resourcemanagementproject.Repository.UserRepository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -88,11 +89,41 @@ public class ImputationService {
         imputationRepository.deleteById(id);
     }
 
-    // SEARCH
-    public List<ImputationDTO> search(String keyword) {
-        return imputationRepository.searchByKeyword(keyword)
-                .stream()
-                .map(ImputationMapper::toDTO)
-                .collect(Collectors.toList());
+    public Page<ImputationDTO> searchImputations(
+            String comment,
+            String title,
+            String username,
+            Long taskId,
+            Long userId,
+            LocalDateTime date,
+            Double hours,
+            int page,
+            int size,
+            String sortBy,
+            String sortDir
+    ) {
+        Sort sort = sortDir.equalsIgnoreCase("desc")
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        return imputationRepository.searchImputations(
+                normalize(comment),
+                normalize(title),
+                normalize(username),
+                taskId,
+                userId,
+                date,
+                hours,
+                pageable
+        ).map(ImputationMapper::toDTO);
     }
+    // -------------------------------------------------------------------------
+    // Helpers
+    // -------------------------------------------------------------------------
+    private String normalize(String value) {
+        return (value == null || value.isBlank()) ? null : value.trim();
+    }
+
 }
