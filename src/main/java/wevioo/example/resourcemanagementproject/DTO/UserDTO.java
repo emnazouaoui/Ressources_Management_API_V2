@@ -66,7 +66,10 @@ public class UserDTO {
     private String managerUsername;
 
     // 🔥 relation
+
+    // ✅ Ajoute
     private List<Long> technologyIds;
+    private List<String> technologyNames;
 
     private Long createdById;
     private LocalDateTime createdDate;

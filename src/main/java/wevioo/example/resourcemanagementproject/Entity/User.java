@@ -11,6 +11,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
@@ -61,8 +63,22 @@ public class User {
     @JoinColumn(name = "manager", nullable = true) // nullable = false normalement mais j'ai changé pour la 1ere creation
     private User manager;
 
+    // supprime
+//    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+//    private List<UserTechnology> usersTechnologyList= new ArrayList<>();;
+
+    //  Remplace par / Technologies (ManyToMany natif — remplace usersTechnologyList)
+    @ManyToMany
+    @JoinTable(
+            name = "user_technology",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "technology_id")
+    )
+    private List<Technology> technologies = new ArrayList<>();
+
+    //  UserProject (garde OneToMany — attributs supplémentaires)
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<UserTechnology> usersTechnologyList= new ArrayList<>();;
+    private List<UserProject> userProjects = new ArrayList<>();
 
     @CreatedDate
     @Column(name = "created_date", nullable = false, updatable = false)

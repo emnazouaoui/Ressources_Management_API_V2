@@ -77,11 +77,6 @@ public class UserController {
         userService.delete(id);
     }
 
-//    @GetMapping("/search")
-//    @Operation(summary = "Search users by keyword")
-//    public List<UserDTO> search(@RequestParam String keyword) {
-//        return userService.search(keyword);
-//    }
 
     // 🔥 assign technology
     @Operation(summary = "Assign technology to User")

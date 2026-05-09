@@ -43,9 +43,13 @@ public class ProjectDTO {
 
     // relations (IDs)
     private List<Long> userIds;        // team members (UserProject)
-    private List<Long> technologyIds;// ProjectTechnology
+    //private List<Long> technologyIds;// ProjectTechnology
     private List<ProjectTimeLineDTO> timelines; // TimeLines project
     private List<Long> taskIds;
+
+    // ✅ Après — plus d'info sur les techs
+    private List<Long> technologyIds;      // garde pour assign/remove
+    private List<String> technologyNames;  // ajoute pour l'affichage
 
     private Long createdById;
     private LocalDateTime createdDate;

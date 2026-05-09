@@ -29,7 +29,6 @@ public class ProjectService {
     private final TechnologyRepository technologyRepository;
 
     private final UserProjectRepository userProjectRepository;
-    private final ProjectTechnologyRepository projectTechnologyRepository;
     private final ProjectTimeLineRepository projectTimeLineRepository;
     private final TaskRepository taskRepository;
 
@@ -223,27 +222,42 @@ public ProjectDTO update(Long id, ProjectDTO dto) {
     // 🔥 RELATIONS
     // =========================
 
+//    public void assignTechnologies(Long projectId, List<Long> techIds) {
+//        if (techIds == null) return;
+//
+//        for (Long techId : techIds) {
+//
+//            if (projectTechnologyRepository.existsByProjectIdAndTechnologyId(projectId, techId))
+//                continue;
+//
+//            ProjectTechnology pt = new ProjectTechnology();
+//
+//            Project p = new Project();
+//            p.setId(projectId);
+//
+//            Technology t = technologyRepository.findById(techId)
+//                    .orElseThrow(() -> new RuntimeException("Tech not found"));
+//
+//            pt.setProject(p);
+//            pt.setTechnology(t);
+//
+//            projectTechnologyRepository.save(pt);
+//        }
+//    }
+
+    // ✅ Après
     public void assignTechnologies(Long projectId, List<Long> techIds) {
         if (techIds == null) return;
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new RuntimeException("Project not found"));
 
-        for (Long techId : techIds) {
-
-            if (projectTechnologyRepository.existsByProjectIdAndTechnologyId(projectId, techId))
-                continue;
-
-            ProjectTechnology pt = new ProjectTechnology();
-
-            Project p = new Project();
-            p.setId(projectId);
-
-            Technology t = technologyRepository.findById(techId)
-                    .orElseThrow(() -> new RuntimeException("Tech not found"));
-
-            pt.setProject(p);
-            pt.setTechnology(t);
-
-            projectTechnologyRepository.save(pt);
-        }
+        List<Technology> techs = technologyRepository.findAllById(techIds);
+        project.getTechnologies().addAll(
+                techs.stream()
+                        .filter(t -> !project.getTechnologies().contains(t))
+                        .toList()
+        );
+        projectRepository.save(project);
     }
 
     public void assignUsers(Long projectId, List<Long> userIds) {
@@ -304,8 +318,15 @@ public ProjectDTO update(Long id, ProjectDTO dto) {
 
 
     // remove
+//    public void removeTechnology(Long projectId, Long techId) {
+//        projectTechnologyRepository.deleteByProjectIdAndTechnologyId(projectId, techId);
+//    }
+
     public void removeTechnology(Long projectId, Long techId) {
-        projectTechnologyRepository.deleteByProjectIdAndTechnologyId(projectId, techId);
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new RuntimeException("Project not found"));
+        project.getTechnologies().removeIf(t -> t.getId() == techId);
+        projectRepository.save(project);
     }
 
     public void removeUser(Long projectId, Long userId) {

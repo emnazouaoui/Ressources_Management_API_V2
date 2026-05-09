@@ -2,7 +2,6 @@ package wevioo.example.resourcemanagementproject.Service;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -11,23 +10,15 @@ import org.springframework.stereotype.Service;
 import wevioo.example.resourcemanagementproject.DTO.UserDTO;
 import wevioo.example.resourcemanagementproject.Entity.Technology;
 import wevioo.example.resourcemanagementproject.Entity.User;
-import wevioo.example.resourcemanagementproject.Entity.UserTechnology;
 import wevioo.example.resourcemanagementproject.Enums.Level;
 import wevioo.example.resourcemanagementproject.Enums.UserField;
 import wevioo.example.resourcemanagementproject.Mapper.UserMapper;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.web.multipart.MultipartFile;
-import java.io.IOException;
-import org.springframework.core.io.Resource;
 import wevioo.example.resourcemanagementproject.Repository.DepartmentRepository;
 import wevioo.example.resourcemanagementproject.Repository.RoleRepository;
 import wevioo.example.resourcemanagementproject.Repository.TechnologyRepository;
 import wevioo.example.resourcemanagementproject.Repository.UserRepository;
-import wevioo.example.resourcemanagementproject.Repository.UserTechnologyRepository;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 
 @Service
@@ -40,7 +31,6 @@ public class UserService {
     private final UserMapper userMapper;
     private final UserHistoryService userHistoryService;
     private final TechnologyRepository technologyRepository;
-    private final UserTechnologyRepository userTechnologyRepository;
 
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
@@ -179,13 +169,6 @@ public class UserService {
         userRepository.deleteById(id);
     }
 
-//    // SEARCH
-//    public List<UserDTO> search(String keyword) {
-//        return userRepository.searchUsers(keyword)
-//                .stream()
-//                .map(userMapper::toDTO)
-//                .toList();
-//    }
 
     //  SEARCH
     public Page<UserDTO> searchUsers(
@@ -251,11 +234,27 @@ public class UserService {
 //    }
 
 
-    public void assignTechnology(Long userId, Long techId) {
+//    public void assignTechnology(Long userId, Long techId) {
+//
+//        if (userTechnologyRepository.existsByUserIdAndTechnologyId(userId, techId)) {
+//            throw new RuntimeException("Technology already assigned");
+//        }
+//
+//        User user = userRepository.findById(userId)
+//                .orElseThrow(() -> new RuntimeException("User not found"));
+//
+//        Technology tech = technologyRepository.findById(techId)
+//                .orElseThrow(() -> new RuntimeException("Technology not found"));
+//
+//        UserTechnology ut = new UserTechnology();
+//        ut.setUser(user);
+//        ut.setTechnology(tech);
+//
+//        userTechnologyRepository.save(ut);
+//    }
 
-        if (userTechnologyRepository.existsByUserIdAndTechnologyId(userId, techId)) {
-            throw new RuntimeException("Technology already assigned");
-        }
+    // ✅ Nouvelle version
+    public void assignTechnology(Long userId, Long techId) {
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -263,11 +262,12 @@ public class UserService {
         Technology tech = technologyRepository.findById(techId)
                 .orElseThrow(() -> new RuntimeException("Technology not found"));
 
-        UserTechnology ut = new UserTechnology();
-        ut.setUser(user);
-        ut.setTechnology(tech);
+        if (user.getTechnologies().contains(tech)) {
+            throw new RuntimeException("Technology already assigned");
+        }
 
-        userTechnologyRepository.save(ut);
+        user.getTechnologies().add(tech);
+        userRepository.save(user);
     }
 
 
@@ -300,18 +300,37 @@ public class UserService {
 //        userTechnologyRepository.save(ut);
 //    }
 
-    // 🔥 remove technology
+//    // 🔥 remove technology
+//    @Transactional
+//    public void removeTechnology(Long userId, Long techId) {
+//        userTechnologyRepository.deleteByUserIdAndTechnologyId(userId, techId);
+//    }
+    // ✅ Nouvelle version
     @Transactional
     public void removeTechnology(Long userId, Long techId) {
-        userTechnologyRepository.deleteByUserIdAndTechnologyId(userId, techId);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        user.getTechnologies().removeIf(t -> t.getId() == techId);
+        userRepository.save(user);
     }
 
-    // 🔥 get technologies of user
+//    // 🔥 get technologies of user
+//    public List<Long> getUserTechnologies(Long userId) {
+//
+//        return userTechnologyRepository.findByUserId(userId)
+//                .stream()
+//                .map(ut -> ut.getTechnology().getId())
+//                .toList();
+//    }
+    // ✅ Nouvelle version
     public List<Long> getUserTechnologies(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-        return userTechnologyRepository.findByUserId(userId)
+        return user.getTechnologies()
                 .stream()
-                .map(ut -> ut.getTechnology().getId())
+                .map(Technology::getId)
                 .toList();
     }
 

@@ -11,6 +11,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
@@ -56,17 +58,31 @@ public class Project{
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Task> tasksList= new ArrayList<>(); // without exception/ without verification of empty list
 
-    /** Team members assigned to this project */
-    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<UserProject> userProjectsList= new ArrayList<>();;
-
-    /** Technologies used in this project */
-    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ProjectTechnology> ProjectsTechnologyList= new ArrayList<>();;
-
     /** Timeline events (milestones, deliveries, reviews…) */
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProjectTimeLine> ProjectsTimelineList= new ArrayList<>();;
+
+    // supprime
+//    /** Team members assigned to this project */
+//    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
+//    private List<UserProject> userProjectsList= new ArrayList<>();;
+//
+//    /** Technologies used in this project */
+//    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
+//    private List<ProjectTechnology> ProjectsTechnologyList= new ArrayList<>();;
+
+    //  Remplace par
+    @ManyToMany
+    @JoinTable(
+            name = "project_technology",
+            joinColumns = @JoinColumn(name = "project"),
+            inverseJoinColumns = @JoinColumn(name = "technology")
+    )
+    private List<Technology> technologies = new ArrayList<>();
+
+    // UserProject reste OneToMany (attributs supplémentaires)
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<UserProject> userProjects = new ArrayList<>();
 
     @CreatedDate
     @Column(name = "created_date", nullable = false, updatable = false)

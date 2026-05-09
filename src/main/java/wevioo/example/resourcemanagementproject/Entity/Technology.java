@@ -6,6 +6,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -15,6 +16,8 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
@@ -30,6 +33,14 @@ public class Technology{
     /** Technology name — unique, e.g. "Spring Boot", "React", "Docker" */
     @Column(nullable = false, unique = true, length = 155)
     private String name;
+
+    // New
+    @ManyToMany(mappedBy = "technologies")
+    private List<Project> projects = new ArrayList<>();
+
+    // New
+    @ManyToMany(mappedBy = "technologies")
+    private List<User> users = new ArrayList<>();
 
     @CreatedDate
     @Column(name = "created_date", nullable = false, updatable = false)
