@@ -1,76 +1,54 @@
 package wevioo.example.resourcemanagementproject.Mapper;
 
-
-import org.springframework.stereotype.Component;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingConstants;
+import org.mapstruct.MappingTarget;
+import org.mapstruct.Named;
 import wevioo.example.resourcemanagementproject.DTO.UserDTO;
+import wevioo.example.resourcemanagementproject.Entity.Technology;
 import wevioo.example.resourcemanagementproject.Entity.User;
 
-@Component
-public class UserMapper {
+import java.util.List;
 
-    public UserDTO toDTO(User user) {
-        if (user == null) return null;
+@Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
+public interface UserMapper {
 
-        return UserDTO.builder()
-                .id(user.getId())
-                .username(user.getUsername())
-                .firstName(user.getFirstName())
-                .lastName(user.getLastName())
-                .email(user.getEmail())
-              //  .password(user.getPassword()) // (اختياري حسب security)
-                .active(user.getActive())
-                //.photo(user.getPhoto())
-                .level(user.getLevel())
-                .roleId(user.getRole() != null ? user.getRole().getId() : null)
-                .roleName(user.getRole() != null ? user.getRole().getName() : null)
-                .departmentId(user.getDepartment() != null ? user.getDepartment().getId() : null)
-                .departmentName(user.getDepartment() != null ? user.getDepartment().getName() : null)
-                .managerId(user.getManager() != null ? user.getManager().getId() : null)
-                .managerUsername(user.getManager() != null ? user.getManager().getUsername() : null)
-                .createdDate(user.getCreatedDate())
-                .updatedDate(user.getUpdatedDate())
-                .technologyIds(
-                        user.getUsersTechnologyList() != null ?
-                                user.getUsersTechnologyList().stream()
-                                        .map(ut -> ut.getTechnology().getId())
-                                        .toList()
-                                : null
-                )
-                .build();
+    @Mapping(source = "role.id",           target = "roleId")
+    @Mapping(source = "role.name",         target = "roleName")
+    @Mapping(source = "department.id",     target = "departmentId")
+    @Mapping(source = "department.name",   target = "departmentName")
+    @Mapping(source = "manager.id",        target = "managerId")
+    @Mapping(source = "manager.username",  target = "managerUsername")
+    @Mapping(source = "technologies",      target = "technologyIds",   qualifiedByName = "techsToIds")
+    @Mapping(source = "technologies",      target = "technologyNames", qualifiedByName = "techsToNames")
+    UserDTO toDTO(User entity);
+
+    @Mapping(target = "role",         ignore = true)
+    @Mapping(target = "department",   ignore = true)
+    @Mapping(target = "manager",      ignore = true)
+    @Mapping(target = "technologies", ignore = true)
+    @Mapping(target = "userProjects", ignore = true)
+    @Mapping(target = "password",     ignore = true)
+    User toEntity(UserDTO dto);
+
+    @Mapping(target = "role",         ignore = true)
+    @Mapping(target = "department",   ignore = true)
+    @Mapping(target = "manager",      ignore = true)
+    @Mapping(target = "technologies", ignore = true)
+    @Mapping(target = "userProjects", ignore = true)
+    @Mapping(target = "password",     ignore = true)
+    void updateEntityFromDTO(UserDTO dto, @MappingTarget User user);
+
+    @Named("techsToIds")
+    default List<Long> techsToIds(List<Technology> technologies) {
+        if (technologies == null) return List.of();
+        return technologies.stream().map(t -> t.getId()).toList();
     }
 
-    public User toEntity(UserDTO dto) {
-        if (dto == null) return null;
-
-        User user = new User();
-        user.setId(dto.getId());
-        user.setUsername(dto.getUsername());
-        user.setFirstName(dto.getFirstName());
-        user.setLastName(dto.getLastName());
-        user.setEmail(dto.getEmail());
-      //  user.setPassword(dto.getPassword()); // 🔐
-        user.setActive(dto.getActive());
-        //user.setPhoto(dto.getPhoto());
-        user.setLevel(dto.getLevel());
-        user.setCreatedDate(dto.getCreatedDate());
-        user.setUpdatedDate(dto.getUpdatedDate());
-
-        return user;
+    @Named("techsToNames")
+    default List<String> techsToNames(List<Technology> technologies) {
+        if (technologies == null) return List.of();
+        return technologies.stream().map(Technology::getName).toList();
     }
-
-    public void updateEntityFromDTO(UserDTO dto, User user) {
-        if (dto == null || user == null) return;
-
-        user.setUsername(dto.getUsername());
-        user.setFirstName(dto.getFirstName());
-        user.setLastName(dto.getLastName());
-        user.setEmail(dto.getEmail());
-      //  user.setPassword(dto.getPassword()); // 🔐
-        user.setActive(dto.getActive());
-       // user.setPhoto(dto.getPhoto());
-        user.setLevel(dto.getLevel());
-        user.setUpdatedDate(dto.getUpdatedDate());
-        user.setCreatedDate(dto.getCreatedDate());
-    }
-
 }

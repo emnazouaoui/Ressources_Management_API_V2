@@ -1,45 +1,13 @@
 package wevioo.example.resourcemanagementproject.Mapper;
 
-import org.springframework.stereotype.Component;
+import org.mapstruct.Mapper;
+import org.mapstruct.MappingConstants;
 import wevioo.example.resourcemanagementproject.DTO.RoleDTO;
 import wevioo.example.resourcemanagementproject.Entity.Role;
 
-import java.util.List;
-import java.util.stream.Collectors;
+@Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
+public interface RoleMapper {
 
-@Component
-public class RoleMapper {
-
-    public static RoleDTO toDto(Role r) {
-        if (r == null) return null;
-
-        return RoleDTO.builder()
-                .id(r.getId())
-                .name(r.getName())
-                .description(r.getDescription())
-                .active(r.getActive())
-                .createdDate(r.getCreatedDate())
-                .updatedDate(r.getUpdatedDate())
-                .build();
-    }
-
-    public static Role toEntity(RoleDTO dto) {
-        if (dto == null) return null;
-
-        Role r = new Role();
-        r.setId(dto.getId());
-        r.setName(dto.getName());
-        r.setDescription(dto.getDescription());
-        r.setActive(dto.getActive());
-        r.setCreatedDate(dto.getCreatedDate());
-        r.setUpdatedDate(dto.getUpdatedDate());
-
-        return r;
-    }
-
-    public static List<RoleDTO> toDtoList(List<Role> list) {
-        return list.stream()
-                .map(RoleMapper::toDto)
-                .collect(Collectors.toList());
-    }
+    RoleDTO toDTO(Role entity);
+    Role toEntity(RoleDTO dto);
 }

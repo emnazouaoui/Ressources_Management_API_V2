@@ -8,8 +8,10 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import wevioo.example.resourcemanagementproject.DTO.DepartmentDTO;
 import wevioo.example.resourcemanagementproject.Entity.Department;
-import wevioo.example.resourcemanagementproject.Mapper.DepartmentMapper;
 import wevioo.example.resourcemanagementproject.Repository.DepartmentRepository;
+import wevioo.example.resourcemanagementproject.Mapper.DepartmentMapper;
+
+
 
 import java.util.List;
 
@@ -18,24 +20,25 @@ import java.util.List;
 public class DepartmentService {
 
     private final DepartmentRepository repository;
+    private final DepartmentMapper departmentMapper;
 
     // CREATE
     public DepartmentDTO create(DepartmentDTO dto) {
-        Department saved = repository.save(DepartmentMapper.toEntity(dto));
+        Department saved = repository.save(departmentMapper.toEntity(dto));
 
-        return DepartmentMapper.toDto(saved);
+        return departmentMapper.toDTO(saved);
     }
 
-    // GET ALL
-    public List<DepartmentDTO> getAll() {
-        return DepartmentMapper.toDtoList(repository.findAll());
-    }
+//    // GET ALL
+//    public List<DepartmentDTO> getAll() {
+//        return departmentMapper.toDtoList(repository.findAll());
+//    }
 
     // 📄 GET ALL WITH PAGINATION
     public Page<DepartmentDTO> getAll(int page, int size, String sortBy) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
         return repository.findAll(pageable)
-                   .map(DepartmentMapper::toDto);
+                   .map(departmentMapper::toDTO);
     }
 
 
@@ -44,7 +47,7 @@ public class DepartmentService {
         Department d = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Department not found: " + id));
 
-        return DepartmentMapper.toDto(d);
+        return departmentMapper.toDTO(d);
     }
 
     // UPDATE
@@ -55,7 +58,7 @@ public class DepartmentService {
         d.setName(dto.getName());
         d.setDescription(dto.getDescription());
 
-        return DepartmentMapper.toDto(repository.save(d));
+        return departmentMapper.toDTO(repository.save(d));
     }
 
     // DELETE
@@ -86,7 +89,7 @@ public class DepartmentService {
                 normalize(name),
                 normalize(description),
                 pageable
-        ).map(DepartmentMapper::toDto);
+        ).map(departmentMapper::toDTO);
     }
 
     // -------------------------------------------------------------------------

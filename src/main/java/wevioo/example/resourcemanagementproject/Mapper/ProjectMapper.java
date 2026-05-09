@@ -1,90 +1,70 @@
 package wevioo.example.resourcemanagementproject.Mapper;
 
-import org.springframework.stereotype.Component;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingConstants;
+import org.mapstruct.MappingTarget;
+import org.mapstruct.Named;
 import wevioo.example.resourcemanagementproject.DTO.ProjectDTO;
 import wevioo.example.resourcemanagementproject.Entity.Project;
+import wevioo.example.resourcemanagementproject.Entity.Task;
+import wevioo.example.resourcemanagementproject.Entity.Technology;
+import wevioo.example.resourcemanagementproject.Entity.UserProject;
 
 import java.util.List;
 
-@Component
-public class ProjectMapper {
+@Mapper(componentModel = MappingConstants.ComponentModel.SPRING,
+        uses = {ProjectTimeLineMapper.class})
+public interface ProjectMapper {
 
-    private final ProjectTimeLineMapper timelineMapper;
+    @Mapping(source = "projectManager.id",       target = "projectManagerId")
+    @Mapping(source = "projectManager.username",  target = "projectManagerUsername")
+    @Mapping(source = "client.id",               target = "clientId")
+    @Mapping(source = "client.name",             target = "clientName")
+    @Mapping(source = "technologies",            target = "technologyIds",   qualifiedByName = "techsToIds")
+    @Mapping(source = "technologies",            target = "technologyNames", qualifiedByName = "techsToNames")
+    @Mapping(source = "userProjects",            target = "userIds",         qualifiedByName = "userProjectsToIds")
+    @Mapping(source = "tasksList",               target = "taskIds",         qualifiedByName = "tasksToIds")
+    @Mapping(source = "projectsTimelineList", target = "timelines")
+    ProjectDTO toDTO(Project entity);
 
-    public ProjectMapper(ProjectTimeLineMapper timelineMapper) {
-        this.timelineMapper = timelineMapper;
+    @Mapping(target = "projectManager",       ignore = true)
+    @Mapping(target = "client",               ignore = true)
+    @Mapping(target = "technologies",         ignore = true)
+    @Mapping(target = "userProjects",         ignore = true)
+    @Mapping(target = "tasksList",            ignore = true)
+    @Mapping(target = "projectsTimelineList", ignore = true)  // fil toEntity
+    Project toEntity(ProjectDTO dto);
+
+    @Mapping(target = "projectManager",       ignore = true)
+    @Mapping(target = "client",               ignore = true)
+    @Mapping(target = "technologies",         ignore = true)
+    @Mapping(target = "userProjects",         ignore = true)
+    @Mapping(target = "tasksList",            ignore = true)
+    @Mapping(target = "projectsTimelineList", ignore = true)  // fil updateEntity
+    void updateEntity(ProjectDTO dto, @MappingTarget Project project);
+
+    @Named("techsToIds")
+    default List<Long> techsToIds(List<Technology> technologies) {
+        if (technologies == null) return List.of();
+        return technologies.stream().map(t -> t.getId()).toList();
     }
 
-    public ProjectDTO toDTO(Project p) {
-        return ProjectDTO.builder()
-                .id(p.getId())
-                .name(p.getName())
-                .description(p.getDescription())
-                .startDate(p.getStartDate())
-                .endDate(p.getEndDate())
-                .status(p.getStatus() != null ? p.getStatus().name() : null)
-                .progressPercent(p.getProgressPercent())
-                .projectManagerId(p.getProjectManager() != null ? p.getProjectManager().getId() : null)
-                .projectManagerUsername(p.getProjectManager() != null ? p.getProjectManager().getUsername() : null)
-                .clientId(p.getClient() != null ? p.getClient().getId() : null)
-                .clientName(p.getClient() != null ? p.getClient().getName() : null)
-                .createdDate(p.getCreatedDate())
-                .updatedDate(p.getUpdatedDate())
-
-
-                // 🔥 USERS
-                .userIds(
-                        p.getUserProjectsList() != null ?
-                                p.getUserProjectsList().stream()
-                                        .map(up -> up.getUser().getId())
-                                        .toList()
-                                : null
-                )
-
-                // 🔥 TECHNOLOGIES
-                .technologyIds(
-                        p.getProjectsTechnologyList() != null ?
-                                p.getProjectsTechnologyList().stream()
-                                        .map(pt -> pt.getTechnology().getId())
-                                        .toList()
-                                : null
-                )
-                // 🔥 TASKS (NEW 🔥)
-                .taskIds(
-                        p.getTasksList() != null ?
-                                p.getTasksList().stream()
-                                        .map(task -> task.getId())
-                                        .toList()
-                                : List.of()
-                )
-                // 🔥 TIMELINES
-                .timelines(
-                        p.getProjectsTimelineList() != null ?
-                                p.getProjectsTimelineList().stream()
-                                        .map(timelineMapper::toDTO)
-                                        .toList()
-                                : List.of()
-                )
-
-
-                .build();
+    @Named("techsToNames")
+    default List<String> techsToNames(List<Technology> technologies) {
+        if (technologies == null) return List.of();
+        return technologies.stream().map(Technology::getName).toList();
     }
 
-    public void updateEntity(ProjectDTO dto, Project p) {
-        p.setName(dto.getName());
-        p.setDescription(dto.getDescription());
-        p.setStartDate(dto.getStartDate());
-        p.setEndDate(dto.getEndDate());
-        p.setProgressPercent(dto.getProgressPercent());
-        p.setUpdatedDate(dto.getUpdatedDate());
-        p.setCreatedDate(dto.getCreatedDate());
+    @Named("userProjectsToIds")
+    default List<Long> userProjectsToIds(List<UserProject> userProjects) {
+        if (userProjects == null) return List.of();
+        return userProjects.stream().map(up -> up.getUser().getId()).toList();
+    }
 
-        // 🔥 status (string → enum)
-        if (dto.getStatus() != null) {
-            p.setStatus(Enum.valueOf(
-                    wevioo.example.resourcemanagementproject.Enums.ProjectStatus.class,
-                    dto.getStatus()
-            ));
-        }
+    @Named("tasksToIds")
+    default List<Long> tasksToIds(List<Task> tasks) {
+        if (tasks == null) return List.of();
+        return tasks.stream().map(t -> t.getId()).toList();
     }
 }

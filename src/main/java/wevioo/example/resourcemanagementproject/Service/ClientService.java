@@ -9,11 +9,9 @@ import org.springframework.stereotype.Service;
 import wevioo.example.resourcemanagementproject.DTO.ClientDTO;
 import wevioo.example.resourcemanagementproject.Entity.Client;
 import wevioo.example.resourcemanagementproject.Enums.ClientType;
-import wevioo.example.resourcemanagementproject.Mapper.ClientMapper;
 import wevioo.example.resourcemanagementproject.Repository.ClientRepository;
+import wevioo.example.resourcemanagementproject.Mapper.ClientMapper;
 
-import java.util.List;
-import java.util.stream.Collectors;
 
 
 @Service
@@ -21,6 +19,7 @@ import java.util.stream.Collectors;
 public class ClientService {
 
     private final ClientRepository clientRepository;
+    private final ClientMapper clientMapper;
 
 //    public ClientService(ClientRepository repository) {
 //        this.clientRepository = repository;
@@ -28,9 +27,9 @@ public class ClientService {
 
     // ✅ CREATE
     public ClientDTO create(ClientDTO dto) {
-        Client client = ClientMapper.toEntity(dto);
+        Client client = clientMapper.toEntity(dto);
         Client saved = clientRepository.save(client);
-        return ClientMapper.toDTO(saved);
+        return clientMapper.toDTO(saved);
     }
 
     // ✅ UPDATE
@@ -48,7 +47,7 @@ public class ClientService {
 
         Client updated = clientRepository.save(existing);
 
-        return ClientMapper.toDTO(updated);
+        return clientMapper.toDTO(updated);
     }
 
     // ✅ GET BY ID
@@ -56,7 +55,7 @@ public class ClientService {
         Client client = clientRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Client not found with id: " + id));
 
-        return ClientMapper.toDTO(client);
+        return clientMapper.toDTO(client);
     }
 
 //    // ✅ GET ALL
@@ -71,7 +70,7 @@ public class ClientService {
     public Page<ClientDTO> getAll(int page, int size,String sortBy) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
         return clientRepository.findAll(pageable)
-                .map(ClientMapper::toDTO);
+                .map(clientMapper::toDTO);
     }
 
     // ✅ DELETE
@@ -106,7 +105,7 @@ public class ClientService {
                         normalize(address), normalize(phone), typeClient,
                         pageable
                 )
-                .map(ClientMapper::toDTO);  // Page<Client> → Page<ClientDTO> directement
+                .map(clientMapper::toDTO);  // Page<Client> → Page<ClientDTO> directement
     }
 
     /** Retourne null si la chaîne est null ou vide après trim. */

@@ -1,55 +1,40 @@
 package wevioo.example.resourcemanagementproject.Mapper;
 
-import org.springframework.stereotype.Component;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingConstants;
 import wevioo.example.resourcemanagementproject.DTO.ImputationDTO;
 import wevioo.example.resourcemanagementproject.Entity.Imputation;
 import wevioo.example.resourcemanagementproject.Entity.Task;
 import wevioo.example.resourcemanagementproject.Entity.User;
 
-@Component
-public class ImputationMapper {
+@Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
+public interface ImputationMapper {
 
-    public static ImputationDTO toDTO(Imputation entity) {
-        if (entity == null) return null;
+    @Mapping(source = "task.id",       target = "taskId")
+    @Mapping(source = "task.title",    target = "title")
+    @Mapping(source = "user.id",       target = "userId")
+    @Mapping(source = "user.username", target = "username")
+    ImputationDTO toDTO(Imputation entity);
 
-        return ImputationDTO.builder()
-                .id(entity.getId())
-                .date(entity.getDate())
-                .hours(entity.getHours())
-                .comment(entity.getComment())
-                .taskId(entity.getTask() != null ? entity.getTask().getId() : null)
-                .title(entity.getTask() != null ? entity.getTask().getTitle() : null)   // ← nouveau
-                .userId(entity.getUser() != null ? entity.getUser().getId() : null)
-                .username(entity.getUser() != null ? entity.getUser().getUsername() : null) // ← nouveau
-                .createdDate(entity.getCreatedDate())
-                .updatedDate(entity.getUpdatedDate())
-                .build();
-    }
+    @Mapping(target = "task", ignore = true)
+    @Mapping(target = "user", ignore = true)
+    Imputation toEntity(ImputationDTO dto);
 
-    public static Imputation toEntity(ImputationDTO dto, Task task, User user) {
-        if (dto == null) return null;
-
-        Imputation entity = new Imputation();
-        entity.setId(dto.getId());
-        entity.setDate(dto.getDate());
-        entity.setHours(dto.getHours());
-        entity.setComment(dto.getComment());
+    // ← default method pour 3 paramètres
+    default Imputation toEntity(ImputationDTO dto, Task task, User user) {
+        Imputation entity = toEntity(dto);
         entity.setTask(task);
         entity.setUser(user);
-        entity.setUpdatedDate(dto.getUpdatedDate());
-        entity.setCreatedDate(dto.getCreatedDate());
-
-
-
         return entity;
     }
 
-    public static void updateEntity(Imputation entity, ImputationDTO dto, Task task, User user) {
+    // ← default method pour update
+    default void updateEntity(Imputation entity, ImputationDTO dto, Task task, User user) {
         entity.setDate(dto.getDate());
         entity.setHours(dto.getHours());
         entity.setComment(dto.getComment());
         entity.setTask(task);
         entity.setUser(user);
-        entity.setUpdatedDate(dto.getUpdatedDate());
     }
 }

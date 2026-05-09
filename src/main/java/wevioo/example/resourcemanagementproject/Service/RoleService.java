@@ -8,21 +8,21 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import wevioo.example.resourcemanagementproject.DTO.RoleDTO;
 import wevioo.example.resourcemanagementproject.Entity.Role;
-import wevioo.example.resourcemanagementproject.Mapper.RoleMapper;
 import wevioo.example.resourcemanagementproject.Repository.RoleRepository;
+import wevioo.example.resourcemanagementproject.Mapper.RoleMapper;
 
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class RoleService {
 
     private final RoleRepository repository;
+    private final RoleMapper roleMapper;
 
     // CREATE
     public RoleDTO create(RoleDTO dto) {
-        Role saved = repository.save(RoleMapper.toEntity(dto));
-        return RoleMapper.toDto(saved);
+        Role saved = repository.save(roleMapper.toEntity(dto));
+        return roleMapper.toDTO(saved);
     }
 
     // GET BY ID
@@ -30,7 +30,7 @@ public class RoleService {
         Role r = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Role not found: " + id));
 
-        return RoleMapper.toDto(r);
+        return roleMapper.toDTO(r);
     }
 
     // UPDATE
@@ -42,7 +42,7 @@ public class RoleService {
         r.setDescription(dto.getDescription());
         r.setActive(dto.getActive());
 
-        return RoleMapper.toDto(repository.save(r));
+        return roleMapper.toDTO(repository.save(r));
     }
 
     // DELETE
@@ -57,7 +57,7 @@ public class RoleService {
     public Page<RoleDTO> getAll(int page, int size, String sortBy) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
         return repository.findAll(pageable)
-                .map(RoleMapper::toDto);
+                .map(roleMapper::toDTO);
     }
 
 
@@ -80,7 +80,7 @@ public class RoleService {
                 normalize(name),
                 normalize(description),
                 pageable
-        ).map(RoleMapper::toDto);
+        ).map(roleMapper::toDTO);
     }
 
     // -------------------------------------------------------------------------

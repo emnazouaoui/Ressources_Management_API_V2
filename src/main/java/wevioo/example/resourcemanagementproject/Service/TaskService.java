@@ -15,15 +15,14 @@ import wevioo.example.resourcemanagementproject.Entity.User;
 import wevioo.example.resourcemanagementproject.Enums.Priority;
 import wevioo.example.resourcemanagementproject.Enums.TaskField;
 import wevioo.example.resourcemanagementproject.Enums.TaskStatus;
-import wevioo.example.resourcemanagementproject.Mapper.TaskMapper;
 import wevioo.example.resourcemanagementproject.Repository.ImputationRepository;
 import wevioo.example.resourcemanagementproject.Repository.ProjectRepository;
 import wevioo.example.resourcemanagementproject.Repository.TaskRepository;
 import wevioo.example.resourcemanagementproject.Repository.UserRepository;
+import wevioo.example.resourcemanagementproject.Mapper.TaskMapper;
 
-import java.math.BigDecimal;
+
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -35,12 +34,14 @@ public class TaskService {
     private final UserRepository userRepository;
     private final TaskHistoryService taskHistoryService;
     private final ImputationRepository imputationRepository;
+    private final TaskMapper taskMapper;
+
 
 
     // ================= CREATE =================
     public TaskDTO create(TaskDTO dto) {
 
-        Task task = TaskMapper.toEntity(dto);
+        Task task = taskMapper.toEntity(dto);
 
         Project project = projectRepository.findById(dto.getProjectId())
                 .orElseThrow(() -> new RuntimeException("Project not found"));
@@ -51,7 +52,7 @@ public class TaskService {
         task.setProject(project);
         task.setAssignedUser(user);
 
-        return TaskMapper.toDTO(taskRepository.save(task));
+        return taskMapper.toDTO(taskRepository.save(task));
     }
 
     // ================= GET BY ID =================
@@ -60,7 +61,7 @@ public class TaskService {
         Task task = taskRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Task not found"));
 
-        return TaskMapper.toDTO(task);
+        return taskMapper.toDTO(task);
     }
 
 //    // ================= UPDATE =================
@@ -163,7 +164,7 @@ public class TaskService {
             task.setAssignedUser(user);
         }
 
-        return TaskMapper.toDTO(taskRepository.save(task));
+        return taskMapper.toDTO(taskRepository.save(task));
     }
 
     // ================= DELETE =================
@@ -178,7 +179,7 @@ public class TaskService {
 
         Page<Task> tasks = taskRepository.findAll(pageable);
 
-        return tasks.map(TaskMapper::toDTO);
+        return tasks.map(taskMapper::toDTO);
     }
 
     //  SEARCH
@@ -220,7 +221,7 @@ public class TaskService {
                 estimatedHours,
                 consumedHours,
                 pageable
-        ).map(TaskMapper::toDTO);
+        ).map(taskMapper::toDTO);
     }
 
         // -------------------------------------------------------------------------
@@ -249,7 +250,7 @@ public class TaskService {
         // recalcul consumedHours
         recalculateConsumedHours(task);
 
-        return TaskMapper.toDTO(taskRepository.save(task));
+        return taskMapper.toDTO(taskRepository.save(task));
     }
 
     // ➖ REMOVE IMPUTATION FROM TASK
@@ -267,7 +268,7 @@ public class TaskService {
 
         recalculateConsumedHours(task);
 
-        return TaskMapper.toDTO(taskRepository.save(task));
+        return taskMapper.toDTO(taskRepository.save(task));
     }
 
     // 🔥 recalcul propre

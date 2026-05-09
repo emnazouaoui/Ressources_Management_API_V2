@@ -10,14 +10,12 @@ import wevioo.example.resourcemanagementproject.DTO.ImputationDTO;
 import wevioo.example.resourcemanagementproject.Entity.Imputation;
 import wevioo.example.resourcemanagementproject.Entity.Task;
 import wevioo.example.resourcemanagementproject.Entity.User;
-import wevioo.example.resourcemanagementproject.Mapper.ImputationMapper;
 import wevioo.example.resourcemanagementproject.Repository.ImputationRepository;
 import wevioo.example.resourcemanagementproject.Repository.TaskRepository;
 import wevioo.example.resourcemanagementproject.Repository.UserRepository;
+import wevioo.example.resourcemanagementproject.Mapper.ImputationMapper;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -27,6 +25,8 @@ public class ImputationService {
     private final ImputationRepository imputationRepository;
     private final TaskRepository taskRepository;
     private final UserRepository userRepository;
+    private final ImputationMapper imputationMapper;
+
 
     // CREATE
     public ImputationDTO create(ImputationDTO dto) {
@@ -36,9 +36,9 @@ public class ImputationService {
         User user = userRepository.findById(dto.getUserId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        Imputation imputation = ImputationMapper.toEntity(dto, task, user);
+        Imputation imputation = imputationMapper.toEntity(dto, task, user);
 
-        return ImputationMapper.toDTO(imputationRepository.save(imputation));
+        return imputationMapper.toDTO(imputationRepository.save(imputation));
     }
 
     // GET BY ID
@@ -46,7 +46,7 @@ public class ImputationService {
         Imputation imputation = imputationRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Imputation not found"));
 
-        return ImputationMapper.toDTO(imputation);
+        return imputationMapper.toDTO(imputation);
     }
 
 //    // GET ALL
@@ -61,7 +61,7 @@ public class ImputationService {
     public Page<ImputationDTO> getAll(int page, int size, String sortBy) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
         return imputationRepository.findAll(pageable)
-                .map(ImputationMapper::toDTO);
+                .map(imputationMapper::toDTO);
     }
 
 
@@ -76,9 +76,9 @@ public class ImputationService {
         User user = userRepository.findById(dto.getUserId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        ImputationMapper.updateEntity(imputation, dto, task, user);
+        imputationMapper.updateEntity(imputation, dto, task, user);
 
-        return ImputationMapper.toDTO(imputationRepository.save(imputation));
+        return imputationMapper.toDTO(imputationRepository.save(imputation));
     }
 
     // DELETE
@@ -117,7 +117,7 @@ public class ImputationService {
                 date,
                 hours,
                 pageable
-        ).map(ImputationMapper::toDTO);
+        ).map(imputationMapper::toDTO);
     }
     // -------------------------------------------------------------------------
     // Helpers

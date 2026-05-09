@@ -1,41 +1,13 @@
 package wevioo.example.resourcemanagementproject.Mapper;
 
-import org.springframework.stereotype.Component;
+import org.mapstruct.Mapper;
+import org.mapstruct.MappingConstants;
 import wevioo.example.resourcemanagementproject.DTO.TechnologyDTO;
 import wevioo.example.resourcemanagementproject.Entity.Technology;
 
-import java.util.List;
-import java.util.stream.Collectors;
+@Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
+public interface TechnologyMapper {
 
-@Component
-public class TechnologyMapper {
-
-    public static TechnologyDTO toDto(Technology t) {
-        if (t == null) return null;
-
-        return TechnologyDTO.builder()
-                .id(t.getId())
-                .name(t.getName())
-                .createdDate(t.getCreatedDate())
-                .updatedDate(t.getUpdatedDate())
-                .build();
-    }
-
-    public static Technology toEntity(TechnologyDTO dto) {
-        if (dto == null) return null;
-
-        Technology t = new Technology();
-        t.setId(dto.getId());
-        t.setName(dto.getName());
-        t.setCreatedDate(dto.getCreatedDate());
-        t.setUpdatedDate(dto.getUpdatedDate());
-
-        return t;
-    }
-
-    public static List<TechnologyDTO> toDtoList(List<Technology> list) {
-        return list.stream()
-                .map(TechnologyMapper::toDto)
-                .collect(Collectors.toList());
-    }
+    TechnologyDTO toDTO(Technology entity);
+    Technology toEntity(TechnologyDTO dto);
 }

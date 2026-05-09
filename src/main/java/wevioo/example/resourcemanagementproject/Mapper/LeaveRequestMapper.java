@@ -1,46 +1,27 @@
 package wevioo.example.resourcemanagementproject.Mapper;
 
-import org.springframework.stereotype.Component;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingConstants;
+import org.mapstruct.MappingTarget;
 import wevioo.example.resourcemanagementproject.DTO.LeaveRequestDTO;
 import wevioo.example.resourcemanagementproject.Entity.LeaveRequest;
-import wevioo.example.resourcemanagementproject.Enums.LeaveRequestStatus;
-import wevioo.example.resourcemanagementproject.Enums.LeaveRequestType;
 
-@Component
-public class LeaveRequestMapper {
+@Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
+public interface LeaveRequestMapper {
 
-    public LeaveRequestDTO toDTO(LeaveRequest lr) {
-        return LeaveRequestDTO.builder()
-                .id(lr.getId())
-                .type(lr.getType() != null ? lr.getType().name() : null)
-                .startDate(lr.getStartDate())
-                .endDate(lr.getEndDate())
-                .reason(lr.getReason())
-                .status(lr.getStatus() != null ? lr.getStatus().name() : null)
-                .projectManagerId(lr.getProjectManager() != null ? lr.getProjectManager().getId() : null)
-                .projectManagerName(lr.getProjectManager() != null ? lr.getProjectManager().getUsername() : null) // ← nouveau
-                .userId(lr.getUser() != null ? lr.getUser().getId() : null)
-                .username(lr.getUser() != null ? lr.getUser().getUsername() : null) // ← nouveau
-                .createdDate(lr.getCreatedDate())
-                .updatedDate(lr.getUpdatedDate())
-                .build();
+    @Mapping(source = "user.id",                 target = "userId")
+    @Mapping(source = "user.username",           target = "username")
+    @Mapping(source = "projectManager.id",       target = "projectManagerId")
+    @Mapping(source = "projectManager.username", target = "projectManagerName")
+    LeaveRequestDTO toDTO(LeaveRequest entity);
 
-    }
+    @Mapping(target = "user",           ignore = true)
+    @Mapping(target = "projectManager", ignore = true)
+    LeaveRequest toEntity(LeaveRequestDTO dto);
 
-    public void toEntity(LeaveRequestDTO dto, LeaveRequest lr) {
-
-        lr.setStartDate(dto.getStartDate());
-        lr.setEndDate(dto.getEndDate());
-        lr.setReason(dto.getReason());
-        lr.setCreatedDate(dto.getCreatedDate());
-        lr.setUpdatedDate(dto.getUpdatedDate());
-
-        if (dto.getType() != null) {
-            lr.setType(LeaveRequestType.valueOf(dto.getType()));
-        }
-
-        if (dto.getStatus() != null) {
-            lr.setStatus(LeaveRequestStatus.valueOf(dto.getStatus()));
-        }
-    }
+    // pour update
+    @Mapping(target = "user",           ignore = true)
+    @Mapping(target = "projectManager", ignore = true)
+    void toEntity(LeaveRequestDTO dto, @MappingTarget LeaveRequest entity);
 }

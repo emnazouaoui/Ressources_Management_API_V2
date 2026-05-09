@@ -1,39 +1,23 @@
 package wevioo.example.resourcemanagementproject.Mapper;
 
-import org.springframework.stereotype.Component;
-import wevioo.example.resourcemanagementproject.Entity.ProjectTimeLine;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingConstants;
+import org.mapstruct.MappingTarget;
 import wevioo.example.resourcemanagementproject.DTO.ProjectTimeLineDTO;
+import wevioo.example.resourcemanagementproject.Entity.ProjectTimeLine;
 
+@Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
+public interface ProjectTimeLineMapper {
 
-@Component
-public class ProjectTimeLineMapper {
+    @Mapping(source = "project.id",   target = "projectId")
+    @Mapping(source = "project.name", target = "name")
+    ProjectTimeLineDTO toDTO(ProjectTimeLine entity);
 
-    public ProjectTimeLineDTO toDTO(ProjectTimeLine t) {
-        return ProjectTimeLineDTO.builder()
-                .id(t.getId())
-                .title(t.getTitle())
-                .description(t.getDescription())
-                .progressPercent(t.getProgressPercent())
-                .version(t.getVersion())
-                .deliveredToClient(t.getDeliveredToClient())
-                .type(t.getType())
-                .projectId(t.getProject() != null ? t.getProject().getId() : null)
-                .name(t.getProject() != null ? t.getProject().getName() : null) // ← nouveau
-                .createdDate(t.getCreatedDate())
-                .updatedDate(t.getUpdatedDate())
-                .build();
-    }
+    @Mapping(target = "project", ignore = true)
+    ProjectTimeLine toEntity(ProjectTimeLineDTO dto);
 
-    public void updateEntity(ProjectTimeLineDTO dto, ProjectTimeLine t) {
-
-        t.setTitle(dto.getTitle());
-        t.setDescription(dto.getDescription());
-        t.setProgressPercent(dto.getProgressPercent());
-        t.setVersion(dto.getVersion());
-        t.setDeliveredToClient(dto.getDeliveredToClient());
-        t.setType(dto.getType());
-        t.setCreatedDate(dto.getCreatedDate());
-        t.setUpdatedDate(dto.getUpdatedDate());
-    }
-
+    // pour update
+    @Mapping(target = "project", ignore = true)
+    void updateEntity(ProjectTimeLineDTO dto, @MappingTarget ProjectTimeLine entity);
 }

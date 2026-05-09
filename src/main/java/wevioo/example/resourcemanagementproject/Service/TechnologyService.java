@@ -8,8 +8,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import wevioo.example.resourcemanagementproject.DTO.TechnologyDTO;
 import wevioo.example.resourcemanagementproject.Entity.Technology;
-import wevioo.example.resourcemanagementproject.Mapper.TechnologyMapper;
 import wevioo.example.resourcemanagementproject.Repository.TechnologyRepository;
+import wevioo.example.resourcemanagementproject.Mapper.TechnologyMapper;
+
 
 
 @Service
@@ -17,11 +18,13 @@ import wevioo.example.resourcemanagementproject.Repository.TechnologyRepository;
 public class TechnologyService {
 
     private final TechnologyRepository repository;
+    private final TechnologyMapper technologyMapper;
+
 
     // CREATE
     public TechnologyDTO create(TechnologyDTO dto) {
-        Technology saved = repository.save(TechnologyMapper.toEntity(dto));
-        return TechnologyMapper.toDto(saved);
+        Technology saved = repository.save(technologyMapper.toEntity(dto));
+        return technologyMapper.toDTO(saved);
     }
 
     // GET BY ID
@@ -29,7 +32,7 @@ public class TechnologyService {
         Technology t = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Technology not found: " + id));
 
-        return TechnologyMapper.toDto(t);
+        return technologyMapper.toDTO(t);
     }
 
     // UPDATE
@@ -39,7 +42,7 @@ public class TechnologyService {
 
         t.setName(dto.getName());
 
-        return TechnologyMapper.toDto(repository.save(t));
+        return technologyMapper.toDTO(repository.save(t));
     }
 
     // DELETE
@@ -54,7 +57,7 @@ public class TechnologyService {
     public Page<TechnologyDTO> getAll(int page, int size, String sortBy) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
         return repository.findAll(pageable)
-                .map(TechnologyMapper::toDto);
+                .map(technologyMapper::toDTO);
     }
 
 
@@ -75,7 +78,7 @@ public class TechnologyService {
         return repository.searchTechnologies(
                 normalize(name),
                 pageable
-        ).map(TechnologyMapper::toDto);
+        ).map(technologyMapper::toDTO);
     }
 
     // -------------------------------------------------------------------------

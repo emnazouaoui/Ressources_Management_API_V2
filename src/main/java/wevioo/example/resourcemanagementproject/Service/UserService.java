@@ -12,12 +12,13 @@ import wevioo.example.resourcemanagementproject.Entity.Technology;
 import wevioo.example.resourcemanagementproject.Entity.User;
 import wevioo.example.resourcemanagementproject.Enums.Level;
 import wevioo.example.resourcemanagementproject.Enums.UserField;
-import wevioo.example.resourcemanagementproject.Mapper.UserMapper;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import wevioo.example.resourcemanagementproject.Repository.DepartmentRepository;
 import wevioo.example.resourcemanagementproject.Repository.RoleRepository;
 import wevioo.example.resourcemanagementproject.Repository.TechnologyRepository;
 import wevioo.example.resourcemanagementproject.Repository.UserRepository;
+import wevioo.example.resourcemanagementproject.Mapper.UserMapper;
+
 
 import java.util.List;
 
