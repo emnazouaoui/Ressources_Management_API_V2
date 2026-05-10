@@ -3,6 +3,7 @@ package wevioo.example.resourcemanagementproject.Controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -32,7 +33,7 @@ public class ProjectTimeLineController {
 
     @Operation(summary = "Create timeline")
     @PostMapping
-    public ProjectTimeLineDTO create(@RequestBody ProjectTimeLineDTO dto) {
+    public ProjectTimeLineDTO create(@Valid @RequestBody ProjectTimeLineDTO dto) {
         return service.create(dto);
     }
 
@@ -40,7 +41,7 @@ public class ProjectTimeLineController {
     @PutMapping("/{id}")
     public ProjectTimeLineDTO update(
             @Parameter(description = "Timeline ID") @PathVariable Long id,
-            @RequestBody ProjectTimeLineDTO dto) {
+            @Valid @RequestBody ProjectTimeLineDTO dto) {
         return service.update(id, dto);
     }
 

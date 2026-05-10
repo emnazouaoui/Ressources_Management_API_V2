@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import wevioo.example.resourcemanagementproject.validator.annotation.ValidName;
 
 import java.time.LocalDateTime;
 
@@ -19,8 +20,9 @@ public class DepartmentDTO {
 
     private Long id;
 
-    @NotBlank(message = "Department name is required")
+    @NotBlank(message = "Name is required")
     @Size(max = 100)
+    @ValidName
     private String name;
 
     @Size(max = 500)

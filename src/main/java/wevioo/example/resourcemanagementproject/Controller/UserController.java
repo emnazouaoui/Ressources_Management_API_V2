@@ -6,8 +6,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,17 +16,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 import wevioo.example.resourcemanagementproject.DTO.UserDTO;
 import wevioo.example.resourcemanagementproject.Entity.UserHistory;
 import wevioo.example.resourcemanagementproject.Enums.Level;
 import wevioo.example.resourcemanagementproject.Repository.UserHistoryRepository;
 import wevioo.example.resourcemanagementproject.Service.UserService;
-import org.springframework.core.io.Resource;
-
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import java.util.List;
 
@@ -140,6 +132,9 @@ public class UserController {
             @Parameter(description = "Filtrer par niveau (JUNIOR, MID, SENIOR…)")
             @RequestParam(required = false) Level level,
 
+            @Parameter(description = "Filtrer par téléphone")
+            @RequestParam(required = false) String phone,
+
             @Parameter(description = "Filtrer par ID du rôle")
             @RequestParam(required = false) Long roleId,
 
@@ -174,7 +169,7 @@ public class UserController {
         return ResponseEntity.ok(
                 userService.searchUsers(
                         username, firstName, lastName, email,
-                        active, level,
+                        active, level, phone,
                         roleId, roleName,
                         departmentId, departmentName,
                         managerId, managerUsername,

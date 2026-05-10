@@ -1,6 +1,5 @@
 package wevioo.example.resourcemanagementproject.DTO;
 
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -10,6 +9,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import wevioo.example.resourcemanagementproject.Enums.ClientType;
+import wevioo.example.resourcemanagementproject.validator.annotation.ValidEmail;
+import wevioo.example.resourcemanagementproject.validator.annotation.ValidName;
+import wevioo.example.resourcemanagementproject.validator.annotation.ValidPhone;
 
 import java.time.LocalDateTime;
 
@@ -23,18 +25,20 @@ public class ClientDTO {
 
     @NotBlank(message = "Name is required")
     @Size(max = 255)
+    @ValidName
     private String name;
 
     @Size(max = 255)
     private String address;
 
     @Size(max = 255)
+    @ValidName
     private String company;
 
-    @Email(message = "Invalid email format")
+    @ValidEmail
     private String email;
 
-    @Size(max = 20)
+    @ValidPhone
     private String phone;
 
     @NotNull(message = "Client type is required")

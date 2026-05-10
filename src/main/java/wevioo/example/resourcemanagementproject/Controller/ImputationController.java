@@ -3,6 +3,7 @@ package wevioo.example.resourcemanagementproject.Controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -33,7 +34,7 @@ public class ImputationController {
 
     @PostMapping
     @Operation(summary = "Create imputation")
-    public ImputationDTO create(@RequestBody ImputationDTO dto) {
+    public ImputationDTO create(@Valid @RequestBody ImputationDTO dto) {
         return imputationService.create(dto);
     }
 
@@ -55,7 +56,7 @@ public class ImputationController {
 
     @PutMapping("/{id}")
     @Operation(summary = "Update an existing imputation")
-    public ImputationDTO update(@PathVariable Long id, @RequestBody ImputationDTO dto) {
+    public ImputationDTO update(@PathVariable Long id, @Valid @RequestBody ImputationDTO dto) {
         return imputationService.update(id, dto);
     }
 

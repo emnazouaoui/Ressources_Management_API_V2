@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import wevioo.example.resourcemanagementproject.validator.annotation.ValidName;
 
 import java.time.LocalDateTime;
 
@@ -19,11 +20,12 @@ public class RoleDTO {
 
     private Long id;
 
-    @NotBlank(message = "Role name is required")
-    @Size(max = 50)
+    @NotBlank(message = "Name is required")
+    @Size(max = 255)
+    @ValidName
     private String name;
 
-    @Size(max = 255)
+    @Size(max = 1000)
     private String description;
 
     private Boolean active;

@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import wevioo.example.resourcemanagementproject.DTO.DepartmentDTO;
 import wevioo.example.resourcemanagementproject.DTO.TechnologyDTO;
 import wevioo.example.resourcemanagementproject.Service.TechnologyService;
 

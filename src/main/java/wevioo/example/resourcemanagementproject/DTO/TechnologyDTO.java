@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import wevioo.example.resourcemanagementproject.validator.annotation.ValidName;
 
 import java.time.LocalDateTime;
 
@@ -19,8 +20,9 @@ public class TechnologyDTO {
 
     private Long id;
 
-    @NotBlank(message = "Technology name is required")
-    @Size(max = 100)
+    @NotBlank(message = "Name is required")
+    @Size(max = 255)
+    @ValidName
     private String name;
 
     private Long createdById;

@@ -7,26 +7,30 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    // Validation errors
+    // ✅ Validation errors — zid hathi
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ApiError handleValidationException(
             MethodArgumentNotValidException ex,
             HttpServletRequest request) {
-        Map<String, String> fieldErrors = new HashMap<>();
-        ex.getBindingResult().getFieldErrors().forEach(error ->
-                fieldErrors.put(error.getField(), error.getDefaultMessage())
-        );
+
+        Map<String, String> fieldErrors = new LinkedHashMap<>();
+        ex.getBindingResult()
+                .getFieldErrors()
+                .forEach(error ->
+                        fieldErrors.put(error.getField(), error.getDefaultMessage())
+                );
+
         return new ApiError(
                 400,
                 "Validation Error",
-                "Invalid request",
+                "Invalid request data",
                 request.getRequestURI(),
                 fieldErrors
         );
@@ -59,5 +63,4 @@ public class GlobalExceptionHandler {
                 request.getRequestURI()
         );
     }
-
 }

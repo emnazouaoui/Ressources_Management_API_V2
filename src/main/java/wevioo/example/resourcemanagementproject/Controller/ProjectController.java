@@ -3,6 +3,7 @@ package wevioo.example.resourcemanagementproject.Controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -36,7 +37,7 @@ public class ProjectController {
 
     @Operation(summary = "Create a new project")
     @PostMapping
-    public ProjectDTO create(@RequestBody ProjectDTO dto) {
+    public ProjectDTO create(@Valid @RequestBody ProjectDTO dto) {
         return service.create(dto);
     }
 
@@ -44,7 +45,7 @@ public class ProjectController {
     @PutMapping("/{id}")
     public ProjectDTO update(
             @Parameter(description = "Project ID") @PathVariable Long id,
-            @RequestBody ProjectDTO dto) {
+            @Valid @RequestBody ProjectDTO dto) {
         return service.update(id, dto);
     }
 

@@ -10,7 +10,6 @@ import wevioo.example.resourcemanagementproject.Entity.Project;
 import wevioo.example.resourcemanagementproject.Enums.ProjectStatus;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Repository
 public interface ProjectRepository extends JpaRepository<Project, Long> {

@@ -4,6 +4,7 @@ package wevioo.example.resourcemanagementproject.Controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -35,7 +36,7 @@ public class TaskController {
 
     @Operation(summary = "Create Task")
     @PostMapping
-    public TaskDTO create(@RequestBody TaskDTO dto) {
+    public TaskDTO create(@Valid @RequestBody TaskDTO dto) {
         return taskService.create(dto);
     }
 
@@ -47,7 +48,7 @@ public class TaskController {
 
     @Operation(summary = "Update Task")
     @PutMapping("/{id}")
-    public TaskDTO update(@PathVariable Long id, @RequestBody TaskDTO dto) {
+    public TaskDTO update(@Valid @PathVariable Long id, @RequestBody TaskDTO dto) {
         return taskService.update(id, dto);
     }
 

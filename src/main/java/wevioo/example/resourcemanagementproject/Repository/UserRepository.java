@@ -38,6 +38,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
             + "AND ((:email) IS NULL OR u.email LIKE %:email%) "
             + "AND ((:active) IS NULL OR u.active = :active) "
             + "AND ((:level) IS NULL OR u.level = :level) "
+            + "AND ((:phone) IS NULL OR u.phone LIKE %:phone%) "
             + "AND ((:roleId) IS NULL OR r.id = :roleId) "
             + "AND ((:roleName) IS NULL OR r.name LIKE %:roleName% ) "
             + "AND ((:departmentId) IS NULL OR d.id = :departmentId) "
@@ -51,6 +52,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
             @Param("email")           String email,
             @Param("active")          Boolean active,
             @Param("level")           Level level,
+            @Param("phone")           String  phone,
             @Param("roleId")          Long roleId,
             @Param("roleName")        String roleName,
             @Param("departmentId")    Long departmentId,

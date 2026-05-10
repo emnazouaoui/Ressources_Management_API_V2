@@ -8,8 +8,6 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import wevioo.example.resourcemanagementproject.Entity.Technology;
 
-import java.util.List;
-
 @Repository
 public interface TechnologyRepository extends JpaRepository<Technology, Long> {
 

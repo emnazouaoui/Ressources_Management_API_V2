@@ -4,11 +4,13 @@ import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import wevioo.example.resourcemanagementproject.validator.annotation.ValidName;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -22,17 +24,25 @@ public class ProjectDTO {
 
     private Long id;
 
-    @NotBlank(message = "Project name is required")
+    @NotBlank(message = "Name is required")
+    @Size(max = 255)
+    @ValidName
     private String name;
 
+    @Size(max = 1000)
     private String description;
+
     private LocalDateTime startDate;
     private LocalDateTime endDate;
+
+    @NotNull(message = "Status is required")
     private String status;
 
-    @DecimalMin(value = "0.0") @DecimalMax(value = "100.0")
+    @DecimalMin(value = "0.0", message = "Progress must be >= 0")
+    @DecimalMax(value = "100.0", message = "Progress must be <= 100")
     private Double progressPercent;
 
+    @NotNull(message = "Project manager is required")
     private Long projectManagerId;
     private String projectManagerUsername;
 

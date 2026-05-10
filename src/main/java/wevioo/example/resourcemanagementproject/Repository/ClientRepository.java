@@ -9,7 +9,6 @@ import org.springframework.stereotype.Repository;
 import wevioo.example.resourcemanagementproject.Entity.Client;
 import wevioo.example.resourcemanagementproject.Enums.ClientType;
 
-import java.util.List;
 
 @Repository
 public interface ClientRepository extends JpaRepository<Client, Long> {

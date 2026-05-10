@@ -5,13 +5,15 @@ import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.Named;
+import org.mapstruct.ReportingPolicy;
 import wevioo.example.resourcemanagementproject.DTO.UserDTO;
 import wevioo.example.resourcemanagementproject.Entity.Technology;
 import wevioo.example.resourcemanagementproject.Entity.User;
 
 import java.util.List;
 
-@Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
+@Mapper(componentModel = MappingConstants.ComponentModel.SPRING,
+        unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface UserMapper {
 
     @Mapping(source = "role.id",           target = "roleId")
@@ -30,6 +32,7 @@ public interface UserMapper {
     @Mapping(target = "technologies", ignore = true)
     @Mapping(target = "userProjects", ignore = true)
     @Mapping(target = "password",     ignore = true)
+    @Mapping(source = "phone",        target = "phone")  // ← زيد هاذي
     User toEntity(UserDTO dto);
 
     @Mapping(target = "role",         ignore = true)
@@ -38,6 +41,7 @@ public interface UserMapper {
     @Mapping(target = "technologies", ignore = true)
     @Mapping(target = "userProjects", ignore = true)
     @Mapping(target = "password",     ignore = true)
+    @Mapping(source = "phone",        target = "phone")  // ← زيد هاذي
     void updateEntityFromDTO(UserDTO dto, @MappingTarget User user);
 
     @Named("techsToIds")

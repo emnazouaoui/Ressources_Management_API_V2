@@ -41,6 +41,9 @@ public class User {
     private String lastName;
     private String email;
 
+    @Column(length = 20)
+    private String phone;
+
     //@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)//️ تقبل password في request (POST / PUT)
     private String password;
 
