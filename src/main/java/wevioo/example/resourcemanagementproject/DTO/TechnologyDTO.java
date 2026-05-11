@@ -7,7 +7,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import wevioo.example.resourcemanagementproject.validator.annotation.ValidName;
+import wevioo.example.resourcemanagementproject.Validator.Annotation.ValidName;
 
 import java.time.LocalDateTime;
 

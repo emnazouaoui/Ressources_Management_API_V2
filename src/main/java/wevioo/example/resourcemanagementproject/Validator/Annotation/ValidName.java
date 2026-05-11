@@ -1,8 +1,8 @@
-package wevioo.example.resourcemanagementproject.validator.annotation;
+package wevioo.example.resourcemanagementproject.Validator.Annotation;
 
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
-import wevioo.example.resourcemanagementproject.validator.impl.EmailValidatorImpl;
+import wevioo.example.resourcemanagementproject.Validator.Impl.NameValidator;
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -10,12 +10,12 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 @Documented
-@Constraint(validatedBy = EmailValidatorImpl.class)
+@Constraint(validatedBy = NameValidator.class)
 @Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface ValidEmail {
+public @interface ValidName {
 
-    String message() default "Invalid email format";
+    String message() default "Name can only contain letters, numbers, spaces, hyphens and apostrophes";
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};
 }

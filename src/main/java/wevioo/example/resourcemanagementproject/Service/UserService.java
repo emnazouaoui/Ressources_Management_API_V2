@@ -7,12 +7,15 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import wevioo.example.resourcemanagementproject.DTO.TechnologyDTO;
 import wevioo.example.resourcemanagementproject.DTO.UserDTO;
 import wevioo.example.resourcemanagementproject.Entity.Technology;
 import wevioo.example.resourcemanagementproject.Entity.User;
 import wevioo.example.resourcemanagementproject.Enums.Level;
 import wevioo.example.resourcemanagementproject.Enums.UserField;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import wevioo.example.resourcemanagementproject.Pagination.CustomSort;
+import wevioo.example.resourcemanagementproject.Pagination.PaginationUtil;
 import wevioo.example.resourcemanagementproject.Repository.DepartmentRepository;
 import wevioo.example.resourcemanagementproject.Repository.RoleRepository;
 import wevioo.example.resourcemanagementproject.Repository.TechnologyRepository;
@@ -32,6 +35,8 @@ public class UserService {
     private final UserMapper userMapper;
     private final UserHistoryService userHistoryService;
     private final TechnologyRepository technologyRepository;
+    private final PaginationUtil paginationUtil;      // pour pagination
+
 
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
@@ -57,11 +62,17 @@ public class UserService {
         return userMapper.toDTO(userRepository.save(user));
     }
 
-    // GET ALL (pagination)
-    public Page<UserDTO> getAll(int page, int size, String sortBy) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
-        return userRepository.findAll(pageable)
-                .map(userMapper::toDTO);
+//    // GET ALL (pagination)
+//    public Page<UserDTO> getAll(int page, int size, String sortBy) {
+//        Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
+//        return userRepository.findAll(pageable)
+//                .map(userMapper::toDTO);
+//    }
+    //  GET ALL — يتبدل : page تبدأ من 1
+    public Page<UserDTO> getAll(Integer page, Integer pageSize, CustomSort sort) {
+        Sort sorting = paginationUtil.sortingCriteria(sort, Sort.Direction.ASC, "name");
+        Pageable pageable = paginationUtil.createPageable(page, pageSize, sorting);
+        return userRepository.findAll(pageable).map(userMapper::toDTO);
     }
 
 
@@ -186,16 +197,12 @@ public class UserService {
             String departmentName,
             Long managerId,
             String managerUsername,
-            int page,
-            int size,
-            String sortBy,
-            String sortDir
+            Integer page,
+            Integer pageSize,
+            CustomSort sort
     ) {
-        Sort sort = sortDir.equalsIgnoreCase("desc")
-                ? Sort.by(sortBy).descending()
-                : Sort.by(sortBy).ascending();
-
-        Pageable pageable = PageRequest.of(page, size, sort);
+        Sort sorting = paginationUtil.sortingCriteria(sort, Sort.Direction.ASC, "name");
+        Pageable pageable = paginationUtil.createPageable(page, pageSize, sorting);
 
         return userRepository.searchUsers(
                 normalize(username),

@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 import wevioo.example.resourcemanagementproject.DTO.ClientDTO;
 import wevioo.example.resourcemanagementproject.Entity.Client;
 import wevioo.example.resourcemanagementproject.Enums.ClientType;
+import wevioo.example.resourcemanagementproject.Pagination.CustomSort;
+import wevioo.example.resourcemanagementproject.Pagination.PaginationUtil;
 import wevioo.example.resourcemanagementproject.Repository.ClientRepository;
 import wevioo.example.resourcemanagementproject.Mapper.ClientMapper;
 
@@ -20,6 +22,8 @@ public class ClientService {
 
     private final ClientRepository clientRepository;
     private final ClientMapper clientMapper;
+    private final PaginationUtil paginationUtil;      // pour pagination
+
 
 //    public ClientService(ClientRepository repository) {
 //        this.clientRepository = repository;
@@ -66,14 +70,21 @@ public class ClientService {
 //                .collect(Collectors.toList());
 //    }
 
-    // ✅ GET ALL
-    public Page<ClientDTO> getAll(int page, int size,String sortBy) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
-        return clientRepository.findAll(pageable)
-                .map(clientMapper::toDTO);
+//    //  GET ALL
+//    public Page<ClientDTO> getAll(int page, int size,String sortBy) {
+//        Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
+//        return clientRepository.findAll(pageable)
+//                .map(clientMapper::toDTO);
+//    }
+
+    //  GET ALL — يتبدل : page تبدأ من 1
+    public Page<ClientDTO> getAll(Integer page, Integer pageSize, CustomSort sort) {
+        Sort sorting = paginationUtil.sortingCriteria(sort, Sort.Direction.ASC, "name");
+        Pageable pageable = paginationUtil.createPageable(page, pageSize, sorting);
+        return clientRepository.findAll(pageable).map(clientMapper::toDTO);
     }
 
-    // ✅ DELETE
+    //  DELETE
     public void delete(Long id) {
         Client client = clientRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Client not found with id: " + id));
@@ -89,16 +100,12 @@ public class ClientService {
             String address,
             String phone,
             ClientType typeClient,
-            int page,
-            int size,
-            String sortBy,
-            String sortDir
+            Integer  page,
+            Integer  pageSize,
+            CustomSort sort
     ) {
-        Sort sort = sortDir.equalsIgnoreCase("desc")
-                ? Sort.by(sortBy).descending()
-                : Sort.by(sortBy).ascending();
-
-        Pageable pageable = PageRequest.of(page, size, sort);
+        Sort sorting = paginationUtil.sortingCriteria(sort, Sort.Direction.ASC, "name");
+        Pageable pageable = paginationUtil.createPageable(page, pageSize, sorting);
 
         return clientRepository.searchClients(
                         normalize(name), normalize(email), normalize(company),

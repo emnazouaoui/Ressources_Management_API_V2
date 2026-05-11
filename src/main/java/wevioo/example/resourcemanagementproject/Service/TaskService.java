@@ -7,6 +7,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import wevioo.example.resourcemanagementproject.DTO.RoleDTO;
 import wevioo.example.resourcemanagementproject.DTO.TaskDTO;
 import wevioo.example.resourcemanagementproject.Entity.Imputation;
 import wevioo.example.resourcemanagementproject.Entity.Project;
@@ -15,6 +16,8 @@ import wevioo.example.resourcemanagementproject.Entity.User;
 import wevioo.example.resourcemanagementproject.Enums.Priority;
 import wevioo.example.resourcemanagementproject.Enums.TaskField;
 import wevioo.example.resourcemanagementproject.Enums.TaskStatus;
+import wevioo.example.resourcemanagementproject.Pagination.CustomSort;
+import wevioo.example.resourcemanagementproject.Pagination.PaginationUtil;
 import wevioo.example.resourcemanagementproject.Repository.ImputationRepository;
 import wevioo.example.resourcemanagementproject.Repository.ProjectRepository;
 import wevioo.example.resourcemanagementproject.Repository.TaskRepository;
@@ -35,6 +38,8 @@ public class TaskService {
     private final TaskHistoryService taskHistoryService;
     private final ImputationRepository imputationRepository;
     private final TaskMapper taskMapper;
+    private final PaginationUtil paginationUtil;      // pour pagination
+
 
 
 
@@ -173,13 +178,16 @@ public class TaskService {
     }
 
     // ================= GET ALL TASKS =================
-    public Page<TaskDTO> getAllTasks(int page, int size) {
-
-        Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
-
-        Page<Task> tasks = taskRepository.findAll(pageable);
-
-        return tasks.map(taskMapper::toDTO);
+//    public Page<TaskDTO> getAllTasks(int page, int size) {
+//        Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
+//        Page<Task> tasks = taskRepository.findAll(pageable);
+//        return tasks.map(taskMapper::toDTO);
+//    }
+    //  GET ALL — يتبدل : page تبدأ من 1
+    public Page<TaskDTO> getAllTasks(Integer page, Integer pageSize, CustomSort sort) {
+        Sort sorting = paginationUtil.sortingCriteria(sort, Sort.Direction.ASC, "name");
+        Pageable pageable = paginationUtil.createPageable(page, pageSize, sorting);
+        return taskRepository.findAll(pageable).map(taskMapper::toDTO);
     }
 
     //  SEARCH
@@ -196,16 +204,12 @@ public class TaskService {
             LocalDateTime endDate,
             Double estimatedHours,
             Double consumedHours,
-            int page,
-            int size,
-            String sortBy,
-            String sortDir
+            Integer page,
+            Integer pageSize,
+            CustomSort sort
     ) {
-        Sort sort = sortDir.equalsIgnoreCase("desc")
-                ? Sort.by(sortBy).descending()
-                : Sort.by(sortBy).ascending();
-
-        Pageable pageable = PageRequest.of(page, size, sort);
+        Sort sorting = paginationUtil.sortingCriteria(sort, Sort.Direction.ASC, "name");
+        Pageable pageable = paginationUtil.createPageable(page, pageSize, sorting);
 
         return taskRepository.searchTasks(
                 normalize(title),

@@ -7,12 +7,15 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import wevioo.example.resourcemanagementproject.DTO.ClientDTO;
 import wevioo.example.resourcemanagementproject.DTO.LeaveRequestDTO;
 import wevioo.example.resourcemanagementproject.Entity.LeaveBalance;
 import wevioo.example.resourcemanagementproject.Entity.LeaveRequest;
 import wevioo.example.resourcemanagementproject.Entity.User;
 import wevioo.example.resourcemanagementproject.Enums.LeaveRequestStatus;
 import wevioo.example.resourcemanagementproject.Enums.LeaveRequestType;
+import wevioo.example.resourcemanagementproject.Pagination.CustomSort;
+import wevioo.example.resourcemanagementproject.Pagination.PaginationUtil;
 import wevioo.example.resourcemanagementproject.Repository.LeaveBalanceRepository;
 import wevioo.example.resourcemanagementproject.Repository.LeaveRequestRepository;
 import wevioo.example.resourcemanagementproject.Repository.UserRepository;
@@ -30,6 +33,7 @@ public class LeaveRequestService {
     private final LeaveRequestMapper mapper;
     private final UserRepository userRepository;
     private final LeaveBalanceRepository leaveBalanceRepository;
+    private final PaginationUtil paginationUtil;      // pour pagination
     private final LeavePolicyService policyService;
 
 
@@ -94,11 +98,18 @@ public class LeaveRequestService {
 //        return mapper.toDTO(repository.save(lr));
 //    }
 
-    // GET ALL
-    public Page<LeaveRequestDTO> getAll(int page, int size, String sortBy) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
-        return repository.findAll(pageable)
-                .map(mapper::toDTO);
+//    // GET ALL
+//    public Page<LeaveRequestDTO> getAll(int page, int size, String sortBy) {
+//        Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
+//        return repository.findAll(pageable)
+//                .map(mapper::toDTO);
+//    }
+
+    //  GET ALL — يتبدل : page تبدأ من 1
+    public Page<LeaveRequestDTO> getAll(Integer page, Integer pageSize, CustomSort sort) {
+        Sort sorting = paginationUtil.sortingCriteria(sort, Sort.Direction.ASC, "name");
+        Pageable pageable = paginationUtil.createPageable(page, pageSize, sorting);
+        return repository.findAll(pageable).map(mapper::toDTO);
     }
 
 
@@ -126,16 +137,12 @@ public class LeaveRequestService {
             String username,
             LocalDateTime startDate,
             LocalDateTime endDate,
-            int page,
-            int size,
-            String sortBy,
-            String sortDir
+            Integer page,
+            Integer pageSize,
+            CustomSort sort
     ) {
-        Sort sort = sortDir.equalsIgnoreCase("desc")
-                ? Sort.by(sortBy).descending()
-                : Sort.by(sortBy).ascending();
-
-        Pageable pageable = PageRequest.of(page, size, sort);
+        Sort sorting = paginationUtil.sortingCriteria(sort, Sort.Direction.ASC, "name");
+        Pageable pageable = paginationUtil.createPageable(page, pageSize, sorting);
 
         return repository.searchLeaveRequests(
                 normalize(reason),

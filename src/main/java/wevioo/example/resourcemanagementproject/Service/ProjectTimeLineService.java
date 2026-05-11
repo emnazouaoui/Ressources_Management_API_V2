@@ -7,10 +7,13 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import wevioo.example.resourcemanagementproject.DTO.ClientDTO;
 import wevioo.example.resourcemanagementproject.DTO.ProjectTimeLineDTO;
 import wevioo.example.resourcemanagementproject.Entity.Project;
 import wevioo.example.resourcemanagementproject.Entity.ProjectTimeLine;
 import wevioo.example.resourcemanagementproject.Enums.ProjectTimeLineType;
+import wevioo.example.resourcemanagementproject.Pagination.CustomSort;
+import wevioo.example.resourcemanagementproject.Pagination.PaginationUtil;
 import wevioo.example.resourcemanagementproject.Repository.ProjectRepository;
 import wevioo.example.resourcemanagementproject.Repository.ProjectTimeLineRepository;
 import wevioo.example.resourcemanagementproject.Mapper.ProjectTimeLineMapper;
@@ -26,6 +29,8 @@ public class ProjectTimeLineService {
     private final ProjectTimeLineRepository repository;
     private final ProjectRepository projectRepository;
     private final ProjectTimeLineMapper mapper;
+    private final PaginationUtil paginationUtil;      // pour pagination
+
 
     // CREATE
     public ProjectTimeLineDTO create(ProjectTimeLineDTO dto) {
@@ -69,11 +74,18 @@ public class ProjectTimeLineService {
 //                .toList();
 //    }
 
-    public Page<ProjectTimeLineDTO> getAll(int page, int size, String sortBy) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
-        return repository.findAll(pageable)
-                .map(mapper::toDTO);
+//    public Page<ProjectTimeLineDTO> getAll(int page, int size, String sortBy) {
+//        Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
+//        return repository.findAll(pageable)
+//                .map(mapper::toDTO);
+//    }
+    //  GET ALL — يتبدل : page تبدأ من 1
+    public Page<ProjectTimeLineDTO> getAll(Integer page, Integer pageSize, CustomSort sort) {
+        Sort sorting = paginationUtil.sortingCriteria(sort, Sort.Direction.ASC, "name");
+        Pageable pageable = paginationUtil.createPageable(page, pageSize, sorting);
+        return repository.findAll(pageable).map(mapper::toDTO);
     }
+
 
     // GET BY PROJECT
     public List<ProjectTimeLineDTO> getByProject(Long projectId) {
@@ -101,16 +113,12 @@ public class ProjectTimeLineService {
             Long projectId,
             String name,
             Double progressPercent,
-            int page,
-            int size,
-            String sortBy,
-            String sortDir
+            Integer page,
+            Integer pageSize,
+            CustomSort sort
     ) {
-        Sort sort = sortDir.equalsIgnoreCase("desc")
-                ? Sort.by(sortBy).descending()
-                : Sort.by(sortBy).ascending();
-
-        Pageable pageable = PageRequest.of(page, size, sort);
+        Sort sorting = paginationUtil.sortingCriteria(sort, Sort.Direction.ASC, "name");
+        Pageable pageable = paginationUtil.createPageable(page, pageSize, sorting);
 
         return repository.searchProjectTimeLines(
                 normalize(title),

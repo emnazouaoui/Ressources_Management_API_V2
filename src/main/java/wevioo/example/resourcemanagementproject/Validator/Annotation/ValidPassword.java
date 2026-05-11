@@ -1,8 +1,8 @@
-package wevioo.example.resourcemanagementproject.validator.annotation;
+package wevioo.example.resourcemanagementproject.Validator.Annotation;
 
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
-import wevioo.example.resourcemanagementproject.validator.impl.PhoneValidator;
+import wevioo.example.resourcemanagementproject.Validator.Impl.PasswordValidator;
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -10,12 +10,12 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 @Documented
-@Constraint(validatedBy = PhoneValidator.class)
+@Constraint(validatedBy = PasswordValidator.class)
 @Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface ValidPhone {
+public @interface ValidPassword {
 
-    String message() default "Invalid phone number (8-15 digits, optional + prefix)";
+    String message() default "Password must be at least 8 chars with 1 uppercase, 1 lowercase, 1 digit and 1 special character";
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};
 }

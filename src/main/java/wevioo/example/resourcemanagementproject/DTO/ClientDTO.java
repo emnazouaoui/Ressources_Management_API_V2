@@ -9,9 +9,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import wevioo.example.resourcemanagementproject.Enums.ClientType;
-import wevioo.example.resourcemanagementproject.validator.annotation.ValidEmail;
-import wevioo.example.resourcemanagementproject.validator.annotation.ValidName;
-import wevioo.example.resourcemanagementproject.validator.annotation.ValidPhone;
+import wevioo.example.resourcemanagementproject.Validator.Annotation.ValidEmail;
+import wevioo.example.resourcemanagementproject.Validator.Annotation.ValidName;
+import wevioo.example.resourcemanagementproject.Validator.Annotation.ValidPhone;
 
 import java.time.LocalDateTime;
 

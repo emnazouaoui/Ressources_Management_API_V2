@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import wevioo.example.resourcemanagementproject.DTO.DepartmentDTO;
+import wevioo.example.resourcemanagementproject.Pagination.CustomSort;
 import wevioo.example.resourcemanagementproject.Service.DepartmentService;
 
 import java.util.List;
@@ -38,11 +40,13 @@ public class DepartmentController {
     @GetMapping
     @Operation(summary = "Get all departments")
     public Page<DepartmentDTO> getAll(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "id") String sortBy
+            @RequestParam(defaultValue = "1") Integer page,
+            @RequestParam(defaultValue = "5") Integer pageSize,
+            @RequestParam(required = false) String sortBy,
+            @RequestParam(required = false) String sortDir
     ) {
-        return service.getAll(page, size,sortBy);
+        CustomSort sort = buildSort(sortBy, sortDir);
+        return service.getAll(page, pageSize,sort);
     }
 
     @GetMapping("/{id}")
@@ -77,23 +81,35 @@ public class DepartmentController {
             @Parameter(description = "Filtrer par description (recherche partielle)")
             @RequestParam(required = false) String description,
 
-            @Parameter(description = "Numéro de page (0-indexed)", example = "0")
-            @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Numéro de page (commence à 1)", example = "1")
+            @RequestParam(defaultValue = "1") Integer page,
 
             @Parameter(description = "Nombre de résultats par page", example = "10")
-            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "10") Integer pageSize,
 
-            @Parameter(description = "Champ de tri (name, createdDate…)", example = "name")
-            @RequestParam(defaultValue = "name") String sortBy,
+            @Parameter(description = "Champ de tri (name, email...)", example = "name")
+            @RequestParam(required = false) String sortBy,
 
-            @Parameter(description = "Direction du tri : asc ou desc", example = "asc")
-            @RequestParam(defaultValue = "asc") String sortDir
+            @Parameter(description = "Direction du tri : ASC ou DESC", example = "ASC")
+            @RequestParam(required = false) String sortDir
     ) {
+        CustomSort sort = buildSort(sortBy, sortDir);
         return ResponseEntity.ok(
                 service.searchDepartments(
-                        name, description, page, size, sortBy, sortDir
+                        name, description, page, pageSize, sort
                 )
         );
+    }
+
+    // -------------------------------------------------------------------------
+    // Helper — construit CustomSort uniquement si les deux params sont fournis
+    // -------------------------------------------------------------------------
+    private CustomSort buildSort(String sortBy, String sortDir) {
+        if (sortBy == null || sortDir == null) return null;
+        CustomSort sort = new CustomSort();
+        sort.setColumnKey(sortBy);
+        sort.setOrder(Sort.Direction.fromString(sortDir));
+        return sort;
     }
 
 

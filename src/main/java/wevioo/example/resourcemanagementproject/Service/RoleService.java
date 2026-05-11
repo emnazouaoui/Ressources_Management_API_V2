@@ -6,8 +6,11 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import wevioo.example.resourcemanagementproject.DTO.ProjectTimeLineDTO;
 import wevioo.example.resourcemanagementproject.DTO.RoleDTO;
 import wevioo.example.resourcemanagementproject.Entity.Role;
+import wevioo.example.resourcemanagementproject.Pagination.CustomSort;
+import wevioo.example.resourcemanagementproject.Pagination.PaginationUtil;
 import wevioo.example.resourcemanagementproject.Repository.RoleRepository;
 import wevioo.example.resourcemanagementproject.Mapper.RoleMapper;
 
@@ -18,6 +21,8 @@ public class RoleService {
 
     private final RoleRepository repository;
     private final RoleMapper roleMapper;
+    private final PaginationUtil paginationUtil;      // pour pagination
+
 
     // CREATE
     public RoleDTO create(RoleDTO dto) {
@@ -53,11 +58,17 @@ public class RoleService {
         repository.deleteById(id);
     }
 
-    // 📄 GET ALL (pagination ready)
-    public Page<RoleDTO> getAll(int page, int size, String sortBy) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
-        return repository.findAll(pageable)
-                .map(roleMapper::toDTO);
+//    // 📄 GET ALL (pagination ready)
+//    public Page<RoleDTO> getAll(int page, int size, String sortBy) {
+//        Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
+//        return repository.findAll(pageable)
+//                .map(roleMapper::toDTO);
+//    }
+    //  GET ALL — يتبدل : page تبدأ من 1
+    public Page<RoleDTO> getAll(Integer page, Integer pageSize, CustomSort sort) {
+        Sort sorting = paginationUtil.sortingCriteria(sort, Sort.Direction.ASC, "name");
+        Pageable pageable = paginationUtil.createPageable(page, pageSize, sorting);
+        return repository.findAll(pageable).map(roleMapper::toDTO);
     }
 
 
@@ -65,16 +76,12 @@ public class RoleService {
     public Page<RoleDTO> searchRoles(
             String name,
             String description,
-            int page,
-            int size,
-            String sortBy,
-            String sortDir
+            Integer page,
+            Integer pageSize,
+            CustomSort sort
     ) {
-        Sort sort = sortDir.equalsIgnoreCase("desc")
-                ? Sort.by(sortBy).descending()
-                : Sort.by(sortBy).ascending();
-
-        Pageable pageable = PageRequest.of(page, size, sort);
+        Sort sorting = paginationUtil.sortingCriteria(sort, Sort.Direction.ASC, "name");
+        Pageable pageable = paginationUtil.createPageable(page, pageSize, sorting);
 
         return repository.searchRoles(
                 normalize(name),

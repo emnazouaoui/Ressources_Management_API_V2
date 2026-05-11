@@ -6,8 +6,11 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import wevioo.example.resourcemanagementproject.DTO.ClientDTO;
 import wevioo.example.resourcemanagementproject.DTO.DepartmentDTO;
 import wevioo.example.resourcemanagementproject.Entity.Department;
+import wevioo.example.resourcemanagementproject.Pagination.CustomSort;
+import wevioo.example.resourcemanagementproject.Pagination.PaginationUtil;
 import wevioo.example.resourcemanagementproject.Repository.DepartmentRepository;
 import wevioo.example.resourcemanagementproject.Mapper.DepartmentMapper;
 
@@ -21,6 +24,8 @@ public class DepartmentService {
 
     private final DepartmentRepository repository;
     private final DepartmentMapper departmentMapper;
+    private final PaginationUtil paginationUtil;      // pour pagination
+
 
     // CREATE
     public DepartmentDTO create(DepartmentDTO dto) {
@@ -34,11 +39,17 @@ public class DepartmentService {
 //        return departmentMapper.toDtoList(repository.findAll());
 //    }
 
-    // 📄 GET ALL WITH PAGINATION
-    public Page<DepartmentDTO> getAll(int page, int size, String sortBy) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
-        return repository.findAll(pageable)
-                   .map(departmentMapper::toDTO);
+//    // 📄 GET ALL WITH PAGINATION
+//    public Page<DepartmentDTO> getAll(int page, int size, String sortBy) {
+//        Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
+//        return repository.findAll(pageable)
+//                   .map(departmentMapper::toDTO);
+//    }
+    //  GET ALL — يتبدل : page تبدأ من 1
+    public Page<DepartmentDTO> getAll(Integer page, Integer pageSize, CustomSort sort) {
+        Sort sorting = paginationUtil.sortingCriteria(sort, Sort.Direction.ASC, "name");
+        Pageable pageable = paginationUtil.createPageable(page, pageSize, sorting);
+        return repository.findAll(pageable).map(departmentMapper::toDTO);
     }
 
 
@@ -74,16 +85,12 @@ public class DepartmentService {
     public Page<DepartmentDTO> searchDepartments(
             String name,
             String description,
-            int page,
-            int size,
-            String sortBy,
-            String sortDir
+            Integer  page,
+            Integer  pageSize,
+            CustomSort sort
     ) {
-        Sort sort = sortDir.equalsIgnoreCase("desc")
-                ? Sort.by(sortBy).descending()
-                : Sort.by(sortBy).ascending();
-
-        Pageable pageable = PageRequest.of(page, size, sort);
+        Sort sorting = paginationUtil.sortingCriteria(sort, Sort.Direction.ASC, "name");
+        Pageable pageable = paginationUtil.createPageable(page, pageSize, sorting);
 
         return repository.searchDepartments(
                 normalize(name),

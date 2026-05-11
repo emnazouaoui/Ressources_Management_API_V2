@@ -1,8 +1,8 @@
-package wevioo.example.resourcemanagementproject.validator.impl;
+package wevioo.example.resourcemanagementproject.Validator.Impl;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
-import wevioo.example.resourcemanagementproject.validator.annotation.ValidEmail;
+import wevioo.example.resourcemanagementproject.Validator.Annotation.ValidEmail;
 
 public class EmailValidatorImpl implements ConstraintValidator<ValidEmail, String>{
 
