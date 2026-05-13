@@ -8,5 +8,9 @@ public enum ProjectField {
     STATUS,
     PROGRESS,
     PROJECT_MANAGER,
-    CLIENT
+    CLIENT,
+    createdDate,
+    updatedDate,
+    createdBy,
+    updatedBy
 }

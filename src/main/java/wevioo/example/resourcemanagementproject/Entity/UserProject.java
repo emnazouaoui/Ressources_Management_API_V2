@@ -38,11 +38,11 @@ public class UserProject {
     @JoinColumn(name = "project", nullable = false)
     private Project project;
 
-    @CreatedDate
+    //@CreatedDate
     @Column(name = "created_date", nullable = false, updatable = false)
     private LocalDateTime createdDate;
 
-    @LastModifiedDate
+    //@LastModifiedDate
     @Column(name = "updated_date")
     private LocalDateTime updatedDate;
 

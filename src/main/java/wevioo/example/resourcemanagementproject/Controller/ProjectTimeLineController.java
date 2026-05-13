@@ -17,9 +17,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import wevioo.example.resourcemanagementproject.DTO.DepartmentDTO;
 import wevioo.example.resourcemanagementproject.DTO.ProjectTimeLineDTO;
 import wevioo.example.resourcemanagementproject.Enums.ProjectTimeLineType;
 import wevioo.example.resourcemanagementproject.Pagination.CustomSort;
+import wevioo.example.resourcemanagementproject.Pagination.PaginatedResponse;
 import wevioo.example.resourcemanagementproject.Service.ProjectTimeLineService;
 
 import java.util.List;
@@ -49,14 +51,13 @@ public class ProjectTimeLineController {
 
     @Operation(summary = "Get all timelines with pagination")
     @GetMapping
-    public Page<ProjectTimeLineDTO> getAll(
+    public ResponseEntity<PaginatedResponse<ProjectTimeLineDTO>> getAll(
             @RequestParam(defaultValue = "1") Integer page,
             @RequestParam(defaultValue = "5") Integer pageSize,
             @RequestParam(required = false) String sortBy,
             @RequestParam(required = false) String sortDir
     ) {
-        CustomSort sort = buildSort(sortBy, sortDir);
-        return service.getAll(page, pageSize,sort);
+        return ResponseEntity.ok(service.getAll(page, pageSize, sortBy, sortDir));
     }
 
 
@@ -77,7 +78,7 @@ public class ProjectTimeLineController {
             description = "Filtrer par titre, description, version, type, projet. Tous les champs sont optionnels."
     )
     @GetMapping("/search")
-    public ResponseEntity<Page<ProjectTimeLineDTO>> searchProjectTimeLines(
+    public ResponseEntity<PaginatedResponse<ProjectTimeLineDTO>> searchProjectTimeLines(
 
             @Parameter(description = "Filtrer par titre (recherche partielle)")
             @RequestParam(required = false) String title,
@@ -109,7 +110,7 @@ public class ProjectTimeLineController {
             @Parameter(description = "Nombre de résultats par page", example = "10")
             @RequestParam(defaultValue = "10") Integer pageSize,
 
-            @Parameter(description = "Champ de tri (name, email...)", example = "name")
+            @Parameter(description = "Champ de tri (name, email...)", example = "createdDate")
             @RequestParam(required = false) String sortBy,
 
             @Parameter(description = "Direction du tri : ASC ou DESC", example = "ASC")
@@ -117,14 +118,12 @@ public class ProjectTimeLineController {
 
 
     ) {
-        CustomSort sort = buildSort(sortBy, sortDir);
-
         return ResponseEntity.ok(
                 service.searchProjectTimeLines(
                         title, description, version,
                         type, deliveredToClient,
                         projectId, name,progressPercent,
-                        page, pageSize, sort
+                        page, pageSize, sortBy, sortDir  // ← sortBy + sortDir مباشرة
                 )
         );
     }

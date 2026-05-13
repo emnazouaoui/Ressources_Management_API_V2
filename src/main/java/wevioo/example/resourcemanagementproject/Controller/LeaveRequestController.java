@@ -18,10 +18,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import wevioo.example.resourcemanagementproject.DTO.ImputationDTO;
 import wevioo.example.resourcemanagementproject.DTO.LeaveRequestDTO;
 import wevioo.example.resourcemanagementproject.Enums.LeaveRequestStatus;
 import wevioo.example.resourcemanagementproject.Enums.LeaveRequestType;
 import wevioo.example.resourcemanagementproject.Pagination.CustomSort;
+import wevioo.example.resourcemanagementproject.Pagination.PaginatedResponse;
 import wevioo.example.resourcemanagementproject.Service.LeaveRequestService;
 
 import java.time.LocalDateTime;
@@ -50,14 +52,13 @@ public class LeaveRequestController {
 
     @GetMapping
     @Operation(summary = "Get all leave request with pagination")
-    public Page<LeaveRequestDTO> getAll(
+    public ResponseEntity<PaginatedResponse<LeaveRequestDTO>> getAll(
             @RequestParam(defaultValue = "1") Integer page,
             @RequestParam(defaultValue = "5") Integer pageSize,
             @RequestParam(required = false) String sortBy,
             @RequestParam(required = false) String sortDir
     ) {
-        CustomSort sort = buildSort(sortBy, sortDir);
-        return service.getAll(page, pageSize,sort);
+        return ResponseEntity.ok(service.getAll(page, pageSize, sortBy, sortDir));
     }
 
     @GetMapping("/{id}")
@@ -78,7 +79,7 @@ public class LeaveRequestController {
             description = "Filtrer par type, statut, utilisateur, manager, dates. Tous les champs sont optionnels."
     )
     @GetMapping("/search")
-    public ResponseEntity<Page<LeaveRequestDTO>> searchLeaveRequests(
+    public ResponseEntity<PaginatedResponse<LeaveRequestDTO>> searchLeaveRequests(
 
             @Parameter(description = "Filtrer par raison (recherche partielle)")
             @RequestParam(required = false) String reason,
@@ -112,21 +113,20 @@ public class LeaveRequestController {
             @Parameter(description = "Nombre de résultats par page", example = "10")
             @RequestParam(defaultValue = "10") Integer pageSize,
 
-            @Parameter(description = "Champ de tri (name, email...)", example = "name")
+            @Parameter(description = "Champ de tri (name, email...)", example = "createdDate")
             @RequestParam(required = false) String sortBy,
 
             @Parameter(description = "Direction du tri : ASC ou DESC", example = "ASC")
             @RequestParam(required = false) String sortDir
 
     ) {
-        CustomSort sort = buildSort(sortBy, sortDir);
         return ResponseEntity.ok(
                 service.searchLeaveRequests(
                         reason, type, status,
                         userId, projectManagerId,
                         username,
                         startDate, endDate,
-                        page, pageSize, sort
+                        page, pageSize,sortBy, sortDir  // ← sortBy + sortDir مباشرة
                 )
         );
     }

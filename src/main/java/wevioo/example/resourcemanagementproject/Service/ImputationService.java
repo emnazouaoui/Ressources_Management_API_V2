@@ -7,11 +7,14 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import wevioo.example.resourcemanagementproject.DTO.ClientDTO;
+import wevioo.example.resourcemanagementproject.DTO.DepartmentDTO;
 import wevioo.example.resourcemanagementproject.DTO.ImputationDTO;
+import wevioo.example.resourcemanagementproject.Entity.Department;
 import wevioo.example.resourcemanagementproject.Entity.Imputation;
 import wevioo.example.resourcemanagementproject.Entity.Task;
 import wevioo.example.resourcemanagementproject.Entity.User;
 import wevioo.example.resourcemanagementproject.Pagination.CustomSort;
+import wevioo.example.resourcemanagementproject.Pagination.PaginatedResponse;
 import wevioo.example.resourcemanagementproject.Pagination.PaginationUtil;
 import wevioo.example.resourcemanagementproject.Repository.ImputationRepository;
 import wevioo.example.resourcemanagementproject.Repository.TaskRepository;
@@ -54,25 +57,33 @@ public class ImputationService {
         return imputationMapper.toDTO(imputation);
     }
 
-//    // GET ALL
-//    public List<ImputationDTO> getAll() {
-//        return imputationRepository.findAll()
-//                .stream()
-//                .map(ImputationMapper::toDTO)
-//                .collect(Collectors.toList());
-//    }
-
-//    // 📄 GET ALL WITH PAGINATION
-//    public Page<ImputationDTO> getAll(int page, int size, String sortBy) {
-//        Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
-//        return imputationRepository.findAll(pageable)
-//                .map(imputationMapper::toDTO);
+//    //  GET ALL — يتبدل : page تبدأ من 1
+//    public Page<ImputationDTO> getAll(Integer page, Integer pageSize, CustomSort sort) {
+//        Sort sorting = paginationUtil.sortingCriteria(sort, Sort.Direction.ASC, "name");
+//        Pageable pageable = paginationUtil.createPageable(page, pageSize, sorting);
+//        return imputationRepository.findAll(pageable).map(imputationMapper::toDTO);
 //    }
     //  GET ALL — يتبدل : page تبدأ من 1
-    public Page<ImputationDTO> getAll(Integer page, Integer pageSize, CustomSort sort) {
-        Sort sorting = paginationUtil.sortingCriteria(sort, Sort.Direction.ASC, "name");
+    public PaginatedResponse<ImputationDTO> getAll(Integer page, Integer pageSize, String sortBy, String sortDir) {
+        CustomSort customSort = null;
+        if (sortBy != null && sortDir != null) {
+            customSort = new CustomSort();
+            customSort.setColumnKey(sortBy);
+            customSort.setOrder(Sort.Direction.fromString(sortDir));
+        }
+
+        Sort sorting = paginationUtil.sortingCriteria(customSort, Sort.Direction.ASC, "createdDate");
         Pageable pageable = paginationUtil.createPageable(page, pageSize, sorting);
-        return imputationRepository.findAll(pageable).map(imputationMapper::toDTO);
+
+        Page<Imputation> ImputationPage = imputationRepository.findAll(pageable);
+
+        PaginatedResponse<ImputationDTO> response = new PaginatedResponse<>();
+        response.setContent(ImputationPage.getContent().stream().map(imputationMapper::toDTO).toList());
+        response.setPage(ImputationPage.getNumber() + 1);
+        response.setPageSize(ImputationPage.getSize());
+        response.setTotalElement(ImputationPage.getTotalElements());
+        response.setTotalPage(ImputationPage.getTotalPages());
+        return response;
     }
 
 
@@ -89,6 +100,8 @@ public class ImputationService {
 
         imputationMapper.updateEntity(imputation, dto, task, user);
 
+        imputation.setUpdatedDate(LocalDateTime.now());
+
         return imputationMapper.toDTO(imputationRepository.save(imputation));
     }
 
@@ -100,7 +113,35 @@ public class ImputationService {
         imputationRepository.deleteById(id);
     }
 
-    public Page<ImputationDTO> searchImputations(
+//    public Page<ImputationDTO> searchImputations(
+//            String comment,
+//            String title,
+//            String username,
+//            Long taskId,
+//            Long userId,
+//            LocalDateTime date,
+//            Double hours,
+//            Integer page,
+//            Integer pageSize,
+//            CustomSort sort
+//    ) {
+//        Sort sorting = paginationUtil.sortingCriteria(sort, Sort.Direction.ASC, "name");
+//        Pageable pageable = paginationUtil.createPageable(page, pageSize, sorting);
+//
+//        return imputationRepository.searchImputations(
+//                normalize(comment),
+//                normalize(title),
+//                normalize(username),
+//                taskId,
+//                userId,
+//                date,
+//                hours,
+//                pageable
+//        ).map(imputationMapper::toDTO);
+//    }
+
+    // ✅ SEARCH — retourne PaginatedResponse au lieu de Page<ClientDTO>
+    public PaginatedResponse<ImputationDTO> searchImputations(
             String comment,
             String title,
             String username,
@@ -110,12 +151,27 @@ public class ImputationService {
             Double hours,
             Integer page,
             Integer pageSize,
-            CustomSort sort
+            String sortBy,
+            String sortDir
     ) {
-        Sort sorting = paginationUtil.sortingCriteria(sort, Sort.Direction.ASC, "name");
+        // ← بدل Sort.by(sortBy).ascending() مباشرة
+        // نبني CustomSort ونمرروه لـ PaginationUtil بش يvalidiha
+        CustomSort customSort = null;
+        if (sortBy != null && sortDir != null) {
+            customSort = new CustomSort();
+            customSort.setColumnKey(sortBy);
+            customSort.setOrder(Sort.Direction.fromString(sortDir));
+        }
+
+        Sort sorting = paginationUtil.sortingCriteria(
+                customSort,
+                Sort.Direction.ASC,
+                "createdDate"                  // ← default si sort == null
+        );
+
         Pageable pageable = paginationUtil.createPageable(page, pageSize, sorting);
 
-        return imputationRepository.searchImputations(
+        Page<Imputation> ImputationPage = imputationRepository.searchImputations(
                 normalize(comment),
                 normalize(title),
                 normalize(username),
@@ -124,8 +180,21 @@ public class ImputationService {
                 date,
                 hours,
                 pageable
-        ).map(imputationMapper::toDTO);
+        );
+
+        // ← البناء الجديد للـ response
+        PaginatedResponse<ImputationDTO> response = new PaginatedResponse<>();
+        response.setContent(ImputationPage.getContent().stream()
+                .map(imputationMapper::toDTO)
+                .toList());
+        response.setPage(ImputationPage.getNumber() + 1);   // Spring 0-indexed → on remet à 1
+        response.setPageSize(ImputationPage.getSize());
+        response.setTotalElement(ImputationPage.getTotalElements());
+        response.setTotalPage(ImputationPage.getTotalPages());
+
+        return response;
     }
+
     // -------------------------------------------------------------------------
     // Helpers
     // -------------------------------------------------------------------------

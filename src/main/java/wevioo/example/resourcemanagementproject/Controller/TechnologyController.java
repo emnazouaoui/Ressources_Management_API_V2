@@ -17,8 +17,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import wevioo.example.resourcemanagementproject.DTO.RoleDTO;
 import wevioo.example.resourcemanagementproject.DTO.TechnologyDTO;
 import wevioo.example.resourcemanagementproject.Pagination.CustomSort;
+import wevioo.example.resourcemanagementproject.Pagination.PaginatedResponse;
 import wevioo.example.resourcemanagementproject.Service.TechnologyService;
 
 import java.util.List;
@@ -56,16 +58,27 @@ public class TechnologyController {
     }
 
     // 📄 PAGINATION
-    @GetMapping
+//    @GetMapping
+//    @Operation(summary = "Get all technologies with pagination")
+//    public Page<TechnologyDTO> getAll(
+//            @RequestParam(defaultValue = "1") Integer page,
+//            @RequestParam(defaultValue = "5") Integer pageSize,
+//            @RequestParam(required = false) String sortBy,
+//            @RequestParam(required = false) String sortDir
+//    ) {
+//        CustomSort sort = buildSort(sortBy, sortDir);
+//        return service.getAll(page, pageSize,sort);
+//    }
+
     @Operation(summary = "Get all technologies with pagination")
-    public Page<TechnologyDTO> getAll(
+    @GetMapping
+    public ResponseEntity<PaginatedResponse<TechnologyDTO>> getAll(
             @RequestParam(defaultValue = "1") Integer page,
             @RequestParam(defaultValue = "5") Integer pageSize,
             @RequestParam(required = false) String sortBy,
             @RequestParam(required = false) String sortDir
     ) {
-        CustomSort sort = buildSort(sortBy, sortDir);
-        return service.getAll(page, pageSize,sort);
+        return ResponseEntity.ok(service.getAll(page, pageSize, sortBy, sortDir));
     }
 
     @Operation(
@@ -73,7 +86,7 @@ public class TechnologyController {
             description = "Filtrer par nom . Tous les champs sont optionnels."
     )
     @GetMapping("/search")
-    public ResponseEntity<Page<TechnologyDTO>> searchTechnologies(
+    public ResponseEntity<PaginatedResponse<TechnologyDTO>> searchTechnologies(
 
             @Parameter(description = "Filtrer par nom (recherche partielle)")
             @RequestParam(required = false) String name,
@@ -84,17 +97,15 @@ public class TechnologyController {
             @Parameter(description = "Nombre de résultats par page", example = "10")
             @RequestParam(defaultValue = "10") Integer pageSize,
 
-            @Parameter(description = "Champ de tri (name, email...)", example = "name")
+            @Parameter(description = "Champ de tri (name, email...)", example = "createdDate")
             @RequestParam(required = false) String sortBy,
 
             @Parameter(description = "Direction du tri : ASC ou DESC", example = "ASC")
             @RequestParam(required = false) String sortDir
     ) {
-        CustomSort sort = buildSort(sortBy, sortDir);
-
         return ResponseEntity.ok(
                 service.searchTechnologies(
-                        name, page, pageSize, sort
+                        name, page, pageSize, sortBy, sortDir  // ← sortBy + sortDir مباشرة
                 )
         );
     }

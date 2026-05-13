@@ -8,17 +8,21 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import wevioo.example.resourcemanagementproject.DTO.ClientDTO;
+import wevioo.example.resourcemanagementproject.DTO.DepartmentDTO;
 import wevioo.example.resourcemanagementproject.DTO.ProjectTimeLineDTO;
+import wevioo.example.resourcemanagementproject.Entity.Department;
 import wevioo.example.resourcemanagementproject.Entity.Project;
 import wevioo.example.resourcemanagementproject.Entity.ProjectTimeLine;
 import wevioo.example.resourcemanagementproject.Enums.ProjectTimeLineType;
 import wevioo.example.resourcemanagementproject.Pagination.CustomSort;
+import wevioo.example.resourcemanagementproject.Pagination.PaginatedResponse;
 import wevioo.example.resourcemanagementproject.Pagination.PaginationUtil;
 import wevioo.example.resourcemanagementproject.Repository.ProjectRepository;
 import wevioo.example.resourcemanagementproject.Repository.ProjectTimeLineRepository;
 import wevioo.example.resourcemanagementproject.Mapper.ProjectTimeLineMapper;
 
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -58,6 +62,8 @@ public class ProjectTimeLineService {
 
         mapper.updateEntity(dto, t);
 
+        t.setUpdatedDate(LocalDateTime.now());
+
         if (dto.getProjectId() != null) {
             t.setProject(projectRepository.findById(dto.getProjectId())
                     .orElseThrow(() -> new RuntimeException("Project not found")));
@@ -66,24 +72,33 @@ public class ProjectTimeLineService {
         return mapper.toDTO(repository.save(t));
     }
 
-//    // GET ALL
-//    public List<ProjectTimeLineDTO> getAll() {
-//        return repository.findAll()
-//                .stream()
-//                .map(mapper::toDTO)
-//                .toList();
-//    }
-
-//    public Page<ProjectTimeLineDTO> getAll(int page, int size, String sortBy) {
-//        Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
-//        return repository.findAll(pageable)
-//                .map(mapper::toDTO);
+//    //  GET ALL — يتبدل : page تبدأ من 1
+//    public Page<ProjectTimeLineDTO> getAll(Integer page, Integer pageSize, CustomSort sort) {
+//        Sort sorting = paginationUtil.sortingCriteria(sort, Sort.Direction.ASC, "name");
+//        Pageable pageable = paginationUtil.createPageable(page, pageSize, sorting);
+//        return repository.findAll(pageable).map(mapper::toDTO);
 //    }
     //  GET ALL — يتبدل : page تبدأ من 1
-    public Page<ProjectTimeLineDTO> getAll(Integer page, Integer pageSize, CustomSort sort) {
-        Sort sorting = paginationUtil.sortingCriteria(sort, Sort.Direction.ASC, "name");
+    public PaginatedResponse<ProjectTimeLineDTO> getAll(Integer page, Integer pageSize, String sortBy, String sortDir) {
+        CustomSort customSort = null;
+        if (sortBy != null && sortDir != null) {
+            customSort = new CustomSort();
+            customSort.setColumnKey(sortBy);
+            customSort.setOrder(Sort.Direction.fromString(sortDir));
+        }
+
+        Sort sorting = paginationUtil.sortingCriteria(customSort, Sort.Direction.ASC, "createdDate");
         Pageable pageable = paginationUtil.createPageable(page, pageSize, sorting);
-        return repository.findAll(pageable).map(mapper::toDTO);
+
+        Page<ProjectTimeLine> ProjectTimeLinePage = repository.findAll(pageable);
+
+        PaginatedResponse<ProjectTimeLineDTO> response = new PaginatedResponse<>();
+        response.setContent(ProjectTimeLinePage.getContent().stream().map(mapper::toDTO).toList());
+        response.setPage(ProjectTimeLinePage.getNumber() + 1);
+        response.setPageSize(ProjectTimeLinePage.getSize());
+        response.setTotalElement(ProjectTimeLinePage.getTotalElements());
+        response.setTotalPage(ProjectTimeLinePage.getTotalPages());
+        return response;
     }
 
 
@@ -95,16 +110,39 @@ public class ProjectTimeLineService {
                 .toList();
     }
 
-//    // SEARCH
-//    public List<ProjectTimeLineDTO> search(String keyword) {
-//        return repository.search(keyword)
-//                .stream()
-//                .map(mapper::toDTO)
-//                .toList();
+
+//    //  SEARCH
+//    public Page<ProjectTimeLineDTO> searchProjectTimeLines(
+//            String title,
+//            String description,
+//            String version,
+//            ProjectTimeLineType type,
+//            Boolean deliveredToClient,
+//            Long projectId,
+//            String name,
+//            Double progressPercent,
+//            Integer page,
+//            Integer pageSize,
+//            CustomSort sort
+//    ) {
+//        Sort sorting = paginationUtil.sortingCriteria(sort, Sort.Direction.ASC, "name");
+//        Pageable pageable = paginationUtil.createPageable(page, pageSize, sorting);
+//
+//        return repository.searchProjectTimeLines(
+//                normalize(title),
+//                normalize(description),
+//                normalize(version),
+//                type,
+//                deliveredToClient,
+//                projectId,
+//                normalize(name),
+//                progressPercent,
+//                pageable
+//        ).map(mapper::toDTO);
 //    }
 
-    //  SEARCH
-    public Page<ProjectTimeLineDTO> searchProjectTimeLines(
+    // ✅ SEARCH — retourne PaginatedResponse au lieu de Page<ClientDTO>
+    public PaginatedResponse<ProjectTimeLineDTO> searchProjectTimeLines(
             String title,
             String description,
             String version,
@@ -115,12 +153,27 @@ public class ProjectTimeLineService {
             Double progressPercent,
             Integer page,
             Integer pageSize,
-            CustomSort sort
+            String sortBy,
+            String sortDir
     ) {
-        Sort sorting = paginationUtil.sortingCriteria(sort, Sort.Direction.ASC, "name");
+        // ← بدل Sort.by(sortBy).ascending() مباشرة
+        // نبني CustomSort ونمرروه لـ PaginationUtil بش يvalidiha
+        CustomSort customSort = null;
+        if (sortBy != null && sortDir != null) {
+            customSort = new CustomSort();
+            customSort.setColumnKey(sortBy);
+            customSort.setOrder(Sort.Direction.fromString(sortDir));
+        }
+
+        Sort sorting = paginationUtil.sortingCriteria(
+                customSort,
+                Sort.Direction.ASC,
+                "createdDate"                  // ← default si sort == null
+        );
+
         Pageable pageable = paginationUtil.createPageable(page, pageSize, sorting);
 
-        return repository.searchProjectTimeLines(
+        Page<ProjectTimeLine> ProjectTimeLinePage = repository.searchProjectTimeLines(
                 normalize(title),
                 normalize(description),
                 normalize(version),
@@ -130,7 +183,19 @@ public class ProjectTimeLineService {
                 normalize(name),
                 progressPercent,
                 pageable
-        ).map(mapper::toDTO);
+        );
+
+        // ← البناء الجديد للـ response
+        PaginatedResponse<ProjectTimeLineDTO> response = new PaginatedResponse<>();
+        response.setContent(ProjectTimeLinePage.getContent().stream()
+                .map(mapper::toDTO)
+                .toList());
+        response.setPage(ProjectTimeLinePage.getNumber() + 1);   // Spring 0-indexed → on remet à 1
+        response.setPageSize(ProjectTimeLinePage.getSize());
+        response.setTotalElement(ProjectTimeLinePage.getTotalElements());
+        response.setTotalPage(ProjectTimeLinePage.getTotalPages());
+
+        return response;
     }
 
     // -------------------------------------------------------------------------

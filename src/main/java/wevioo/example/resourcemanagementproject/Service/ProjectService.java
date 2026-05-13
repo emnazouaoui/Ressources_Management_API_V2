@@ -8,11 +8,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import wevioo.example.resourcemanagementproject.DTO.ClientDTO;
+import wevioo.example.resourcemanagementproject.DTO.DepartmentDTO;
 import wevioo.example.resourcemanagementproject.DTO.ProjectDTO;
 import wevioo.example.resourcemanagementproject.Entity.*;
 import wevioo.example.resourcemanagementproject.Enums.ProjectField;
 import wevioo.example.resourcemanagementproject.Enums.ProjectStatus;
 import wevioo.example.resourcemanagementproject.Pagination.CustomSort;
+import wevioo.example.resourcemanagementproject.Pagination.PaginatedResponse;
 import wevioo.example.resourcemanagementproject.Pagination.PaginationUtil;
 import wevioo.example.resourcemanagementproject.Repository.*;
 import wevioo.example.resourcemanagementproject.Mapper.ProjectMapper;
@@ -118,6 +120,8 @@ public ProjectDTO update(Long id, ProjectDTO dto) {
         p.setStatus(ProjectStatus.valueOf(dto.getStatus()));
     }
 
+    p.setUpdatedDate(LocalDateTime.now());
+
     p.setProjectManager(userRepository.findById(dto.getProjectManagerId())
             .orElseThrow(() -> new RuntimeException("Manager not found")));
 
@@ -157,31 +161,73 @@ public ProjectDTO update(Long id, ProjectDTO dto) {
 
     return mapper.toDTO(saved);
 }
-
-
-//    // 🔥 GET ALL
-//    public List<ProjectDTO> getAll() {
 //
-//        return projectRepository.findAll()
-//                .stream()
-//                .map(mapper::toDTO)
-//                .toList();
+//    //  GET ALL — يتبدل : page تبدأ من 1
+//    public Page<ProjectDTO> getAll(Integer page, Integer pageSize, CustomSort sort) {
+//        Sort sorting = paginationUtil.sortingCriteria(sort, Sort.Direction.ASC, "name");
+//        Pageable pageable = paginationUtil.createPageable(page, pageSize, sorting);
+//        return projectRepository.findAll(pageable).map(mapper::toDTO);
 //    }
-//    //Get All with pagination
-//    public Page<ProjectDTO> getAll(int page, int size,String sortBy) {
-//        Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
-//        return projectRepository.findAll(pageable)
-//                .map(mapper::toDTO);
-//    }
+
     //  GET ALL — يتبدل : page تبدأ من 1
-    public Page<ProjectDTO> getAll(Integer page, Integer pageSize, CustomSort sort) {
-        Sort sorting = paginationUtil.sortingCriteria(sort, Sort.Direction.ASC, "name");
+    public PaginatedResponse<ProjectDTO> getAll(Integer page, Integer pageSize, String sortBy, String sortDir) {
+        CustomSort customSort = null;
+        if (sortBy != null && sortDir != null) {
+            customSort = new CustomSort();
+            customSort.setColumnKey(sortBy);
+            customSort.setOrder(Sort.Direction.fromString(sortDir));
+        }
+
+        Sort sorting = paginationUtil.sortingCriteria(customSort, Sort.Direction.ASC, "createdDate");
         Pageable pageable = paginationUtil.createPageable(page, pageSize, sorting);
-        return projectRepository.findAll(pageable).map(mapper::toDTO);
+
+        Page<Project> ProjectPage = projectRepository.findAll(pageable);
+
+        PaginatedResponse<ProjectDTO> response = new PaginatedResponse<>();
+        response.setContent(ProjectPage.getContent().stream().map(mapper::toDTO).toList());
+        response.setPage(ProjectPage.getNumber() + 1);
+        response.setPageSize(ProjectPage.getSize());
+        response.setTotalElement(ProjectPage.getTotalElements());
+        response.setTotalPage(ProjectPage.getTotalPages());
+        return response;
     }
 
-    //  SEARCH
-    public Page<ProjectDTO> searchProjects(
+//    //  SEARCH
+//    public Page<ProjectDTO> searchProjects(
+//            String name,
+//            String description,
+//            ProjectStatus status,
+//            Long projectManagerId,
+//            String projectManagerUsername,
+//            Long clientId,
+//            String clientName,
+//            LocalDateTime startDate,
+//            LocalDateTime endDate,
+//            Double progressPercent,
+//            Integer page,
+//            Integer pageSize,
+//            CustomSort sort
+//    ) {
+//        Sort sorting = paginationUtil.sortingCriteria(sort, Sort.Direction.ASC, "name");
+//        Pageable pageable = paginationUtil.createPageable(page, pageSize, sorting);
+//
+//        return projectRepository.searchProjects(
+//                normalize(name),
+//                normalize(description),
+//                status,
+//                projectManagerId,
+//                normalize(projectManagerUsername),
+//                clientId,
+//                normalize(clientName),
+//                startDate,
+//                endDate,
+//                progressPercent,
+//                pageable
+//        ).map(mapper::toDTO);
+//    }
+
+    // ✅ SEARCH — retourne PaginatedResponse au lieu de Page<ClientDTO>
+    public PaginatedResponse<ProjectDTO> searchProjects(
             String name,
             String description,
             ProjectStatus status,
@@ -194,12 +240,27 @@ public ProjectDTO update(Long id, ProjectDTO dto) {
             Double progressPercent,
             Integer page,
             Integer pageSize,
-            CustomSort sort
+            String sortBy,
+            String sortDir
     ) {
-        Sort sorting = paginationUtil.sortingCriteria(sort, Sort.Direction.ASC, "name");
+        // ← بدل Sort.by(sortBy).ascending() مباشرة
+        // نبني CustomSort ونمرروه لـ PaginationUtil بش يvalidiha
+        CustomSort customSort = null;
+        if (sortBy != null && sortDir != null) {
+            customSort = new CustomSort();
+            customSort.setColumnKey(sortBy);
+            customSort.setOrder(Sort.Direction.fromString(sortDir));
+        }
+
+        Sort sorting = paginationUtil.sortingCriteria(
+                customSort,
+                Sort.Direction.ASC,
+                "createdDate"                  // ← default si sort == null
+        );
+
         Pageable pageable = paginationUtil.createPageable(page, pageSize, sorting);
 
-        return projectRepository.searchProjects(
+        Page<Project> ProjectPage = projectRepository.searchProjects(
                 normalize(name),
                 normalize(description),
                 status,
@@ -211,7 +272,19 @@ public ProjectDTO update(Long id, ProjectDTO dto) {
                 endDate,
                 progressPercent,
                 pageable
-        ).map(mapper::toDTO);
+        );
+
+        // ← البناء الجديد للـ response
+        PaginatedResponse<ProjectDTO> response = new PaginatedResponse<>();
+        response.setContent(ProjectPage.getContent().stream()
+                .map(mapper::toDTO)
+                .toList());
+        response.setPage(ProjectPage.getNumber() + 1);   // Spring 0-indexed → on remet à 1
+        response.setPageSize(ProjectPage.getSize());
+        response.setTotalElement(ProjectPage.getTotalElements());
+        response.setTotalPage(ProjectPage.getTotalPages());
+
+        return response;
     }
 
     // -------------------------------------------------------------------------

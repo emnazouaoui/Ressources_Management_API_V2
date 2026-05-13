@@ -17,10 +17,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import wevioo.example.resourcemanagementproject.DTO.DepartmentDTO;
 import wevioo.example.resourcemanagementproject.DTO.UserDTO;
 import wevioo.example.resourcemanagementproject.Entity.UserHistory;
 import wevioo.example.resourcemanagementproject.Enums.Level;
 import wevioo.example.resourcemanagementproject.Pagination.CustomSort;
+import wevioo.example.resourcemanagementproject.Pagination.PaginatedResponse;
 import wevioo.example.resourcemanagementproject.Repository.UserHistoryRepository;
 import wevioo.example.resourcemanagementproject.Service.UserService;
 
@@ -44,14 +46,13 @@ public class UserController {
 
     @GetMapping
     @Operation(summary = "Get all users with pagination")
-    public Page<UserDTO> getAll(
+    public ResponseEntity<PaginatedResponse<UserDTO>> getAll(
             @RequestParam(defaultValue = "1") Integer page,
             @RequestParam(defaultValue = "5") Integer pageSize,
             @RequestParam(required = false) String sortBy,
             @RequestParam(required = false) String sortDir
     ) {
-        CustomSort sort = buildSort(sortBy, sortDir);
-        return userService.getAll(page, pageSize,sort);
+        return ResponseEntity.ok(userService.getAll(page, pageSize, sortBy, sortDir));
     }
 
 
@@ -116,7 +117,7 @@ public class UserController {
             description = "Filtrer par username, nom, email, rôle, département, manager. Tous les champs sont optionnels."
     )
     @GetMapping("/search")
-    public ResponseEntity<Page<UserDTO>> searchUsers(
+    public ResponseEntity<PaginatedResponse<UserDTO>> searchUsers(
 
             @Parameter(description = "Filtrer par username")
             @RequestParam(required = false) String username,
@@ -163,15 +164,13 @@ public class UserController {
             @Parameter(description = "Nombre de résultats par page", example = "10")
             @RequestParam(defaultValue = "10") Integer pageSize,
 
-            @Parameter(description = "Champ de tri (name, email...)", example = "name")
+            @Parameter(description = "Champ de tri (name, email...)", example = "createdDate")
             @RequestParam(required = false) String sortBy,
 
             @Parameter(description = "Direction du tri : ASC ou DESC", example = "ASC")
             @RequestParam(required = false) String sortDir
 
     ) {
-        CustomSort sort = buildSort(sortBy, sortDir);
-
         return ResponseEntity.ok(
                 userService.searchUsers(
                         username, firstName, lastName, email,
@@ -179,7 +178,7 @@ public class UserController {
                         roleId, roleName,
                         departmentId, departmentName,
                         managerId, managerUsername,
-                        page, pageSize, sort
+                        page, pageSize, sortBy, sortDir  // ← sortBy + sortDir مباشرة
                 )
         );
     }

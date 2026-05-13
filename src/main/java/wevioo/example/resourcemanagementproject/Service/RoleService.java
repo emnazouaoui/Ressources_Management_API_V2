@@ -6,13 +6,18 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import wevioo.example.resourcemanagementproject.DTO.DepartmentDTO;
 import wevioo.example.resourcemanagementproject.DTO.ProjectTimeLineDTO;
 import wevioo.example.resourcemanagementproject.DTO.RoleDTO;
+import wevioo.example.resourcemanagementproject.Entity.Department;
 import wevioo.example.resourcemanagementproject.Entity.Role;
 import wevioo.example.resourcemanagementproject.Pagination.CustomSort;
+import wevioo.example.resourcemanagementproject.Pagination.PaginatedResponse;
 import wevioo.example.resourcemanagementproject.Pagination.PaginationUtil;
 import wevioo.example.resourcemanagementproject.Repository.RoleRepository;
 import wevioo.example.resourcemanagementproject.Mapper.RoleMapper;
+
+import java.time.LocalDateTime;
 
 
 @Service
@@ -46,6 +51,7 @@ public class RoleService {
         r.setName(dto.getName());
         r.setDescription(dto.getDescription());
         r.setActive(dto.getActive());
+        r.setUpdatedDate(LocalDateTime.now());
 
         return roleMapper.toDTO(repository.save(r));
     }
@@ -58,36 +64,96 @@ public class RoleService {
         repository.deleteById(id);
     }
 
-//    // 📄 GET ALL (pagination ready)
-//    public Page<RoleDTO> getAll(int page, int size, String sortBy) {
-//        Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
-//        return repository.findAll(pageable)
-//                .map(roleMapper::toDTO);
+//    //  GET ALL — يتبدل : page تبدأ من 1
+//    public Page<RoleDTO> getAll(Integer page, Integer pageSize, CustomSort sort) {
+//        Sort sorting = paginationUtil.sortingCriteria(sort, Sort.Direction.ASC, "name");
+//        Pageable pageable = paginationUtil.createPageable(page, pageSize, sorting);
+//        return repository.findAll(pageable).map(roleMapper::toDTO);
 //    }
+
     //  GET ALL — يتبدل : page تبدأ من 1
-    public Page<RoleDTO> getAll(Integer page, Integer pageSize, CustomSort sort) {
-        Sort sorting = paginationUtil.sortingCriteria(sort, Sort.Direction.ASC, "name");
+    public PaginatedResponse<RoleDTO> getAll(Integer page, Integer pageSize, String sortBy, String sortDir) {
+        CustomSort customSort = null;
+        if (sortBy != null && sortDir != null) {
+            customSort = new CustomSort();
+            customSort.setColumnKey(sortBy);
+            customSort.setOrder(Sort.Direction.fromString(sortDir));
+        }
+
+        Sort sorting = paginationUtil.sortingCriteria(customSort, Sort.Direction.ASC, "createdDate");
         Pageable pageable = paginationUtil.createPageable(page, pageSize, sorting);
-        return repository.findAll(pageable).map(roleMapper::toDTO);
+
+        Page<Role> RolePage = repository.findAll(pageable);
+
+        PaginatedResponse<RoleDTO> response = new PaginatedResponse<>();
+        response.setContent(RolePage.getContent().stream().map(roleMapper::toDTO).toList());
+        response.setPage(RolePage.getNumber() + 1);
+        response.setPageSize(RolePage.getSize());
+        response.setTotalElement(RolePage.getTotalElements());
+        response.setTotalPage(RolePage.getTotalPages());
+        return response;
     }
 
 
-    // SEARCH
-    public Page<RoleDTO> searchRoles(
+//    // SEARCH
+//    public Page<RoleDTO> searchRoles(
+//            String name,
+//            String description,
+//            Integer page,
+//            Integer pageSize,
+//            CustomSort sort
+//    ) {
+//        Sort sorting = paginationUtil.sortingCriteria(sort, Sort.Direction.ASC, "name");
+//        Pageable pageable = paginationUtil.createPageable(page, pageSize, sorting);
+//
+//        return repository.searchRoles(
+//                normalize(name),
+//                normalize(description),
+//                pageable
+//        ).map(roleMapper::toDTO);
+//    }
+    // ✅ SEARCH — retourne PaginatedResponse au lieu de Page<ClientDTO>
+    public PaginatedResponse<RoleDTO> searchRoles(
             String name,
             String description,
             Integer page,
             Integer pageSize,
-            CustomSort sort
+            String sortBy,
+            String sortDir
     ) {
-        Sort sorting = paginationUtil.sortingCriteria(sort, Sort.Direction.ASC, "name");
+        // ← بدل Sort.by(sortBy).ascending() مباشرة
+        // نبني CustomSort ونمرروه لـ PaginationUtil بش يvalidiha
+        CustomSort customSort = null;
+        if (sortBy != null && sortDir != null) {
+            customSort = new CustomSort();
+            customSort.setColumnKey(sortBy);
+            customSort.setOrder(Sort.Direction.fromString(sortDir));
+        }
+
+        Sort sorting = paginationUtil.sortingCriteria(
+                customSort,
+                Sort.Direction.ASC,
+                "createdDate"                  // ← default si sort == null
+        );
+
         Pageable pageable = paginationUtil.createPageable(page, pageSize, sorting);
 
-        return repository.searchRoles(
-                normalize(name),
-                normalize(description),
+        Page<Role> RolePage = repository.searchRoles(
+                normalize(name), normalize(description),
                 pageable
-        ).map(roleMapper::toDTO);
+        );
+
+        // ← البناء الجديد للـ response
+        PaginatedResponse<RoleDTO> response = new PaginatedResponse<>();
+        response.setContent(RolePage.getContent().stream()
+                .map(roleMapper::toDTO)
+                .toList());
+        response.setPage(RolePage.getNumber() + 1);   // Spring 0-indexed → on remet à 1
+        response.setPageSize(RolePage.getSize());
+        response.setTotalElement(RolePage.getTotalElements());
+        response.setTotalPage(RolePage.getTotalPages());
+
+        return response;
     }
 
     // -------------------------------------------------------------------------

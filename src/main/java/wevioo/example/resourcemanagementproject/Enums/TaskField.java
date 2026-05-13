@@ -10,5 +10,9 @@ public enum TaskField {
     ESTIMATED_HOURS,
     CONSUMED_HOURS,
     PROJECT,
-    ASSIGNED_USER
+    ASSIGNED_USER,
+    createdDate,
+    updatedDate,
+    createdBy,
+    updatedBy
 }

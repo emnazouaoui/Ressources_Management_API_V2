@@ -10,5 +10,10 @@ public enum UserField {
     ROLE,
     DEPARTMENT,
     MANAGER,
-    LEVEL
+    LEVEL,
+    PHONE,
+    createdDate,
+    updatedDate,
+    createdBy,
+    updatedBy
 }

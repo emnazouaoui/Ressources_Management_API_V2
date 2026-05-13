@@ -30,11 +30,11 @@ public class LeaveBalance {
     private int annualTotal = 30;
     private int annualUsed = 0;
 
-    @CreatedDate
+    //@CreatedDate
     @Column(name = "created_date", nullable = false, updatable = false)
     private LocalDateTime createdDate;
 
-    @LastModifiedDate
+    //@LastModifiedDate
     @Column(name = "updated_date")
     private LocalDateTime updatedDate;
 

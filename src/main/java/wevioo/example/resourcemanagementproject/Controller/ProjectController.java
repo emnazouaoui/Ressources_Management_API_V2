@@ -18,9 +18,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import wevioo.example.resourcemanagementproject.DTO.DepartmentDTO;
 import wevioo.example.resourcemanagementproject.DTO.ProjectDTO;
 import wevioo.example.resourcemanagementproject.Enums.ProjectStatus;
 import wevioo.example.resourcemanagementproject.Pagination.CustomSort;
+import wevioo.example.resourcemanagementproject.Pagination.PaginatedResponse;
 import wevioo.example.resourcemanagementproject.Service.ProjectService;
 
 import java.time.LocalDateTime;
@@ -53,14 +55,13 @@ public class ProjectController {
 
     @Operation(summary = "Get all projects with pagination")
     @GetMapping
-    public Page<ProjectDTO> getAll(
+    public ResponseEntity<PaginatedResponse<ProjectDTO>> getAll(
             @RequestParam(defaultValue = "1") Integer page,
             @RequestParam(defaultValue = "5") Integer pageSize,
             @RequestParam(required = false) String sortBy,
             @RequestParam(required = false) String sortDir
     ) {
-        CustomSort sort = buildSort(sortBy, sortDir);
-        return service.getAll(page, pageSize,sort);
+        return ResponseEntity.ok(service.getAll(page, pageSize, sortBy, sortDir));
     }
 
 
@@ -69,7 +70,7 @@ public class ProjectController {
             description = "Filtrer par nom, statut, manager, client, dates, progression. Tous les champs sont optionnels."
     )
     @GetMapping("/search")
-    public ResponseEntity<Page<ProjectDTO>> searchProjects(
+    public ResponseEntity<PaginatedResponse<ProjectDTO>> searchProjects(
 
             @Parameter(description = "Filtrer par nom (recherche partielle)")
             @RequestParam(required = false) String name,
@@ -109,15 +110,13 @@ public class ProjectController {
             @Parameter(description = "Nombre de résultats par page", example = "10")
             @RequestParam(defaultValue = "10") Integer pageSize,
 
-            @Parameter(description = "Champ de tri (name, email...)", example = "name")
+            @Parameter(description = "Champ de tri (name, email...)", example = "createdDate")
             @RequestParam(required = false) String sortBy,
 
             @Parameter(description = "Direction du tri : ASC ou DESC", example = "ASC")
             @RequestParam(required = false) String sortDir
 
     ) {
-        CustomSort sort = buildSort(sortBy, sortDir);
-
         return ResponseEntity.ok(
                 service.searchProjects(
                         name, description, status,
@@ -125,7 +124,7 @@ public class ProjectController {
                         clientId, clientName,
                         startDate, endDate,
                         progressPercent,
-                        page, pageSize, sort
+                        page, pageSize, sortBy, sortDir  // ← sortBy + sortDir مباشرة
                 )
         );
     }

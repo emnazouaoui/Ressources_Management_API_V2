@@ -7,8 +7,12 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import wevioo.example.resourcemanagementproject.DTO.ClientDTO;
+import wevioo.example.resourcemanagementproject.DTO.DepartmentDTO;
 import wevioo.example.resourcemanagementproject.DTO.RoleDTO;
 import wevioo.example.resourcemanagementproject.DTO.TaskDTO;
+import wevioo.example.resourcemanagementproject.Entity.Client;
+import wevioo.example.resourcemanagementproject.Entity.Department;
 import wevioo.example.resourcemanagementproject.Entity.Imputation;
 import wevioo.example.resourcemanagementproject.Entity.Project;
 import wevioo.example.resourcemanagementproject.Entity.Task;
@@ -17,6 +21,7 @@ import wevioo.example.resourcemanagementproject.Enums.Priority;
 import wevioo.example.resourcemanagementproject.Enums.TaskField;
 import wevioo.example.resourcemanagementproject.Enums.TaskStatus;
 import wevioo.example.resourcemanagementproject.Pagination.CustomSort;
+import wevioo.example.resourcemanagementproject.Pagination.PaginatedResponse;
 import wevioo.example.resourcemanagementproject.Pagination.PaginationUtil;
 import wevioo.example.resourcemanagementproject.Repository.ImputationRepository;
 import wevioo.example.resourcemanagementproject.Repository.ProjectRepository;
@@ -156,6 +161,7 @@ public class TaskService {
         task.setEndDate(dto.getEndDate());
         task.setEstimatedHours(dto.getEstimatedHours());
         task.setConsumedHours(dto.getConsumedHours());
+        task.setUpdatedDate(LocalDateTime.now());
 
         if (dto.getProjectId() != null) {
             Project project = projectRepository.findById(dto.getProjectId())
@@ -178,20 +184,75 @@ public class TaskService {
     }
 
     // ================= GET ALL TASKS =================
-//    public Page<TaskDTO> getAllTasks(int page, int size) {
-//        Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
-//        Page<Task> tasks = taskRepository.findAll(pageable);
-//        return tasks.map(taskMapper::toDTO);
+//    //  GET ALL — يتبدل : page تبدأ من 1
+//    public Page<TaskDTO> getAllTasks(Integer page, Integer pageSize, CustomSort sort) {
+//        Sort sorting = paginationUtil.sortingCriteria(sort, Sort.Direction.ASC, "name");
+//        Pageable pageable = paginationUtil.createPageable(page, pageSize, sorting);
+//        return taskRepository.findAll(pageable).map(taskMapper::toDTO);
 //    }
+
     //  GET ALL — يتبدل : page تبدأ من 1
-    public Page<TaskDTO> getAllTasks(Integer page, Integer pageSize, CustomSort sort) {
-        Sort sorting = paginationUtil.sortingCriteria(sort, Sort.Direction.ASC, "name");
+    public PaginatedResponse<TaskDTO> getAllTasks(Integer page, Integer pageSize, String sortBy, String sortDir) {
+        CustomSort customSort = null;
+        if (sortBy != null && sortDir != null) {
+            customSort = new CustomSort();
+            customSort.setColumnKey(sortBy);
+            customSort.setOrder(Sort.Direction.fromString(sortDir));
+        }
+
+        Sort sorting = paginationUtil.sortingCriteria(customSort, Sort.Direction.ASC, "createdDate");
         Pageable pageable = paginationUtil.createPageable(page, pageSize, sorting);
-        return taskRepository.findAll(pageable).map(taskMapper::toDTO);
+
+        Page<Task> TaskPage = taskRepository.findAll(pageable);
+
+        PaginatedResponse<TaskDTO> response = new PaginatedResponse<>();
+        response.setContent(TaskPage.getContent().stream().map(taskMapper::toDTO).toList());
+        response.setPage(TaskPage.getNumber() + 1);
+        response.setPageSize(TaskPage.getSize());
+        response.setTotalElement(TaskPage.getTotalElements());
+        response.setTotalPage(TaskPage.getTotalPages());
+        return response;
     }
 
-    //  SEARCH
-    public Page<TaskDTO> searchTasks(
+//    //  SEARCH
+//    public Page<TaskDTO> searchTasks(
+//            String title,
+//            String description,
+//            TaskStatus status,
+//            Priority priority,
+//            Long projectId,
+//            String projectName,
+//            Long assignedUserId,
+//            String assignedUserUsername,
+//            LocalDateTime startDate,
+//            LocalDateTime endDate,
+//            Double estimatedHours,
+//            Double consumedHours,
+//            Integer page,
+//            Integer pageSize,
+//            CustomSort sort
+//    ) {
+//        Sort sorting = paginationUtil.sortingCriteria(sort, Sort.Direction.ASC, "name");
+//        Pageable pageable = paginationUtil.createPageable(page, pageSize, sorting);
+//
+//        return taskRepository.searchTasks(
+//                normalize(title),
+//                normalize(description),
+//                status,
+//                priority,
+//                projectId,
+//                normalize(projectName),
+//                assignedUserId,
+//                normalize(assignedUserUsername),
+//                startDate,
+//                endDate,
+//                estimatedHours,
+//                consumedHours,
+//                pageable
+//        ).map(taskMapper::toDTO);
+//    }
+    // ✅ SEARCH — retourne PaginatedResponse au lieu de Page<ClientDTO>
+    public PaginatedResponse<TaskDTO> searchTasks(
             String title,
             String description,
             TaskStatus status,
@@ -206,12 +267,27 @@ public class TaskService {
             Double consumedHours,
             Integer page,
             Integer pageSize,
-            CustomSort sort
+            String sortBy,
+            String sortDir
     ) {
-        Sort sorting = paginationUtil.sortingCriteria(sort, Sort.Direction.ASC, "name");
+        // ← بدل Sort.by(sortBy).ascending() مباشرة
+        // نبني CustomSort ونمرروه لـ PaginationUtil بش يvalidiha
+        CustomSort customSort = null;
+        if (sortBy != null && sortDir != null) {
+            customSort = new CustomSort();
+            customSort.setColumnKey(sortBy);
+            customSort.setOrder(Sort.Direction.fromString(sortDir));
+        }
+
+        Sort sorting = paginationUtil.sortingCriteria(
+                customSort,
+                Sort.Direction.ASC,
+                "createdDate"                  // ← default si sort == null
+        );
+
         Pageable pageable = paginationUtil.createPageable(page, pageSize, sorting);
 
-        return taskRepository.searchTasks(
+        Page<Task> TaskPage = taskRepository.searchTasks(
                 normalize(title),
                 normalize(description),
                 status,
@@ -225,7 +301,19 @@ public class TaskService {
                 estimatedHours,
                 consumedHours,
                 pageable
-        ).map(taskMapper::toDTO);
+        );
+
+        // ← البناء الجديد للـ response
+        PaginatedResponse<TaskDTO> response = new PaginatedResponse<>();
+        response.setContent(TaskPage.getContent().stream()
+                .map(taskMapper::toDTO)
+                .toList());
+        response.setPage(TaskPage.getNumber() + 1);   // Spring 0-indexed → on remet à 1
+        response.setPageSize(TaskPage.getSize());
+        response.setTotalElement(TaskPage.getTotalElements());
+        response.setTotalPage(TaskPage.getTotalPages());
+
+        return response;
     }
 
         // -------------------------------------------------------------------------

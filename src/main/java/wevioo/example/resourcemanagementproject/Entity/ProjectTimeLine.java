@@ -43,11 +43,11 @@ public class ProjectTimeLine {
     @Enumerated(EnumType.STRING)
     private ProjectTimeLineType type;
 
-    @CreatedDate
+    //@CreatedDate
     @Column(name = "created_date", nullable = false, updatable = false)
     private LocalDateTime createdDate;
 
-    @LastModifiedDate
+    //@LastModifiedDate
     @Column(name = "updated_date")
     private LocalDateTime updatedDate;
 

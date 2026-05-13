@@ -83,11 +83,11 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<UserProject> userProjects = new ArrayList<>();
 
-    @CreatedDate
+    //@CreatedDate
     @Column(name = "created_date", nullable = false, updatable = false)
     private LocalDateTime createdDate;
 
-    @LastModifiedDate
+    //@LastModifiedDate
     @Column(name = "updated_date")
     private LocalDateTime updatedDate;
 

@@ -8,6 +8,8 @@ import wevioo.example.resourcemanagementproject.Enums.UserField;
 import wevioo.example.resourcemanagementproject.Repository.UserHistoryRepository;
 import wevioo.example.resourcemanagementproject.Repository.UserRepository;
 
+import java.time.LocalDateTime;
+
 @Service
 @RequiredArgsConstructor
 public class UserHistoryService {
@@ -30,6 +32,8 @@ public class UserHistoryService {
         history.setFieldChanged(field);
         history.setOldValue(oldVal);
         history.setNewValue(newVal);
+        history.setUpdatedDate(LocalDateTime.now());
+        history.setCreatedDate(LocalDateTime.now());
 
         userHistoryRepository.save(history);
     }

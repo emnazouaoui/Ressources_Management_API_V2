@@ -10,10 +10,12 @@ import wevioo.example.resourcemanagementproject.DTO.ClientDTO;
 import wevioo.example.resourcemanagementproject.Entity.Client;
 import wevioo.example.resourcemanagementproject.Enums.ClientType;
 import wevioo.example.resourcemanagementproject.Pagination.CustomSort;
+import wevioo.example.resourcemanagementproject.Pagination.PaginatedResponse;
 import wevioo.example.resourcemanagementproject.Pagination.PaginationUtil;
 import wevioo.example.resourcemanagementproject.Repository.ClientRepository;
 import wevioo.example.resourcemanagementproject.Mapper.ClientMapper;
 
+import java.time.LocalDateTime;
 
 
 @Service
@@ -48,6 +50,7 @@ public class ClientService {
         existing.setPhone(dto.getPhone());
         existing.setEmail(dto.getEmail());
         existing.setTypeClient(dto.getTypeClient());
+        existing.setUpdatedDate(LocalDateTime.now());
 
         Client updated = clientRepository.save(existing);
 
@@ -62,27 +65,37 @@ public class ClientService {
         return clientMapper.toDTO(client);
     }
 
-//    // ✅ GET ALL
-//    public List<ClientDTO> getAll() {
-//        return clientRepository.findAll()
-//                .stream()
-//                .map(ClientMapper::toDTO)
-//                .collect(Collectors.toList());
-//    }
-
-//    //  GET ALL
-//    public Page<ClientDTO> getAll(int page, int size,String sortBy) {
-//        Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
-//        return clientRepository.findAll(pageable)
-//                .map(clientMapper::toDTO);
+//    //  GET ALL — يتبدل : page تبدأ من 1
+//    public Page<ClientDTO> getAll(Integer page, Integer pageSize, CustomSort sort) {
+//        Sort sorting = paginationUtil.sortingCriteria(sort, Sort.Direction.ASC, "name");
+//        Pageable pageable = paginationUtil.createPageable(page, pageSize, sorting);
+//        return clientRepository.findAll(pageable).map(clientMapper::toDTO);
 //    }
 
     //  GET ALL — يتبدل : page تبدأ من 1
-    public Page<ClientDTO> getAll(Integer page, Integer pageSize, CustomSort sort) {
-        Sort sorting = paginationUtil.sortingCriteria(sort, Sort.Direction.ASC, "name");
+    public PaginatedResponse<ClientDTO> getAll(Integer page, Integer pageSize, String sortBy, String sortDir) {
+        CustomSort customSort = null;
+        if (sortBy != null && sortDir != null) {
+            customSort = new CustomSort();
+            customSort.setColumnKey(sortBy);
+            customSort.setOrder(Sort.Direction.fromString(sortDir));
+        }
+
+        Sort sorting = paginationUtil.sortingCriteria(customSort, Sort.Direction.ASC, "createdDate");
         Pageable pageable = paginationUtil.createPageable(page, pageSize, sorting);
-        return clientRepository.findAll(pageable).map(clientMapper::toDTO);
+
+        Page<Client> clientPage = clientRepository.findAll(pageable);
+
+        PaginatedResponse<ClientDTO> response = new PaginatedResponse<>();
+        response.setContent(clientPage.getContent().stream().map(clientMapper::toDTO).toList());
+        response.setPage(clientPage.getNumber() + 1);
+        response.setPageSize(clientPage.getSize());
+        response.setTotalElement(clientPage.getTotalElements());
+        response.setTotalPage(clientPage.getTotalPages());
+        return response;
     }
+
+
 
     //  DELETE
     public void delete(Long id) {
@@ -92,32 +105,81 @@ public class ClientService {
         clientRepository.delete(client);
     }
 
-    //  SEARCH with pagination
-    public Page<ClientDTO> searchClients(
+//    //  SEARCH with pagination
+//    public Page<ClientDTO> searchClients(
+//            String name,
+//            String email,
+//            String company,
+//            String address,
+//            String phone,
+//            ClientType typeClient,
+//            Integer  page,
+//            Integer  pageSize,
+//            CustomSort sort
+//    ) {
+//        Sort sorting = paginationUtil.sortingCriteria(sort, Sort.Direction.ASC, "name");
+//        Pageable pageable = paginationUtil.createPageable(page, pageSize, sorting);
+//
+//        return clientRepository.searchClients(
+//                        normalize(name), normalize(email), normalize(company),
+//                        normalize(address), normalize(phone), typeClient,
+//                        pageable
+//                )
+//                .map(clientMapper::toDTO);  // Page<Client> → Page<ClientDTO> directement
+//    }
+
+    /** Retourne null si la chaîne est null ou vide après trim. */
+    private String normalize(String value) {
+        return (value == null || value.isBlank()) ? null : value.trim();
+    }
+
+    // ✅ SEARCH — retourne PaginatedResponse au lieu de Page<ClientDTO>
+    public PaginatedResponse<ClientDTO> searchClients(
             String name,
             String email,
             String company,
             String address,
             String phone,
             ClientType typeClient,
-            Integer  page,
-            Integer  pageSize,
-            CustomSort sort
+            Integer page,
+            Integer pageSize,
+            String sortBy,
+            String sortDir
     ) {
-        Sort sorting = paginationUtil.sortingCriteria(sort, Sort.Direction.ASC, "name");
+        // ← بدل Sort.by(sortBy).ascending() مباشرة
+        // نبني CustomSort ونمرروه لـ PaginationUtil بش يvalidiha
+        CustomSort customSort = null;
+        if (sortBy != null && sortDir != null) {
+            customSort = new CustomSort();
+            customSort.setColumnKey(sortBy);
+            customSort.setOrder(Sort.Direction.fromString(sortDir));
+        }
+
+        Sort sorting = paginationUtil.sortingCriteria(
+                customSort,
+                Sort.Direction.ASC,
+                "createdDate"                  // ← default si sort == null
+        );
+
         Pageable pageable = paginationUtil.createPageable(page, pageSize, sorting);
 
-        return clientRepository.searchClients(
-                        normalize(name), normalize(email), normalize(company),
-                        normalize(address), normalize(phone), typeClient,
-                        pageable
-                )
-                .map(clientMapper::toDTO);  // Page<Client> → Page<ClientDTO> directement
-    }
+        Page<Client> clientPage = clientRepository.searchClients(
+                normalize(name), normalize(email), normalize(company),
+                normalize(address), normalize(phone), typeClient,
+                pageable
+        );
 
-    /** Retourne null si la chaîne est null ou vide après trim. */
-    private String normalize(String value) {
-        return (value == null || value.isBlank()) ? null : value.trim();
+        // ← البناء الجديد للـ response
+        PaginatedResponse<ClientDTO> response = new PaginatedResponse<>();
+        response.setContent(clientPage.getContent().stream()
+                .map(clientMapper::toDTO)
+                .toList());
+        response.setPage(clientPage.getNumber() + 1);   // Spring 0-indexed → on remet à 1
+        response.setPageSize(clientPage.getSize());
+        response.setTotalElement(clientPage.getTotalElements());
+        response.setTotalPage(clientPage.getTotalPages());
+
+        return response;
     }
 
 

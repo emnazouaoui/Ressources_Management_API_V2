@@ -38,11 +38,11 @@ public class Imputation {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @CreatedDate
+    //@CreatedDate
     @Column(name = "created_date", nullable = false, updatable = false)
     private LocalDateTime createdDate;
 
-    @LastModifiedDate
+    //@LastModifiedDate
     @Column(name = "updated_date")
     private LocalDateTime updatedDate;
 

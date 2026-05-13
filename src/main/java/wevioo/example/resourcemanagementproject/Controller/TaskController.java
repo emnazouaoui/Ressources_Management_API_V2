@@ -19,10 +19,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import wevioo.example.resourcemanagementproject.DTO.DepartmentDTO;
 import wevioo.example.resourcemanagementproject.DTO.TaskDTO;
 import wevioo.example.resourcemanagementproject.Enums.Priority;
 import wevioo.example.resourcemanagementproject.Enums.TaskStatus;
 import wevioo.example.resourcemanagementproject.Pagination.CustomSort;
+import wevioo.example.resourcemanagementproject.Pagination.PaginatedResponse;
 import wevioo.example.resourcemanagementproject.Service.TaskService;
 
 import java.time.LocalDateTime;
@@ -62,14 +64,13 @@ public class TaskController {
 
     @Operation(summary = "Get all tasks with pagination")
     @GetMapping
-    public Page<TaskDTO> getAllTasks(
+    public ResponseEntity<PaginatedResponse<TaskDTO>> getAllTasks(
             @RequestParam(defaultValue = "1") Integer page,
             @RequestParam(defaultValue = "5") Integer pageSize,
             @RequestParam(required = false) String sortBy,
             @RequestParam(required = false) String sortDir
     ) {
-        CustomSort sort = buildSort(sortBy, sortDir);
-        return taskService.getAllTasks(page, pageSize, sort);
+        return ResponseEntity.ok(taskService.getAllTasks(page, pageSize, sortBy, sortDir));
     }
 
 //    @Operation(summary = "Search tasks by keyword ")
@@ -84,7 +85,7 @@ public class TaskController {
             description = "Filtrer par titre, statut, priorité, projet, utilisateur, dates. Tous les champs sont optionnels."
     )
     @GetMapping("/search")
-    public ResponseEntity<Page<TaskDTO>> searchTasks(
+    public ResponseEntity<PaginatedResponse<TaskDTO>> searchTasks(
 
             @Parameter(description = "Filtrer par titre (recherche partielle)")
             @RequestParam(required = false) String title,
@@ -130,15 +131,13 @@ public class TaskController {
             @Parameter(description = "Nombre de résultats par page", example = "10")
             @RequestParam(defaultValue = "10") Integer pageSize,
 
-            @Parameter(description = "Champ de tri (name, email...)", example = "name")
+            @Parameter(description = "Champ de tri (name, email...)", example = "createdDate")
             @RequestParam(required = false) String sortBy,
 
             @Parameter(description = "Direction du tri : ASC ou DESC", example = "ASC")
             @RequestParam(required = false) String sortDir
 
     ) {
-        CustomSort sort = buildSort(sortBy, sortDir);
-
         return ResponseEntity.ok(
                 taskService.searchTasks(
                         title, description,
@@ -147,7 +146,7 @@ public class TaskController {
                         assignedUserId, assignedUserUsername,
                         startDate, endDate,
                         estimatedHours, consumedHours,
-                        page, pageSize, sort
+                        page, pageSize, sortBy, sortDir  // ← sortBy + sortDir مباشرة
                 )
         );
     }

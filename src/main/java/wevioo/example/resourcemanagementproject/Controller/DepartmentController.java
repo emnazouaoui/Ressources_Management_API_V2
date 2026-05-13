@@ -17,8 +17,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import wevioo.example.resourcemanagementproject.DTO.ClientDTO;
 import wevioo.example.resourcemanagementproject.DTO.DepartmentDTO;
+import wevioo.example.resourcemanagementproject.Enums.ClientType;
 import wevioo.example.resourcemanagementproject.Pagination.CustomSort;
+import wevioo.example.resourcemanagementproject.Pagination.PaginatedResponse;
 import wevioo.example.resourcemanagementproject.Service.DepartmentService;
 
 import java.util.List;
@@ -37,16 +40,26 @@ public class DepartmentController {
         return service.create(dto);
     }
 
+//    @GetMapping
+//    @Operation(summary = "Get all departments")
+//    public Page<DepartmentDTO> getAll(
+//            @RequestParam(defaultValue = "1") Integer page,
+//            @RequestParam(defaultValue = "5") Integer pageSize,
+//            @RequestParam(required = false) String sortBy,
+//            @RequestParam(required = false) String sortDir
+//    ) {
+//        CustomSort sort = buildSort(sortBy, sortDir);
+//        return service.getAll(page, pageSize,sort);
+//    }
+    @Operation(summary = "Get all departments with pagination")
     @GetMapping
-    @Operation(summary = "Get all departments")
-    public Page<DepartmentDTO> getAll(
+    public ResponseEntity<PaginatedResponse<DepartmentDTO>> getAll(
             @RequestParam(defaultValue = "1") Integer page,
             @RequestParam(defaultValue = "5") Integer pageSize,
             @RequestParam(required = false) String sortBy,
             @RequestParam(required = false) String sortDir
     ) {
-        CustomSort sort = buildSort(sortBy, sortDir);
-        return service.getAll(page, pageSize,sort);
+        return ResponseEntity.ok(service.getAll(page, pageSize, sortBy, sortDir));
     }
 
     @GetMapping("/{id}")
@@ -68,14 +81,47 @@ public class DepartmentController {
     }
 
 
+//    @Operation(
+//            summary = "Recherche paginée des départements",
+//            description = "Filtrer par nom et/ou description. Tous les champs sont optionnels."
+//    )
+//    @GetMapping("/search")
+//    public ResponseEntity<Page<DepartmentDTO>> searchDepartments(
+//
+//            @Parameter(description = "Filtrer par nom (recherche partielle)")
+//            @RequestParam(required = false) String name,
+//
+//            @Parameter(description = "Filtrer par description (recherche partielle)")
+//            @RequestParam(required = false) String description,
+//
+//            @Parameter(description = "Numéro de page (commence à 1)", example = "1")
+//            @RequestParam(defaultValue = "1") Integer page,
+//
+//            @Parameter(description = "Nombre de résultats par page", example = "10")
+//            @RequestParam(defaultValue = "10") Integer pageSize,
+//
+//            @Parameter(description = "Champ de tri (name, email...)", example = "name")
+//            @RequestParam(required = false) String sortBy,
+//
+//            @Parameter(description = "Direction du tri : ASC ou DESC", example = "ASC")
+//            @RequestParam(required = false) String sortDir
+//    ) {
+//        CustomSort sort = buildSort(sortBy, sortDir);
+//        return ResponseEntity.ok(
+//                service.searchDepartments(
+//                        name, description, page, pageSize, sort
+//                )
+//        );
+//    }
+
     @Operation(
             summary = "Recherche paginée des départements",
             description = "Filtrer par nom et/ou description. Tous les champs sont optionnels."
     )
     @GetMapping("/search")
-    public ResponseEntity<Page<DepartmentDTO>> searchDepartments(
+    public ResponseEntity<PaginatedResponse<DepartmentDTO>> searchDepartments(
 
-            @Parameter(description = "Filtrer par nom (recherche partielle)")
+            @Parameter(description = "Filtrer par nom")
             @RequestParam(required = false) String name,
 
             @Parameter(description = "Filtrer par description (recherche partielle)")
@@ -87,30 +133,31 @@ public class DepartmentController {
             @Parameter(description = "Nombre de résultats par page", example = "10")
             @RequestParam(defaultValue = "10") Integer pageSize,
 
-            @Parameter(description = "Champ de tri (name, email...)", example = "name")
+            @Parameter(description = "Champ de tri (name, email...)", example = "createdDate")
             @RequestParam(required = false) String sortBy,
 
-            @Parameter(description = "Direction du tri : ASC ou DESC", example = "ASC")
+            @Parameter(description = "Direction : ASC ou DESC", example = "ASC")
             @RequestParam(required = false) String sortDir
+
     ) {
-        CustomSort sort = buildSort(sortBy, sortDir);
         return ResponseEntity.ok(
                 service.searchDepartments(
-                        name, description, page, pageSize, sort
+                        name, description, page, pageSize, sortBy, sortDir  // ← sortBy + sortDir مباشرة
                 )
         );
     }
 
-    // -------------------------------------------------------------------------
-    // Helper — construit CustomSort uniquement si les deux params sont fournis
-    // -------------------------------------------------------------------------
-    private CustomSort buildSort(String sortBy, String sortDir) {
-        if (sortBy == null || sortDir == null) return null;
-        CustomSort sort = new CustomSort();
-        sort.setColumnKey(sortBy);
-        sort.setOrder(Sort.Direction.fromString(sortDir));
-        return sort;
-    }
+
+//    // -------------------------------------------------------------------------
+//    // Helper — construit CustomSort uniquement si les deux params sont fournis
+//    // -------------------------------------------------------------------------
+//    private CustomSort buildSort(String sortBy, String sortDir) {
+//        if (sortBy == null || sortDir == null) return null;
+//        CustomSort sort = new CustomSort();
+//        sort.setColumnKey(sortBy);
+//        sort.setOrder(Sort.Direction.fromString(sortDir));
+//        return sort;
+//    }
 
 
 }

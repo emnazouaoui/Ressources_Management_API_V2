@@ -7,14 +7,17 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import wevioo.example.resourcemanagementproject.DTO.DepartmentDTO;
 import wevioo.example.resourcemanagementproject.DTO.TechnologyDTO;
 import wevioo.example.resourcemanagementproject.DTO.UserDTO;
+import wevioo.example.resourcemanagementproject.Entity.Department;
 import wevioo.example.resourcemanagementproject.Entity.Technology;
 import wevioo.example.resourcemanagementproject.Entity.User;
 import wevioo.example.resourcemanagementproject.Enums.Level;
 import wevioo.example.resourcemanagementproject.Enums.UserField;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import wevioo.example.resourcemanagementproject.Pagination.CustomSort;
+import wevioo.example.resourcemanagementproject.Pagination.PaginatedResponse;
 import wevioo.example.resourcemanagementproject.Pagination.PaginationUtil;
 import wevioo.example.resourcemanagementproject.Repository.DepartmentRepository;
 import wevioo.example.resourcemanagementproject.Repository.RoleRepository;
@@ -23,6 +26,7 @@ import wevioo.example.resourcemanagementproject.Repository.UserRepository;
 import wevioo.example.resourcemanagementproject.Mapper.UserMapper;
 
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -62,17 +66,33 @@ public class UserService {
         return userMapper.toDTO(userRepository.save(user));
     }
 
-//    // GET ALL (pagination)
-//    public Page<UserDTO> getAll(int page, int size, String sortBy) {
-//        Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
-//        return userRepository.findAll(pageable)
-//                .map(userMapper::toDTO);
+//    //  GET ALL — يتبدل : page تبدأ من 1
+//    public Page<UserDTO> getAll(Integer page, Integer pageSize, CustomSort sort) {
+//        Sort sorting = paginationUtil.sortingCriteria(sort, Sort.Direction.ASC, "name");
+//        Pageable pageable = paginationUtil.createPageable(page, pageSize, sorting);
+//        return userRepository.findAll(pageable).map(userMapper::toDTO);
 //    }
     //  GET ALL — يتبدل : page تبدأ من 1
-    public Page<UserDTO> getAll(Integer page, Integer pageSize, CustomSort sort) {
-        Sort sorting = paginationUtil.sortingCriteria(sort, Sort.Direction.ASC, "name");
+    public PaginatedResponse<UserDTO> getAll(Integer page, Integer pageSize, String sortBy, String sortDir) {
+        CustomSort customSort = null;
+        if (sortBy != null && sortDir != null) {
+            customSort = new CustomSort();
+            customSort.setColumnKey(sortBy);
+            customSort.setOrder(Sort.Direction.fromString(sortDir));
+        }
+
+        Sort sorting = paginationUtil.sortingCriteria(customSort, Sort.Direction.ASC, "createdDate");
         Pageable pageable = paginationUtil.createPageable(page, pageSize, sorting);
-        return userRepository.findAll(pageable).map(userMapper::toDTO);
+
+        Page<User> UserPage = userRepository.findAll(pageable);
+
+        PaginatedResponse<UserDTO> response = new PaginatedResponse<>();
+        response.setContent(UserPage.getContent().stream().map(userMapper::toDTO).toList());
+        response.setPage(UserPage.getNumber() + 1);
+        response.setPageSize(UserPage.getSize());
+        response.setTotalElement(UserPage.getTotalElements());
+        response.setTotalPage(UserPage.getTotalPages());
+        return response;
     }
 
 
@@ -115,6 +135,7 @@ public class UserService {
         String oldFirstName = user.getFirstName();
         String oldLastName = user.getLastName();
         String oldEmail = user.getEmail();
+        LocalDateTime oldUpdatedDate = user.getUpdatedDate();
         String oldPassword = user.getPassword();
         String oldLevel = user.getLevel() != null ? user.getLevel().name() : null;
         Long oldRole = user.getRole() != null ? user.getRole().getId() : null;
@@ -129,6 +150,7 @@ public class UserService {
             user.setPassword(passwordEncoder.encode(dto.getPassword()));
         }
 
+        user.setUpdatedDate(LocalDateTime.now());
         user.setRole(roleRepository.findById(dto.getRoleId())
                 .orElseThrow(() -> new RuntimeException("Role not found")));
 
@@ -149,6 +171,7 @@ public class UserService {
         userHistoryService.saveChange(id, UserField.FIRST_NAME, oldFirstName, saved.getFirstName());
         userHistoryService.saveChange(id, UserField.LAST_NAME, oldLastName, saved.getLastName());
         userHistoryService.saveChange(id, UserField.EMAIL, oldEmail, saved.getEmail());
+        userHistoryService.saveChange(id, UserField.PHONE, oldEmail, saved.getPhone());
         //userHistoryService.saveChange(id, UserField.PASSWORD, oldPassword, saved.getPassword());
         userHistoryService.saveChange(id, UserField.PASSWORD,
                 oldPassword != null ? "UPDATED" : null,
@@ -182,8 +205,48 @@ public class UserService {
     }
 
 
-    //  SEARCH
-    public Page<UserDTO> searchUsers(
+//    //  SEARCH
+//    public Page<UserDTO> searchUsers(
+//            String username,
+//            String firstName,
+//            String lastName,
+//            String email,
+//            Boolean active,
+//            Level level,
+//            String phone,
+//            Long roleId,
+//            String roleName,
+//            Long departmentId,
+//            String departmentName,
+//            Long managerId,
+//            String managerUsername,
+//            Integer page,
+//            Integer pageSize,
+//            CustomSort sort
+//    ) {
+//        Sort sorting = paginationUtil.sortingCriteria(sort, Sort.Direction.ASC, "name");
+//        Pageable pageable = paginationUtil.createPageable(page, pageSize, sorting);
+//
+//        return userRepository.searchUsers(
+//                normalize(username),
+//                normalize(firstName),
+//                normalize(lastName),
+//                normalize(email),
+//                active,
+//                level,
+//                normalize(phone),
+//                roleId,
+//                normalize(roleName),
+//                departmentId,
+//                normalize(departmentName),
+//                managerId,
+//                normalize(managerUsername),
+//                pageable
+//        ).map(userMapper::toDTO);
+//    }
+
+    // ✅ SEARCH — retourne PaginatedResponse au lieu de Page<ClientDTO>
+    public PaginatedResponse<UserDTO> searchUsers(
             String username,
             String firstName,
             String lastName,
@@ -199,12 +262,27 @@ public class UserService {
             String managerUsername,
             Integer page,
             Integer pageSize,
-            CustomSort sort
+            String sortBy,
+            String sortDir
     ) {
-        Sort sorting = paginationUtil.sortingCriteria(sort, Sort.Direction.ASC, "name");
+        // ← بدل Sort.by(sortBy).ascending() مباشرة
+        // نبني CustomSort ونمرروه لـ PaginationUtil بش يvalidiha
+        CustomSort customSort = null;
+        if (sortBy != null && sortDir != null) {
+            customSort = new CustomSort();
+            customSort.setColumnKey(sortBy);
+            customSort.setOrder(Sort.Direction.fromString(sortDir));
+        }
+
+        Sort sorting = paginationUtil.sortingCriteria(
+                customSort,
+                Sort.Direction.ASC,
+                "createdDate"                  // ← default si sort == null
+        );
+
         Pageable pageable = paginationUtil.createPageable(page, pageSize, sorting);
 
-        return userRepository.searchUsers(
+        Page<User> UserPage = userRepository.searchUsers(
                 normalize(username),
                 normalize(firstName),
                 normalize(lastName),
@@ -219,7 +297,19 @@ public class UserService {
                 managerId,
                 normalize(managerUsername),
                 pageable
-        ).map(userMapper::toDTO);
+        );
+
+        // ← البناء الجديد للـ response
+        PaginatedResponse<UserDTO> response = new PaginatedResponse<>();
+        response.setContent(UserPage.getContent().stream()
+                .map(userMapper::toDTO)
+                .toList());
+        response.setPage(UserPage.getNumber() + 1);   // Spring 0-indexed → on remet à 1
+        response.setPageSize(UserPage.getSize());
+        response.setTotalElement(UserPage.getTotalElements());
+        response.setTotalPage(UserPage.getTotalPages());
+
+        return response;
     }
 
     private String normalize(String value) {

@@ -18,8 +18,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import wevioo.example.resourcemanagementproject.DTO.DepartmentDTO;
 import wevioo.example.resourcemanagementproject.DTO.ImputationDTO;
 import wevioo.example.resourcemanagementproject.Pagination.CustomSort;
+import wevioo.example.resourcemanagementproject.Pagination.PaginatedResponse;
 import wevioo.example.resourcemanagementproject.Service.ImputationService;
 
 import java.time.LocalDateTime;
@@ -48,14 +50,13 @@ public class ImputationController {
 
     @GetMapping
     @Operation(summary = "Get all imputations")
-    public Page<ImputationDTO> getAll(
+    public ResponseEntity<PaginatedResponse<ImputationDTO>>  getAll(
             @RequestParam(defaultValue = "1") Integer page,
             @RequestParam(defaultValue = "5") Integer pageSize,
             @RequestParam(required = false) String sortBy,
             @RequestParam(required = false) String sortDir
     ) {
-        CustomSort sort = buildSort(sortBy, sortDir);
-        return imputationService.getAll(page, pageSize,sort);
+        return ResponseEntity.ok(imputationService.getAll(page, pageSize, sortBy, sortDir));
     }
 
     @PutMapping("/{id}")
@@ -75,7 +76,7 @@ public class ImputationController {
             description = "Filtrer par commentaire, tâche, utilisateur, plage de dates et heures. Tous les champs sont optionnels."
     )
     @GetMapping("/search")
-    public ResponseEntity<Page<ImputationDTO>> searchImputations(
+    public ResponseEntity<PaginatedResponse<ImputationDTO>> searchImputations(
 
             @Parameter(description = "Filtrer par commentaire (recherche partielle)")
             @RequestParam(required = false) String comment,
@@ -105,20 +106,19 @@ public class ImputationController {
             @Parameter(description = "Nombre de résultats par page", example = "10")
             @RequestParam(defaultValue = "10") Integer pageSize,
 
-            @Parameter(description = "Champ de tri (name, email...)", example = "name")
+            @Parameter(description = "Champ de tri (name, email...)", example = "createdDate")
             @RequestParam(required = false) String sortBy,
 
             @Parameter(description = "Direction du tri : ASC ou DESC", example = "ASC")
             @RequestParam(required = false) String sortDir
 
     ) {
-        CustomSort sort = buildSort(sortBy, sortDir);
         return ResponseEntity.ok(
                 imputationService.searchImputations(
                         comment, title, username,
                         taskId, userId,
                         date, hours,
-                        page, pageSize, sort
+                        page, pageSize, sortBy, sortDir  // ← sortBy + sortDir مباشرة
                 )
         );
     }

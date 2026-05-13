@@ -8,13 +8,18 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import wevioo.example.resourcemanagementproject.DTO.ClientDTO;
+import wevioo.example.resourcemanagementproject.DTO.DepartmentDTO;
+import wevioo.example.resourcemanagementproject.DTO.ImputationDTO;
 import wevioo.example.resourcemanagementproject.DTO.LeaveRequestDTO;
+import wevioo.example.resourcemanagementproject.Entity.Department;
+import wevioo.example.resourcemanagementproject.Entity.Imputation;
 import wevioo.example.resourcemanagementproject.Entity.LeaveBalance;
 import wevioo.example.resourcemanagementproject.Entity.LeaveRequest;
 import wevioo.example.resourcemanagementproject.Entity.User;
 import wevioo.example.resourcemanagementproject.Enums.LeaveRequestStatus;
 import wevioo.example.resourcemanagementproject.Enums.LeaveRequestType;
 import wevioo.example.resourcemanagementproject.Pagination.CustomSort;
+import wevioo.example.resourcemanagementproject.Pagination.PaginatedResponse;
 import wevioo.example.resourcemanagementproject.Pagination.PaginationUtil;
 import wevioo.example.resourcemanagementproject.Repository.LeaveBalanceRepository;
 import wevioo.example.resourcemanagementproject.Repository.LeaveRequestRepository;
@@ -62,6 +67,8 @@ public class LeaveRequestService {
 
         mapper.toEntity(dto, lr);
 
+        lr.setUpdatedDate(LocalDateTime.now());
+
         if (dto.getUserId() != null) {
             lr.setUser(userRepository.findById(dto.getUserId())
                     .orElseThrow(() -> new RuntimeException("User not found")));
@@ -98,18 +105,34 @@ public class LeaveRequestService {
 //        return mapper.toDTO(repository.save(lr));
 //    }
 
-//    // GET ALL
-//    public Page<LeaveRequestDTO> getAll(int page, int size, String sortBy) {
-//        Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
-//        return repository.findAll(pageable)
-//                .map(mapper::toDTO);
-//    }
 
+//    //  GET ALL — يتبدل : page تبدأ من 1
+//    public Page<LeaveRequestDTO> getAll(Integer page, Integer pageSize, CustomSort sort) {
+//        Sort sorting = paginationUtil.sortingCriteria(sort, Sort.Direction.ASC, "name");
+//        Pageable pageable = paginationUtil.createPageable(page, pageSize, sorting);
+//        return repository.findAll(pageable).map(mapper::toDTO);
+//    }
     //  GET ALL — يتبدل : page تبدأ من 1
-    public Page<LeaveRequestDTO> getAll(Integer page, Integer pageSize, CustomSort sort) {
-        Sort sorting = paginationUtil.sortingCriteria(sort, Sort.Direction.ASC, "name");
+    public PaginatedResponse<LeaveRequestDTO> getAll(Integer page, Integer pageSize, String sortBy, String sortDir) {
+        CustomSort customSort = null;
+        if (sortBy != null && sortDir != null) {
+            customSort = new CustomSort();
+            customSort.setColumnKey(sortBy);
+            customSort.setOrder(Sort.Direction.fromString(sortDir));
+        }
+
+        Sort sorting = paginationUtil.sortingCriteria(customSort, Sort.Direction.ASC, "createdDate");
         Pageable pageable = paginationUtil.createPageable(page, pageSize, sorting);
-        return repository.findAll(pageable).map(mapper::toDTO);
+
+        Page<LeaveRequest> LeaveRequestPage = repository.findAll(pageable);
+
+        PaginatedResponse<LeaveRequestDTO> response = new PaginatedResponse<>();
+        response.setContent(LeaveRequestPage.getContent().stream().map(mapper::toDTO).toList());
+        response.setPage(LeaveRequestPage.getNumber() + 1);
+        response.setPageSize(LeaveRequestPage.getSize());
+        response.setTotalElement(LeaveRequestPage.getTotalElements());
+        response.setTotalPage(LeaveRequestPage.getTotalPages());
+        return response;
     }
 
 
@@ -127,8 +150,38 @@ public class LeaveRequestService {
     }
 
 
-    // ✅ SEARCH
-    public Page<LeaveRequestDTO> searchLeaveRequests(
+//    // ✅ SEARCH
+//    public Page<LeaveRequestDTO> searchLeaveRequests(
+//            String reason,
+//            LeaveRequestType type,
+//            LeaveRequestStatus status,
+//            Long userId,
+//            Long projectManagerId,
+//            String username,
+//            LocalDateTime startDate,
+//            LocalDateTime endDate,
+//            Integer page,
+//            Integer pageSize,
+//            CustomSort sort
+//    ) {
+//        Sort sorting = paginationUtil.sortingCriteria(sort, Sort.Direction.ASC, "name");
+//        Pageable pageable = paginationUtil.createPageable(page, pageSize, sorting);
+//
+//        return repository.searchLeaveRequests(
+//                normalize(reason),
+//                type,
+//                status,
+//                userId,
+//                projectManagerId,
+//                normalize(username),
+//                startDate,
+//                endDate,
+//                pageable
+//        ).map(mapper::toDTO);
+//    }
+
+    // ✅ SEARCH — retourne PaginatedResponse au lieu de Page<ClientDTO>
+    public PaginatedResponse<LeaveRequestDTO> searchLeaveRequests(
             String reason,
             LeaveRequestType type,
             LeaveRequestStatus status,
@@ -139,12 +192,27 @@ public class LeaveRequestService {
             LocalDateTime endDate,
             Integer page,
             Integer pageSize,
-            CustomSort sort
+            String sortBy,
+            String sortDir
     ) {
-        Sort sorting = paginationUtil.sortingCriteria(sort, Sort.Direction.ASC, "name");
+        // ← بدل Sort.by(sortBy).ascending() مباشرة
+        // نبني CustomSort ونمرروه لـ PaginationUtil بش يvalidiha
+        CustomSort customSort = null;
+        if (sortBy != null && sortDir != null) {
+            customSort = new CustomSort();
+            customSort.setColumnKey(sortBy);
+            customSort.setOrder(Sort.Direction.fromString(sortDir));
+        }
+
+        Sort sorting = paginationUtil.sortingCriteria(
+                customSort,
+                Sort.Direction.ASC,
+                "createdDate"                  // ← default si sort == null
+        );
+
         Pageable pageable = paginationUtil.createPageable(page, pageSize, sorting);
 
-        return repository.searchLeaveRequests(
+        Page<LeaveRequest> LeaveRequestPage = repository.searchLeaveRequests(
                 normalize(reason),
                 type,
                 status,
@@ -154,7 +222,19 @@ public class LeaveRequestService {
                 startDate,
                 endDate,
                 pageable
-        ).map(mapper::toDTO);
+        );
+
+        // ← البناء الجديد للـ response
+        PaginatedResponse<LeaveRequestDTO> response = new PaginatedResponse<>();
+        response.setContent(LeaveRequestPage.getContent().stream()
+                .map(mapper::toDTO)
+                .toList());
+        response.setPage(LeaveRequestPage.getNumber() + 1);   // Spring 0-indexed → on remet à 1
+        response.setPageSize(LeaveRequestPage.getSize());
+        response.setTotalElement(LeaveRequestPage.getTotalElements());
+        response.setTotalPage(LeaveRequestPage.getTotalPages());
+
+        return response;
     }
 
     // -------------------------------------------------------------------------

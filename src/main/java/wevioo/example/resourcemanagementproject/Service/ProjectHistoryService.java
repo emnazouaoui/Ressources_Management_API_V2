@@ -7,6 +7,8 @@ import wevioo.example.resourcemanagementproject.Entity.ProjectHistory;
 import wevioo.example.resourcemanagementproject.Enums.ProjectField;
 import wevioo.example.resourcemanagementproject.Repository.ProjectHistoryRepository;
 
+import java.time.LocalDateTime;
+
 @Service
 @RequiredArgsConstructor
 public class ProjectHistoryService {
@@ -23,9 +25,10 @@ public class ProjectHistoryService {
         history.setFieldChanged(field);
         history.setOldValue(oldVal);
         history.setNewValue(newVal);
+        history.setUpdatedDate(LocalDateTime.now());
+        history.setCreatedDate(LocalDateTime.now());
 
         projectHistoryRepository.save(history);
     }
-
 
 }

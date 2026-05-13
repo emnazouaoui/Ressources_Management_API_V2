@@ -7,6 +7,8 @@ import wevioo.example.resourcemanagementproject.Entity.TaskHistory;
 import wevioo.example.resourcemanagementproject.Enums.TaskField;
 import wevioo.example.resourcemanagementproject.Repository.TaskHistoryRepository;
 
+import java.time.LocalDateTime;
+
 
 @Service
 @RequiredArgsConstructor
@@ -28,6 +30,8 @@ public class TaskHistoryService {
         history.setFieldChanged(fieldChanged);
         history.setOldValue(oldValue);
         history.setNewValue(newValue);
+        history.setUpdatedDate(LocalDateTime.now());
+        history.setCreatedDate(LocalDateTime.now());
 
         taskHistoryRepository.save(history);
     }
