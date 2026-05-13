@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import wevioo.example.resourcemanagementproject.Entity.User;
 import wevioo.example.resourcemanagementproject.Entity.UserHistory;
 import wevioo.example.resourcemanagementproject.Enums.UserField;
+import wevioo.example.resourcemanagementproject.Exception.Custom.ResourceNotFoundException;
 import wevioo.example.resourcemanagementproject.Repository.UserHistoryRepository;
 import wevioo.example.resourcemanagementproject.Repository.UserRepository;
 
@@ -25,7 +26,7 @@ public class UserHistoryService {
         if (oldVal != null && oldVal.equals(newVal)) return;
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         UserHistory history = new UserHistory();
         history.setUser(user);

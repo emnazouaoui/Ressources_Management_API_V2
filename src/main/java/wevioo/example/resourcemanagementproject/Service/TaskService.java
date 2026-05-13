@@ -20,6 +20,7 @@ import wevioo.example.resourcemanagementproject.Entity.User;
 import wevioo.example.resourcemanagementproject.Enums.Priority;
 import wevioo.example.resourcemanagementproject.Enums.TaskField;
 import wevioo.example.resourcemanagementproject.Enums.TaskStatus;
+import wevioo.example.resourcemanagementproject.Exception.Custom.ResourceNotFoundException;
 import wevioo.example.resourcemanagementproject.Pagination.CustomSort;
 import wevioo.example.resourcemanagementproject.Pagination.PaginatedResponse;
 import wevioo.example.resourcemanagementproject.Pagination.PaginationUtil;
@@ -54,10 +55,10 @@ public class TaskService {
         Task task = taskMapper.toEntity(dto);
 
         Project project = projectRepository.findById(dto.getProjectId())
-                .orElseThrow(() -> new RuntimeException("Project not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Project not found"));
 
         User user = userRepository.findById(dto.getAssignedUserId())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         task.setProject(project);
         task.setAssignedUser(user);
@@ -69,7 +70,7 @@ public class TaskService {
     public TaskDTO getById(Long id) {
 
         Task task = taskRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Task not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
 
         return taskMapper.toDTO(task);
     }
@@ -107,7 +108,7 @@ public class TaskService {
     public TaskDTO update(Long id, TaskDTO dto) {
 
         Task task = taskRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Task not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
 
         // ================= HISTORY TRACKING =================
 
@@ -165,13 +166,13 @@ public class TaskService {
 
         if (dto.getProjectId() != null) {
             Project project = projectRepository.findById(dto.getProjectId())
-                    .orElseThrow(() -> new RuntimeException("Project not found"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Project not found"));
             task.setProject(project);
         }
 
         if (dto.getAssignedUserId() != null) {
             User user = userRepository.findById(dto.getAssignedUserId())
-                    .orElseThrow(() -> new RuntimeException("User not found"));
+                    .orElseThrow(() -> new ResourceNotFoundException("User not found"));
             task.setAssignedUser(user);
         }
 
@@ -330,10 +331,10 @@ public class TaskService {
     public TaskDTO addImputationToTask(Long taskId, Long imputationId) {
 
         Task task = taskRepository.findByIdWithImputations(taskId)
-                .orElseThrow(() -> new RuntimeException("Task not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
 
         Imputation imputation = imputationRepository.findById(imputationId)
-                .orElseThrow(() -> new RuntimeException("Imputation not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Imputation not found"));
 
         // ربط
         imputation.setTask(task);
@@ -349,10 +350,10 @@ public class TaskService {
     public TaskDTO removeImputationFromTask(Long taskId, Long imputationId) {
 
         Task task = taskRepository.findByIdWithImputations(taskId)
-                .orElseThrow(() -> new RuntimeException("Task not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
 
         Imputation imputation = imputationRepository.findById(imputationId)
-                .orElseThrow(() -> new RuntimeException("Imputation not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Imputation not found"));
 
         // حذف
         task.getImputations().remove(imputation);

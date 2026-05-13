@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import wevioo.example.resourcemanagementproject.DTO.LeaveBalanceDTO;
 import wevioo.example.resourcemanagementproject.Entity.LeaveBalance;
+import wevioo.example.resourcemanagementproject.Exception.Custom.ResourceNotFoundException;
 import wevioo.example.resourcemanagementproject.Repository.LeaveBalanceRepository;
 
 @Service
@@ -17,7 +18,7 @@ public class LeaveBalanceService {
 
         // Just for annual leave request
         LeaveBalance lb = repository.findByUserId(userId)
-                .orElseThrow(() -> new RuntimeException("Annual leave balance not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Annual leave balance not found"));
 
         LeaveBalanceDTO dto = new LeaveBalanceDTO();
 

@@ -11,6 +11,7 @@ import wevioo.example.resourcemanagementproject.DTO.DepartmentDTO;
 import wevioo.example.resourcemanagementproject.Entity.Client;
 import wevioo.example.resourcemanagementproject.Entity.Department;
 import wevioo.example.resourcemanagementproject.Enums.ClientType;
+import wevioo.example.resourcemanagementproject.Exception.Custom.ResourceNotFoundException;
 import wevioo.example.resourcemanagementproject.Pagination.CustomSort;
 import wevioo.example.resourcemanagementproject.Pagination.PaginatedResponse;
 import wevioo.example.resourcemanagementproject.Pagination.PaginationUtil;
@@ -70,7 +71,7 @@ public class DepartmentService {
     // GET BY ID
     public DepartmentDTO getById(Long id) {
         Department d = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Department not found: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Department not found: " + id));
 
         return departmentMapper.toDTO(d);
     }
@@ -78,7 +79,7 @@ public class DepartmentService {
     // UPDATE
     public DepartmentDTO update(Long id, DepartmentDTO dto) {
         Department d = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Department not found: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Department not found: " + id));
 
         d.setName(dto.getName());
         d.setDescription(dto.getDescription());
@@ -90,7 +91,7 @@ public class DepartmentService {
     // DELETE
     public void delete(Long id) {
         if (!repository.existsById(id)) {
-            throw new RuntimeException("Department not found: " + id);
+            throw new ResourceNotFoundException("Department not found: " + id);
         }
         repository.deleteById(id);
     }

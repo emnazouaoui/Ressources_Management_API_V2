@@ -11,6 +11,7 @@ import wevioo.example.resourcemanagementproject.DTO.TaskDTO;
 import wevioo.example.resourcemanagementproject.DTO.TechnologyDTO;
 import wevioo.example.resourcemanagementproject.Entity.Role;
 import wevioo.example.resourcemanagementproject.Entity.Technology;
+import wevioo.example.resourcemanagementproject.Exception.Custom.ResourceNotFoundException;
 import wevioo.example.resourcemanagementproject.Pagination.CustomSort;
 import wevioo.example.resourcemanagementproject.Pagination.PaginatedResponse;
 import wevioo.example.resourcemanagementproject.Pagination.PaginationUtil;
@@ -39,7 +40,7 @@ public class TechnologyService {
     // GET BY ID
     public TechnologyDTO getById(Long id) {
         Technology t = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Technology not found: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Technology not found: " + id));
 
         return technologyMapper.toDTO(t);
     }
@@ -47,7 +48,7 @@ public class TechnologyService {
     // UPDATE
     public TechnologyDTO update(Long id, TechnologyDTO dto) {
         Technology t = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Technology not found: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Technology not found: " + id));
 
         t.setName(dto.getName());
         t.setUpdatedDate(LocalDateTime.now());
@@ -59,7 +60,7 @@ public class TechnologyService {
     // DELETE
     public void delete(Long id) {
         if (!repository.existsById(id)) {
-            throw new RuntimeException("Technology not found: " + id);
+            throw new ResourceNotFoundException("Technology not found: " + id);
         }
         repository.deleteById(id);
     }

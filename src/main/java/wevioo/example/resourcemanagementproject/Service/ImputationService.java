@@ -13,6 +13,7 @@ import wevioo.example.resourcemanagementproject.Entity.Department;
 import wevioo.example.resourcemanagementproject.Entity.Imputation;
 import wevioo.example.resourcemanagementproject.Entity.Task;
 import wevioo.example.resourcemanagementproject.Entity.User;
+import wevioo.example.resourcemanagementproject.Exception.Custom.ResourceNotFoundException;
 import wevioo.example.resourcemanagementproject.Pagination.CustomSort;
 import wevioo.example.resourcemanagementproject.Pagination.PaginatedResponse;
 import wevioo.example.resourcemanagementproject.Pagination.PaginationUtil;
@@ -39,10 +40,10 @@ public class ImputationService {
     // CREATE
     public ImputationDTO create(ImputationDTO dto) {
         Task task = taskRepository.findById(dto.getTaskId())
-                .orElseThrow(() -> new RuntimeException("Task not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
 
         User user = userRepository.findById(dto.getUserId())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         Imputation imputation = imputationMapper.toEntity(dto, task, user);
 
@@ -52,7 +53,7 @@ public class ImputationService {
     // GET BY ID
     public ImputationDTO getById(Long id) {
         Imputation imputation = imputationRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Imputation not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Imputation not found"));
 
         return imputationMapper.toDTO(imputation);
     }
@@ -90,13 +91,13 @@ public class ImputationService {
     // UPDATE
     public ImputationDTO update(Long id, ImputationDTO dto) {
         Imputation imputation = imputationRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Imputation not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Imputation not found"));
 
         Task task = taskRepository.findById(dto.getTaskId())
-                .orElseThrow(() -> new RuntimeException("Task not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
 
         User user = userRepository.findById(dto.getUserId())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         imputationMapper.updateEntity(imputation, dto, task, user);
 
@@ -108,7 +109,7 @@ public class ImputationService {
     // DELETE
     public void delete(Long id) {
         if (!imputationRepository.existsById(id)) {
-            throw new RuntimeException("Imputation not found");
+            throw new ResourceNotFoundException("Imputation not found");
         }
         imputationRepository.deleteById(id);
     }

@@ -18,6 +18,7 @@ import wevioo.example.resourcemanagementproject.Entity.LeaveRequest;
 import wevioo.example.resourcemanagementproject.Entity.User;
 import wevioo.example.resourcemanagementproject.Enums.LeaveRequestStatus;
 import wevioo.example.resourcemanagementproject.Enums.LeaveRequestType;
+import wevioo.example.resourcemanagementproject.Exception.Custom.ResourceNotFoundException;
 import wevioo.example.resourcemanagementproject.Pagination.CustomSort;
 import wevioo.example.resourcemanagementproject.Pagination.PaginatedResponse;
 import wevioo.example.resourcemanagementproject.Pagination.PaginationUtil;
@@ -51,10 +52,10 @@ public class LeaveRequestService {
         lr.setStatus(LeaveRequestStatus.PENDING);// add for leaveBalance
 
         lr.setUser(userRepository.findById(dto.getUserId())
-                .orElseThrow(() -> new RuntimeException("User not found")));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found")));
 
         lr.setProjectManager(userRepository.findById(dto.getProjectManagerId())
-                .orElseThrow(() -> new RuntimeException("Manager not found")));
+                .orElseThrow(() -> new ResourceNotFoundException("Manager not found")));
 
         return mapper.toDTO(repository.save(lr));
     }
@@ -63,7 +64,7 @@ public class LeaveRequestService {
     public LeaveRequestDTO update(Long id, LeaveRequestDTO dto) {
 
         LeaveRequest lr = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("LeaveRequest not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("LeaveRequest not found"));
 
         mapper.toEntity(dto, lr);
 
@@ -71,12 +72,12 @@ public class LeaveRequestService {
 
         if (dto.getUserId() != null) {
             lr.setUser(userRepository.findById(dto.getUserId())
-                    .orElseThrow(() -> new RuntimeException("User not found")));
+                    .orElseThrow(() -> new ResourceNotFoundException("User not found")));
         }
 
         if (dto.getProjectManagerId() != null) {
             lr.setProjectManager(userRepository.findById(dto.getProjectManagerId())
-                    .orElseThrow(() -> new RuntimeException("Manager not found")));
+                    .orElseThrow(() -> new ResourceNotFoundException("Manager not found")));
         }
 
         return mapper.toDTO(repository.save(lr));
@@ -140,7 +141,7 @@ public class LeaveRequestService {
     public LeaveRequestDTO getById(Long id) {
         return mapper.toDTO(
                 repository.findById(id)
-                        .orElseThrow(() -> new RuntimeException("LeaveRequest not found"))
+                        .orElseThrow(() -> new ResourceNotFoundException("LeaveRequest not found"))
         );
     }
 
@@ -249,7 +250,7 @@ public class LeaveRequestService {
 
     public LeaveRequestDTO updateStatus(Long id, LeaveRequestStatus status) {
         LeaveRequest lr = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("LeaveRequest not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("LeaveRequest not found"));
 
 
         if (status == LeaveRequestStatus.APPROVED) {
@@ -326,7 +327,7 @@ public class LeaveRequestService {
                 .orElseGet(() -> {
 
                     User user = userRepository.findById(userId)
-                            .orElseThrow(() -> new RuntimeException("User not found"));
+                            .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
                     LeaveBalance lb = new LeaveBalance();
                     lb.setUser(user);

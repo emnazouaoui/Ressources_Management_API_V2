@@ -16,6 +16,7 @@ import wevioo.example.resourcemanagementproject.Entity.User;
 import wevioo.example.resourcemanagementproject.Enums.Level;
 import wevioo.example.resourcemanagementproject.Enums.UserField;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import wevioo.example.resourcemanagementproject.Exception.Custom.ResourceNotFoundException;
 import wevioo.example.resourcemanagementproject.Pagination.CustomSort;
 import wevioo.example.resourcemanagementproject.Pagination.PaginatedResponse;
 import wevioo.example.resourcemanagementproject.Pagination.PaginationUtil;
@@ -53,14 +54,14 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
 
         user.setRole(roleRepository.findById(dto.getRoleId())
-                .orElseThrow(() -> new RuntimeException("Role not found")));
+                .orElseThrow(() -> new ResourceNotFoundException("Role not found")));
 
         user.setDepartment(departmentRepository.findById(dto.getDepartmentId())
-                .orElseThrow(() -> new RuntimeException("Department not found")));
+                .orElseThrow(() -> new ResourceNotFoundException("Department not found")));
 
         if (dto.getManagerId() != null) {
         user.setManager(userRepository.findById(dto.getManagerId())
-                  .orElseThrow(() -> new RuntimeException("Manager not found")));
+                  .orElseThrow(() -> new ResourceNotFoundException("Manager not found")));
        }
 
         return userMapper.toDTO(userRepository.save(user));
@@ -100,7 +101,7 @@ public class UserService {
     public UserDTO getById(Long id) {
         return userMapper.toDTO(
                 userRepository.findById(id)
-                        .orElseThrow(() -> new RuntimeException("User not found"))
+                        .orElseThrow(() -> new ResourceNotFoundException("User not found"))
         );
     }
 
@@ -128,7 +129,7 @@ public class UserService {
     public UserDTO update(Long id, UserDTO dto) {
 
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         // 🔥 OLD VALUES
         String oldUsername = user.getUsername();
@@ -152,14 +153,14 @@ public class UserService {
 
         user.setUpdatedDate(LocalDateTime.now());
         user.setRole(roleRepository.findById(dto.getRoleId())
-                .orElseThrow(() -> new RuntimeException("Role not found")));
+                .orElseThrow(() -> new ResourceNotFoundException("Role not found")));
 
         user.setDepartment(departmentRepository.findById(dto.getDepartmentId())
-                .orElseThrow(() -> new RuntimeException("Department not found")));
+                .orElseThrow(() -> new ResourceNotFoundException("Department not found")));
 
         if (dto.getManagerId() != null) {
             user.setManager(userRepository.findById(dto.getManagerId())
-                    .orElseThrow(() -> new RuntimeException("Manager not found")));
+                    .orElseThrow(() -> new ResourceNotFoundException("Manager not found")));
         } else {
             user.setManager(null);
         }
@@ -199,7 +200,7 @@ public class UserService {
     // DELETE
     public void delete(Long id) {
         if (!userRepository.existsById(id)) {
-            throw new RuntimeException("User not found");
+            throw new ResourceNotFoundException("User not found");
         }
         userRepository.deleteById(id);
     }
@@ -357,13 +358,13 @@ public class UserService {
     public void assignTechnology(Long userId, Long techId) {
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         Technology tech = technologyRepository.findById(techId)
-                .orElseThrow(() -> new RuntimeException("Technology not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Technology not found"));
 
         if (user.getTechnologies().contains(tech)) {
-            throw new RuntimeException("Technology already assigned");
+            throw new ResourceNotFoundException("Technology already assigned");
         }
 
         user.getTechnologies().add(tech);
@@ -409,7 +410,7 @@ public class UserService {
     @Transactional
     public void removeTechnology(Long userId, Long techId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         user.getTechnologies().removeIf(t -> t.getId() == techId);
         userRepository.save(user);
@@ -426,7 +427,7 @@ public class UserService {
     // ✅ Nouvelle version
     public List<Long> getUserTechnologies(Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         return user.getTechnologies()
                 .stream()

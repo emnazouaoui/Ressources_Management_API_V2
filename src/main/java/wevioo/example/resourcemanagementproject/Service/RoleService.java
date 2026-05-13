@@ -11,6 +11,7 @@ import wevioo.example.resourcemanagementproject.DTO.ProjectTimeLineDTO;
 import wevioo.example.resourcemanagementproject.DTO.RoleDTO;
 import wevioo.example.resourcemanagementproject.Entity.Department;
 import wevioo.example.resourcemanagementproject.Entity.Role;
+import wevioo.example.resourcemanagementproject.Exception.Custom.ResourceNotFoundException;
 import wevioo.example.resourcemanagementproject.Pagination.CustomSort;
 import wevioo.example.resourcemanagementproject.Pagination.PaginatedResponse;
 import wevioo.example.resourcemanagementproject.Pagination.PaginationUtil;
@@ -38,7 +39,7 @@ public class RoleService {
     // GET BY ID
     public RoleDTO getById(Long id) {
         Role r = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Role not found: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Role not found: " + id));
 
         return roleMapper.toDTO(r);
     }
@@ -46,7 +47,7 @@ public class RoleService {
     // UPDATE
     public RoleDTO update(Long id, RoleDTO dto) {
         Role r = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Role not found: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Role not found: " + id));
 
         r.setName(dto.getName());
         r.setDescription(dto.getDescription());
@@ -59,7 +60,7 @@ public class RoleService {
     // DELETE
     public void delete(Long id) {
         if (!repository.existsById(id)) {
-            throw new RuntimeException("Role not found: " + id);
+            throw new ResourceNotFoundException("Role not found: " + id);
         }
         repository.deleteById(id);
     }

@@ -14,6 +14,7 @@ import wevioo.example.resourcemanagementproject.Entity.Department;
 import wevioo.example.resourcemanagementproject.Entity.Project;
 import wevioo.example.resourcemanagementproject.Entity.ProjectTimeLine;
 import wevioo.example.resourcemanagementproject.Enums.ProjectTimeLineType;
+import wevioo.example.resourcemanagementproject.Exception.Custom.ResourceNotFoundException;
 import wevioo.example.resourcemanagementproject.Pagination.CustomSort;
 import wevioo.example.resourcemanagementproject.Pagination.PaginatedResponse;
 import wevioo.example.resourcemanagementproject.Pagination.PaginationUtil;
@@ -40,7 +41,7 @@ public class ProjectTimeLineService {
     public ProjectTimeLineDTO create(ProjectTimeLineDTO dto) {
 
         Project project = projectRepository.findById(dto.getProjectId())
-                .orElseThrow(() -> new RuntimeException("Project not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Project not found"));
 
         ProjectTimeLine t = new ProjectTimeLine();
         mapper.updateEntity(dto, t);
@@ -58,7 +59,7 @@ public class ProjectTimeLineService {
     public ProjectTimeLineDTO update(Long id, ProjectTimeLineDTO dto) {
 
         ProjectTimeLine t = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Timeline not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Timeline not found"));
 
         mapper.updateEntity(dto, t);
 
@@ -66,7 +67,7 @@ public class ProjectTimeLineService {
 
         if (dto.getProjectId() != null) {
             t.setProject(projectRepository.findById(dto.getProjectId())
-                    .orElseThrow(() -> new RuntimeException("Project not found")));
+                    .orElseThrow(() -> new ResourceNotFoundException("Project not found")));
         }
 
         return mapper.toDTO(repository.save(t));

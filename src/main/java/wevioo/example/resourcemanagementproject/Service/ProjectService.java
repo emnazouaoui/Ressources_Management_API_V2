@@ -13,6 +13,7 @@ import wevioo.example.resourcemanagementproject.DTO.ProjectDTO;
 import wevioo.example.resourcemanagementproject.Entity.*;
 import wevioo.example.resourcemanagementproject.Enums.ProjectField;
 import wevioo.example.resourcemanagementproject.Enums.ProjectStatus;
+import wevioo.example.resourcemanagementproject.Exception.Custom.ResourceNotFoundException;
 import wevioo.example.resourcemanagementproject.Pagination.CustomSort;
 import wevioo.example.resourcemanagementproject.Pagination.PaginatedResponse;
 import wevioo.example.resourcemanagementproject.Pagination.PaginationUtil;
@@ -54,10 +55,10 @@ public class ProjectService {
         p.setStatus(ProjectStatus.valueOf(dto.getStatus()));
 
         p.setProjectManager(userRepository.findById(dto.getProjectManagerId())
-                .orElseThrow(() -> new RuntimeException("Manager not found")));
+                .orElseThrow(() -> new ResourceNotFoundException("Manager not found")));
 
         p.setClient(clientRepository.findById(dto.getClientId())
-                .orElseThrow(() -> new RuntimeException("Client not found")));
+                .orElseThrow(() -> new ResourceNotFoundException("Client not found")));
 
         Project saved = projectRepository.save(p);
 
@@ -91,7 +92,7 @@ public class ProjectService {
 public ProjectDTO update(Long id, ProjectDTO dto) {
 
     Project p = projectRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Project not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("Project not found"));
 
     // =========================
     // 🔥 HISTORY (OLD VALUES)
@@ -123,10 +124,10 @@ public ProjectDTO update(Long id, ProjectDTO dto) {
     p.setUpdatedDate(LocalDateTime.now());
 
     p.setProjectManager(userRepository.findById(dto.getProjectManagerId())
-            .orElseThrow(() -> new RuntimeException("Manager not found")));
+            .orElseThrow(() -> new ResourceNotFoundException("Manager not found")));
 
     p.setClient(clientRepository.findById(dto.getClientId())
-            .orElseThrow(() -> new RuntimeException("Client not found")));
+            .orElseThrow(() -> new ResourceNotFoundException("Client not found")));
 
     Project saved = projectRepository.save(p);
 
@@ -330,7 +331,7 @@ public ProjectDTO update(Long id, ProjectDTO dto) {
     public void assignTechnologies(Long projectId, List<Long> techIds) {
         if (techIds == null) return;
         Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new RuntimeException("Project not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Project not found"));
 
         List<Technology> techs = technologyRepository.findAllById(techIds);
         project.getTechnologies().addAll(
@@ -355,7 +356,7 @@ public ProjectDTO update(Long id, ProjectDTO dto) {
             p.setId(projectId);
 
             User u = userRepository.findById(userId)
-                    .orElseThrow(() -> new RuntimeException("User not found"));
+                    .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
             up.setProject(p);
             up.setUser(u);
@@ -367,10 +368,10 @@ public ProjectDTO update(Long id, ProjectDTO dto) {
     public void addTimeline(Long projectId, Long timelineId) {
 
         Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new RuntimeException("Project not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Project not found"));
 
         ProjectTimeLine timeline = projectTimeLineRepository.findById(timelineId)
-                .orElseThrow(() -> new RuntimeException("Timeline not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Timeline not found"));
 
         // check already assigned
         if (timeline.getProject() != null &&
@@ -387,10 +388,10 @@ public ProjectDTO update(Long id, ProjectDTO dto) {
     public void assignTask(Long projectId, Long taskId) {
 
         Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new RuntimeException("Project not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Project not found"));
 
         Task task = taskRepository.findById(taskId)
-                .orElseThrow(() -> new RuntimeException("Task not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
 
         task.setProject(project);
         taskRepository.save(task);
@@ -405,7 +406,7 @@ public ProjectDTO update(Long id, ProjectDTO dto) {
 
     public void removeTechnology(Long projectId, Long techId) {
         Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new RuntimeException("Project not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Project not found"));
         project.getTechnologies().removeIf(t -> t.getId() == techId);
         projectRepository.save(project);
     }
@@ -417,7 +418,7 @@ public ProjectDTO update(Long id, ProjectDTO dto) {
     public void removeTimeline(Long projectId, Long timelineId) {
 
         ProjectTimeLine timeline = projectTimeLineRepository.findById(timelineId)
-                .orElseThrow(() -> new RuntimeException("Timeline not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Timeline not found"));
 
         if (timeline.getProject() == null ||
                 timeline.getProject().getId() != projectId) {
@@ -431,7 +432,7 @@ public ProjectDTO update(Long id, ProjectDTO dto) {
     public void removeTask(Long projectId, Long taskId) {
 
         Task task = taskRepository.findById(taskId)
-                .orElseThrow(() -> new RuntimeException("Task not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
 
         // ✅ check task belongs to project
         if (task.getProject() == null || task.getProject().getId() != projectId) {
