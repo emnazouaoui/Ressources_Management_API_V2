@@ -27,7 +27,6 @@ public class TaskDTO {
 
     @NotBlank(message = "Title is required")
     @Size(max = 255)
-    @ValidName
     private String title;
 
     @Size(max = 1000)

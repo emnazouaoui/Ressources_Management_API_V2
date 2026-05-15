@@ -25,20 +25,16 @@ public class ClientDTO {
 
     @NotBlank(message = "Name is required")
     @Size(max = 255)
-    @ValidName
     private String name;
 
     @Size(max = 255)
     private String address;
 
     @Size(max = 255)
-    @ValidName
     private String company;
 
-    @ValidEmail
     private String email;
 
-    @ValidPhone
     private String phone;
 
     @NotNull(message = "Client type is required")

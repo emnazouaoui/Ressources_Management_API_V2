@@ -22,7 +22,6 @@ public class DepartmentDTO {
 
     @NotBlank(message = "Name is required")
     @Size(max = 100)
-    @ValidName
     private String name;
 
     @Size(max = 500)

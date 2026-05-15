@@ -4,6 +4,7 @@ package wevioo.example.resourcemanagementproject.Entity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
@@ -15,12 +16,16 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import wevioo.example.resourcemanagementproject.Enums.Level;
+import wevioo.example.resourcemanagementproject.Listener.UserEntityListener;
 
 
 import java.time.LocalDateTime;
@@ -31,6 +36,7 @@ import java.util.List;
 @Setter
 @Entity
 @Table(name = "users")
+@EntityListeners(UserEntityListener.class)
 public class User {
 
     @Id
@@ -90,6 +96,54 @@ public class User {
     //@LastModifiedDate
     @Column(name = "updated_date")
     private LocalDateTime updatedDate;
+
+    @Transient
+    private User oldUser;
+
+    @Transient
+    private String oldUsername;
+
+    @Transient
+    private String oldFirstName;
+
+    @Transient
+    private String oldLastName;
+
+    @Transient
+    private String oldEmail;
+
+    @Transient
+    private String oldPhone;
+
+    @Transient
+    private String oldActive;
+
+    @Transient
+    private String oldLevel;
+
+    @Transient
+    private String oldRole;
+
+    @Transient
+    private String oldDepartment;
+
+    @Transient
+    private String oldManager;
+
+    @PrePersist
+    public void prePersist() {
+
+        LocalDateTime now = LocalDateTime.now();
+
+        this.createdDate = now;
+        this.updatedDate = now;
+    }
+
+    @PreUpdate
+    public void preUpdate() {
+
+        this.updatedDate = LocalDateTime.now();
+    }
 
 
 //    @ManyToOne

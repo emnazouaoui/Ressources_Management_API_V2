@@ -5,15 +5,15 @@ public enum UserField {
     EMAIL,
     FIRST_NAME,
     LAST_NAME,
-    PASSWORD,
+    //PASSWORD,
     ACTIVE,
     ROLE,
     DEPARTMENT,
     MANAGER,
     LEVEL,
     PHONE,
-    createdDate,
-    updatedDate,
-    createdBy,
-    updatedBy
+   // createdDate,
+   // updatedDate,
+   // createdBy,
+   // updatedBy
 }

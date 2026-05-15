@@ -26,7 +26,6 @@ public class ProjectDTO {
 
     @NotBlank(message = "Name is required")
     @Size(max = 255)
-    @ValidName
     private String name;
 
     @Size(max = 1000)

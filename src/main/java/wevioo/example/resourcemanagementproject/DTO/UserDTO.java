@@ -31,30 +31,24 @@ public class UserDTO {
     //  password (WRITE ONLY)
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @NotBlank(message = "Password is required")
-    @ValidPassword
     private String password;
 
     @NotBlank(message = "Username is required")
-    @ValidUsername
     private String username;
 
     @NotBlank(message = "First name is required")
     @Size(max = 50)
-    @ValidName
     private String firstName;
 
     @NotBlank(message = "Last name is required")
     @Size(max = 50)
-    @ValidName
     private String lastName;
 
     @NotBlank(message = "Email is required")
-    @ValidEmail
     private String email;
 
     private Boolean active;
 
-    @ValidPhone
     private String phone;
 
     //private String photo;

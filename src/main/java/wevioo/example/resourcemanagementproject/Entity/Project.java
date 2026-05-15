@@ -4,6 +4,7 @@ package wevioo.example.resourcemanagementproject.Entity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
@@ -15,12 +16,16 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import wevioo.example.resourcemanagementproject.Enums.ProjectStatus;
+import wevioo.example.resourcemanagementproject.Listener.ProjectEntityListener;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -30,6 +35,7 @@ import java.util.List;
 @Setter
 @Entity
 @Table(name = "project")
+@EntityListeners(ProjectEntityListener.class)
 public class Project{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -62,15 +68,6 @@ public class Project{
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProjectTimeLine> ProjectsTimelineList= new ArrayList<>();;
 
-    // supprime
-//    /** Team members assigned to this project */
-//    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
-//    private List<UserProject> userProjectsList= new ArrayList<>();;
-//
-//    /** Technologies used in this project */
-//    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
-//    private List<ProjectTechnology> ProjectsTechnologyList= new ArrayList<>();;
-
     //  Remplace par
     @ManyToMany
     @JoinTable(
@@ -91,6 +88,48 @@ public class Project{
     //@LastModifiedDate
     @Column(name = "updated_date")
     private LocalDateTime updatedDate;
+
+    @Transient
+    private Project oldProject;
+
+    @Transient
+    private String oldName;
+
+    @Transient
+    private String oldDescription;
+
+    @Transient
+    private String oldStatus;
+
+    @Transient
+    private String oldStartDate;
+
+    @Transient
+    private String oldEndDate;
+
+    @Transient
+    private String oldProgress;
+
+    @Transient
+    private String oldManager;
+
+    @Transient
+    private String oldClient;
+
+    @PrePersist
+    public void prePersist() {
+
+        LocalDateTime now = LocalDateTime.now();
+
+        this.createdDate = now;
+        this.updatedDate = now;
+    }
+
+    @PreUpdate
+    public void preUpdate() {
+
+        this.updatedDate = LocalDateTime.now();
+    }
 
 //    @ManyToOne
 //    @JoinColumn(name = "created_by")

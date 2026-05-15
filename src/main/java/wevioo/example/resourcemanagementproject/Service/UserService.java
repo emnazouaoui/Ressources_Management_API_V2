@@ -38,7 +38,7 @@ public class UserService {
     private final RoleRepository roleRepository;
     private final DepartmentRepository departmentRepository;
     private final UserMapper userMapper;
-    private final UserHistoryService userHistoryService;
+   // private final UserHistoryService userHistoryService;
     private final TechnologyRepository technologyRepository;
     private final PaginationUtil paginationUtil;      // pour pagination
 
@@ -125,33 +125,92 @@ public class UserService {
 //
 //        return userMapper.toDTO(userRepository.save(user));
 //    }
+//    @Transactional
+//    public UserDTO update(Long id, UserDTO dto) {
+//
+//        User user = userRepository.findById(id)
+//                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+//
+//        // 🔥 OLD VALUES
+//        String oldUsername = user.getUsername();
+//        String oldFirstName = user.getFirstName();
+//        String oldLastName = user.getLastName();
+//        String oldEmail = user.getEmail();
+//        LocalDateTime oldUpdatedDate = user.getUpdatedDate();
+//        String oldPassword = user.getPassword();
+//        String oldLevel = user.getLevel() != null ? user.getLevel().name() : null;
+//        Long oldRole = user.getRole() != null ? user.getRole().getId() : null;
+//        Long oldDept = user.getDepartment() != null ? user.getDepartment().getId() : null;
+//        Long oldManager = user.getManager() != null ? user.getManager().getId() : null;
+//
+//        // ✏️ UPDATE
+//        userMapper.updateEntityFromDTO(dto, user);
+//
+//        // 🔥 CRYPT PASSWORD ONLY IF PROVIDED
+//        if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
+//            user.setPassword(passwordEncoder.encode(dto.getPassword()));
+//        }
+//
+//        user.setUpdatedDate(LocalDateTime.now());
+//        user.setRole(roleRepository.findById(dto.getRoleId())
+//                .orElseThrow(() -> new ResourceNotFoundException("Role not found")));
+//
+//        user.setDepartment(departmentRepository.findById(dto.getDepartmentId())
+//                .orElseThrow(() -> new ResourceNotFoundException("Department not found")));
+//
+//        if (dto.getManagerId() != null) {
+//            user.setManager(userRepository.findById(dto.getManagerId())
+//                    .orElseThrow(() -> new ResourceNotFoundException("Manager not found")));
+//        } else {
+//            user.setManager(null);
+//        }
+//
+//        User saved = userRepository.save(user);
+//
+//        // 🔥 HISTORY LOG
+//        userHistoryService.saveChange(id, UserField.USERNAME, oldUsername, saved.getUsername());
+//        userHistoryService.saveChange(id, UserField.FIRST_NAME, oldFirstName, saved.getFirstName());
+//        userHistoryService.saveChange(id, UserField.LAST_NAME, oldLastName, saved.getLastName());
+//        userHistoryService.saveChange(id, UserField.EMAIL, oldEmail, saved.getEmail());
+//        userHistoryService.saveChange(id, UserField.PHONE, oldEmail, saved.getPhone());
+//        //userHistoryService.saveChange(id, UserField.PASSWORD, oldPassword, saved.getPassword());
+//        userHistoryService.saveChange(id, UserField.PASSWORD,
+//                oldPassword != null ? "UPDATED" : null,
+//                dto.getPassword() != null ? "UPDATED" : null);
+//
+//        userHistoryService.saveChange(id, UserField.LEVEL,
+//                oldLevel,
+//                saved.getLevel() != null ? saved.getLevel().name() : null);
+//
+//        userHistoryService.saveChange(id, UserField.ROLE,
+//                oldRole != null ? oldRole.toString() : null,
+//                dto.getRoleId().toString());
+//
+//        userHistoryService.saveChange(id, UserField.DEPARTMENT,
+//                oldDept != null ? oldDept.toString() : null,
+//                dto.getDepartmentId().toString());
+//
+//        userHistoryService.saveChange(id, UserField.MANAGER,
+//                oldManager != null ? oldManager.toString() : null,
+//                dto.getManagerId() != null ? dto.getManagerId().toString() : null);
+//
+//        return userMapper.toDTO(saved);
+//    }
+
     @Transactional
     public UserDTO update(Long id, UserDTO dto) {
 
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        // 🔥 OLD VALUES
-        String oldUsername = user.getUsername();
-        String oldFirstName = user.getFirstName();
-        String oldLastName = user.getLastName();
-        String oldEmail = user.getEmail();
-        LocalDateTime oldUpdatedDate = user.getUpdatedDate();
-        String oldPassword = user.getPassword();
-        String oldLevel = user.getLevel() != null ? user.getLevel().name() : null;
-        Long oldRole = user.getRole() != null ? user.getRole().getId() : null;
-        Long oldDept = user.getDepartment() != null ? user.getDepartment().getId() : null;
-        Long oldManager = user.getManager() != null ? user.getManager().getId() : null;
+        // ✅ @PreUpdate يتكفل بالـ history تلقائياً — supprime tout le bloc HISTORY
 
-        // ✏️ UPDATE
         userMapper.updateEntityFromDTO(dto, user);
 
-        // 🔥 CRYPT PASSWORD ONLY IF PROVIDED
         if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
             user.setPassword(passwordEncoder.encode(dto.getPassword()));
         }
 
-        user.setUpdatedDate(LocalDateTime.now());
         user.setRole(roleRepository.findById(dto.getRoleId())
                 .orElseThrow(() -> new ResourceNotFoundException("Role not found")));
 
@@ -165,36 +224,7 @@ public class UserService {
             user.setManager(null);
         }
 
-        User saved = userRepository.save(user);
-
-        // 🔥 HISTORY LOG
-        userHistoryService.saveChange(id, UserField.USERNAME, oldUsername, saved.getUsername());
-        userHistoryService.saveChange(id, UserField.FIRST_NAME, oldFirstName, saved.getFirstName());
-        userHistoryService.saveChange(id, UserField.LAST_NAME, oldLastName, saved.getLastName());
-        userHistoryService.saveChange(id, UserField.EMAIL, oldEmail, saved.getEmail());
-        userHistoryService.saveChange(id, UserField.PHONE, oldEmail, saved.getPhone());
-        //userHistoryService.saveChange(id, UserField.PASSWORD, oldPassword, saved.getPassword());
-        userHistoryService.saveChange(id, UserField.PASSWORD,
-                oldPassword != null ? "UPDATED" : null,
-                dto.getPassword() != null ? "UPDATED" : null);
-
-        userHistoryService.saveChange(id, UserField.LEVEL,
-                oldLevel,
-                saved.getLevel() != null ? saved.getLevel().name() : null);
-
-        userHistoryService.saveChange(id, UserField.ROLE,
-                oldRole != null ? oldRole.toString() : null,
-                dto.getRoleId().toString());
-
-        userHistoryService.saveChange(id, UserField.DEPARTMENT,
-                oldDept != null ? oldDept.toString() : null,
-                dto.getDepartmentId().toString());
-
-        userHistoryService.saveChange(id, UserField.MANAGER,
-                oldManager != null ? oldManager.toString() : null,
-                dto.getManagerId() != null ? dto.getManagerId().toString() : null);
-
-        return userMapper.toDTO(saved);
+        return userMapper.toDTO(userRepository.save(user));
     }
 
     // DELETE

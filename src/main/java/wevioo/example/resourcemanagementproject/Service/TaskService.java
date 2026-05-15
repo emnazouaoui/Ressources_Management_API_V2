@@ -41,7 +41,7 @@ public class TaskService {
     private final TaskRepository taskRepository;
     private final ProjectRepository projectRepository;
     private final UserRepository userRepository;
-    private final TaskHistoryService taskHistoryService;
+   // private final TaskHistoryService taskHistoryService;
     private final ImputationRepository imputationRepository;
     private final TaskMapper taskMapper;
     private final PaginationUtil paginationUtil;      // pour pagination
@@ -105,79 +105,108 @@ public class TaskService {
 //        return TaskMapper.toDTO(taskRepository.save(task));
 //    }
 
-    public TaskDTO update(Long id, TaskDTO dto) {
+//    public TaskDTO update(Long id, TaskDTO dto) {
+//
+//        Task task = taskRepository.findById(id)
+//                .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
+//
+//        // ================= HISTORY TRACKING =================
+//
+//        taskHistoryService.saveHistory(task,
+//                TaskField.TITLE,
+//                task.getTitle(),
+//                dto.getTitle());
+//
+//        taskHistoryService.saveHistory(task,
+//                TaskField.DESCRIPTION,
+//                task.getDescription(),
+//                dto.getDescription());
+//
+//        taskHistoryService.saveHistory(task,
+//                TaskField.STATUS,
+//                task.getStatus() != null ? task.getStatus().toString() : null,
+//                dto.getStatus() != null ? dto.getStatus().toString() : null);
+//
+//        taskHistoryService.saveHistory(task,
+//                TaskField.PRIORITY,
+//                task.getPriority() != null ? task.getPriority().toString() : null,
+//                dto.getPriority() != null ? dto.getPriority().toString() : null);
+//
+//        taskHistoryService.saveHistory(task,
+//                TaskField.START_DATE,
+//                task.getStartDate() != null ? task.getStartDate().toString() : null,
+//                dto.getStartDate() != null ? dto.getStartDate().toString() : null);
+//
+//        taskHistoryService.saveHistory(task,
+//                TaskField.END_DATE,
+//                task.getEndDate() != null ? task.getEndDate().toString() : null,
+//                dto.getEndDate() != null ? dto.getEndDate().toString() : null);
+//
+//        taskHistoryService.saveHistory(task,
+//                TaskField.ESTIMATED_HOURS,
+//                task.getEstimatedHours() != null ? task.getEstimatedHours().toString() : null,
+//                dto.getEstimatedHours() != null ? dto.getEstimatedHours().toString() : null);
+//
+//        taskHistoryService.saveHistory(task,
+//                TaskField.CONSUMED_HOURS,
+//                task.getConsumedHours() != null ? task.getConsumedHours().toString() : null,
+//                dto.getConsumedHours() != null ? dto.getConsumedHours().toString() : null);
+//
+//        // ================= UPDATE VALUES =================
+//
+//        task.setTitle(dto.getTitle());
+//        task.setDescription(dto.getDescription());
+//        task.setStatus(dto.getStatus());
+//        task.setPriority(dto.getPriority());
+//        task.setStartDate(dto.getStartDate());
+//        task.setEndDate(dto.getEndDate());
+//        task.setEstimatedHours(dto.getEstimatedHours());
+//        task.setConsumedHours(dto.getConsumedHours());
+//        task.setUpdatedDate(LocalDateTime.now());
+//
+//        if (dto.getProjectId() != null) {
+//            Project project = projectRepository.findById(dto.getProjectId())
+//                    .orElseThrow(() -> new ResourceNotFoundException("Project not found"));
+//            task.setProject(project);
+//        }
+//
+//        if (dto.getAssignedUserId() != null) {
+//            User user = userRepository.findById(dto.getAssignedUserId())
+//                    .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+//            task.setAssignedUser(user);
+//        }
+//
+//        return taskMapper.toDTO(taskRepository.save(task));
+//    }
+public TaskDTO update(Long id, TaskDTO dto) {
 
-        Task task = taskRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
+    Task task = taskRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
 
-        // ================= HISTORY TRACKING =================
+    // ✅ @PreUpdate يتكفل بالـ history تلقائياً — supprime tout le bloc HISTORY
 
-        taskHistoryService.saveHistory(task,
-                TaskField.TITLE,
-                task.getTitle(),
-                dto.getTitle());
+    task.setTitle(dto.getTitle());
+    task.setDescription(dto.getDescription());
+    task.setStatus(dto.getStatus());
+    task.setPriority(dto.getPriority());
+    task.setStartDate(dto.getStartDate());
+    task.setEndDate(dto.getEndDate());
+    task.setEstimatedHours(dto.getEstimatedHours());
+    task.setConsumedHours(dto.getConsumedHours());
 
-        taskHistoryService.saveHistory(task,
-                TaskField.DESCRIPTION,
-                task.getDescription(),
-                dto.getDescription());
-
-        taskHistoryService.saveHistory(task,
-                TaskField.STATUS,
-                task.getStatus() != null ? task.getStatus().toString() : null,
-                dto.getStatus() != null ? dto.getStatus().toString() : null);
-
-        taskHistoryService.saveHistory(task,
-                TaskField.PRIORITY,
-                task.getPriority() != null ? task.getPriority().toString() : null,
-                dto.getPriority() != null ? dto.getPriority().toString() : null);
-
-        taskHistoryService.saveHistory(task,
-                TaskField.START_DATE,
-                task.getStartDate() != null ? task.getStartDate().toString() : null,
-                dto.getStartDate() != null ? dto.getStartDate().toString() : null);
-
-        taskHistoryService.saveHistory(task,
-                TaskField.END_DATE,
-                task.getEndDate() != null ? task.getEndDate().toString() : null,
-                dto.getEndDate() != null ? dto.getEndDate().toString() : null);
-
-        taskHistoryService.saveHistory(task,
-                TaskField.ESTIMATED_HOURS,
-                task.getEstimatedHours() != null ? task.getEstimatedHours().toString() : null,
-                dto.getEstimatedHours() != null ? dto.getEstimatedHours().toString() : null);
-
-        taskHistoryService.saveHistory(task,
-                TaskField.CONSUMED_HOURS,
-                task.getConsumedHours() != null ? task.getConsumedHours().toString() : null,
-                dto.getConsumedHours() != null ? dto.getConsumedHours().toString() : null);
-
-        // ================= UPDATE VALUES =================
-
-        task.setTitle(dto.getTitle());
-        task.setDescription(dto.getDescription());
-        task.setStatus(dto.getStatus());
-        task.setPriority(dto.getPriority());
-        task.setStartDate(dto.getStartDate());
-        task.setEndDate(dto.getEndDate());
-        task.setEstimatedHours(dto.getEstimatedHours());
-        task.setConsumedHours(dto.getConsumedHours());
-        task.setUpdatedDate(LocalDateTime.now());
-
-        if (dto.getProjectId() != null) {
-            Project project = projectRepository.findById(dto.getProjectId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Project not found"));
-            task.setProject(project);
-        }
-
-        if (dto.getAssignedUserId() != null) {
-            User user = userRepository.findById(dto.getAssignedUserId())
-                    .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-            task.setAssignedUser(user);
-        }
-
-        return taskMapper.toDTO(taskRepository.save(task));
+    if (dto.getProjectId() != null) {
+        task.setProject(projectRepository.findById(dto.getProjectId())
+                .orElseThrow(() -> new ResourceNotFoundException("Project not found")));
     }
+
+    if (dto.getAssignedUserId() != null) {
+        task.setAssignedUser(userRepository.findById(dto.getAssignedUserId())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found")));
+    }
+
+    // ✅ @PostUpdate يتكالى تلقائياً بعد save
+    return taskMapper.toDTO(taskRepository.save(task));
+}
 
     // ================= DELETE =================
     public void delete(Long id) {

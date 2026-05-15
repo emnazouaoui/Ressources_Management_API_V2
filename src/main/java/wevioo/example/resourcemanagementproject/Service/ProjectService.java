@@ -89,39 +89,92 @@ public class ProjectService {
 //
 //        return mapper.toDTO(saved);
 //    }
+//public ProjectDTO update(Long id, ProjectDTO dto) {
+//
+//    Project p = projectRepository.findById(id)
+//            .orElseThrow(() -> new ResourceNotFoundException("Project not found"));
+//
+//    // =========================
+//    // 🔥 HISTORY (OLD VALUES)
+//    // =========================
+//    String oldName = p.getName();
+//    String oldDescription = p.getDescription();
+//    String oldStatus = p.getStatus() != null ? p.getStatus().name() : null;
+//    String oldStartDate = String.valueOf(p.getStartDate());
+//    String oldEndDate = String.valueOf(p.getEndDate());
+//    String oldProgress = String.valueOf(p.getProgressPercent());
+//
+//    String oldManager = p.getProjectManager() != null
+//            ? String.valueOf(p.getProjectManager().getId())
+//            : null;
+//
+//    String oldClient = p.getClient() != null
+//            ? String.valueOf(p.getClient().getId())
+//            : null;
+//
+//    // =========================
+//    // 🔥 UPDATE FIELDS
+//    // =========================
+//    mapper.updateEntity(dto, p);
+//
+//    if (dto.getStatus() != null) {
+//        p.setStatus(ProjectStatus.valueOf(dto.getStatus()));
+//    }
+//
+//    p.setUpdatedDate(LocalDateTime.now());
+//
+//    p.setProjectManager(userRepository.findById(dto.getProjectManagerId())
+//            .orElseThrow(() -> new ResourceNotFoundException("Manager not found")));
+//
+//    p.setClient(clientRepository.findById(dto.getClientId())
+//            .orElseThrow(() -> new ResourceNotFoundException("Client not found")));
+//
+//    Project saved = projectRepository.save(p);
+//
+//    // =========================
+//    // 🔥 HISTORY (NEW VALUES)
+//    // =========================
+//    projectHistoryService.saveHistory(p, ProjectField.NAME,
+//            oldName, saved.getName());
+//
+//    projectHistoryService.saveHistory(p, ProjectField.DESCRIPTION,
+//            oldDescription, saved.getDescription());
+//
+//    projectHistoryService.saveHistory(p, ProjectField.STATUS,
+//            oldStatus, saved.getStatus().name());
+//
+//    projectHistoryService.saveHistory(p, ProjectField.START_DATE,
+//            oldStartDate, String.valueOf(saved.getStartDate()));
+//
+//    projectHistoryService.saveHistory(p, ProjectField.END_DATE,
+//            oldEndDate, String.valueOf(saved.getEndDate()));
+//
+//    projectHistoryService.saveHistory(p, ProjectField.PROGRESS,
+//            oldProgress, String.valueOf(saved.getProgressPercent()));
+//
+//    projectHistoryService.saveHistory(p, ProjectField.PROJECT_MANAGER,
+//            oldManager,
+//            dto.getProjectManagerId() != null ? dto.getProjectManagerId().toString() : null);
+//
+//    projectHistoryService.saveHistory(p, ProjectField.CLIENT,
+//            oldClient,
+//            dto.getClientId() != null ? dto.getClientId().toString() : null);
+//
+//    return mapper.toDTO(saved);
+//}
+// ✅ Après — plus de code history manuel !
 public ProjectDTO update(Long id, ProjectDTO dto) {
 
     Project p = projectRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Project not found"));
 
-    // =========================
-    // 🔥 HISTORY (OLD VALUES)
-    // =========================
-    String oldName = p.getName();
-    String oldDescription = p.getDescription();
-    String oldStatus = p.getStatus() != null ? p.getStatus().name() : null;
-    String oldStartDate = String.valueOf(p.getStartDate());
-    String oldEndDate = String.valueOf(p.getEndDate());
-    String oldProgress = String.valueOf(p.getProgressPercent());
-
-    String oldManager = p.getProjectManager() != null
-            ? String.valueOf(p.getProjectManager().getId())
-            : null;
-
-    String oldClient = p.getClient() != null
-            ? String.valueOf(p.getClient().getId())
-            : null;
-
-    // =========================
-    // 🔥 UPDATE FIELDS
-    // =========================
     mapper.updateEntity(dto, p);
 
     if (dto.getStatus() != null) {
         p.setStatus(ProjectStatus.valueOf(dto.getStatus()));
     }
 
-    p.setUpdatedDate(LocalDateTime.now());
+   // p.setUpdatedDate(LocalDateTime.now());
 
     p.setProjectManager(userRepository.findById(dto.getProjectManagerId())
             .orElseThrow(() -> new ResourceNotFoundException("Manager not found")));
@@ -129,38 +182,12 @@ public ProjectDTO update(Long id, ProjectDTO dto) {
     p.setClient(clientRepository.findById(dto.getClientId())
             .orElseThrow(() -> new ResourceNotFoundException("Client not found")));
 
+    // ← @PreUpdate يتكفل بالـ history تلقائياً !
+    // ✅ Listener يتكفل بالـ history تلقائياً
     Project saved = projectRepository.save(p);
 
-    // =========================
-    // 🔥 HISTORY (NEW VALUES)
-    // =========================
-    projectHistoryService.saveHistory(p, ProjectField.NAME,
-            oldName, saved.getName());
-
-    projectHistoryService.saveHistory(p, ProjectField.DESCRIPTION,
-            oldDescription, saved.getDescription());
-
-    projectHistoryService.saveHistory(p, ProjectField.STATUS,
-            oldStatus, saved.getStatus().name());
-
-    projectHistoryService.saveHistory(p, ProjectField.START_DATE,
-            oldStartDate, String.valueOf(saved.getStartDate()));
-
-    projectHistoryService.saveHistory(p, ProjectField.END_DATE,
-            oldEndDate, String.valueOf(saved.getEndDate()));
-
-    projectHistoryService.saveHistory(p, ProjectField.PROGRESS,
-            oldProgress, String.valueOf(saved.getProgressPercent()));
-
-    projectHistoryService.saveHistory(p, ProjectField.PROJECT_MANAGER,
-            oldManager,
-            dto.getProjectManagerId() != null ? dto.getProjectManagerId().toString() : null);
-
-    projectHistoryService.saveHistory(p, ProjectField.CLIENT,
-            oldClient,
-            dto.getClientId() != null ? dto.getClientId().toString() : null);
-
     return mapper.toDTO(saved);
+    //return mapper.toDTO(projectRepository.save(p));
 }
 //
 //    //  GET ALL — يتبدل : page تبدأ من 1
