@@ -1,6 +1,5 @@
 package wevioo.example.resourcemanagementproject.Entity;
 
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -16,8 +15,6 @@ import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
 import wevioo.example.resourcemanagementproject.Enums.UserField;
 
 import java.time.LocalDateTime;
@@ -44,11 +41,9 @@ public class UserHistory{
     @Column(columnDefinition = "TEXT")
     private String newValue;
 
-    //@CreatedDate
     @Column(name = "created_date", nullable = false, updatable = false)
     private LocalDateTime createdDate;
 
-    //@LastModifiedDate
     @Column(name = "updated_date")
     private LocalDateTime updatedDate;
 

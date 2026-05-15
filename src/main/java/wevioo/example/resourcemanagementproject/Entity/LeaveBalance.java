@@ -9,8 +9,6 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
 
 import java.time.LocalDateTime;
 
@@ -30,11 +28,9 @@ public class LeaveBalance {
     private int annualTotal = 30;
     private int annualUsed = 0;
 
-    //@CreatedDate
     @Column(name = "created_date", nullable = false, updatable = false)
     private LocalDateTime createdDate;
 
-    //@LastModifiedDate
     @Column(name = "updated_date")
     private LocalDateTime updatedDate;
 

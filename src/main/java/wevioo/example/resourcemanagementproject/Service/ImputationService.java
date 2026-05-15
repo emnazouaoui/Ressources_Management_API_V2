@@ -2,14 +2,10 @@ package wevioo.example.resourcemanagementproject.Service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import wevioo.example.resourcemanagementproject.DTO.ClientDTO;
-import wevioo.example.resourcemanagementproject.DTO.DepartmentDTO;
 import wevioo.example.resourcemanagementproject.DTO.ImputationDTO;
-import wevioo.example.resourcemanagementproject.Entity.Department;
 import wevioo.example.resourcemanagementproject.Entity.Imputation;
 import wevioo.example.resourcemanagementproject.Entity.Task;
 import wevioo.example.resourcemanagementproject.Entity.User;
@@ -58,12 +54,6 @@ public class ImputationService {
         return imputationMapper.toDTO(imputation);
     }
 
-//    //  GET ALL — يتبدل : page تبدأ من 1
-//    public Page<ImputationDTO> getAll(Integer page, Integer pageSize, CustomSort sort) {
-//        Sort sorting = paginationUtil.sortingCriteria(sort, Sort.Direction.ASC, "name");
-//        Pageable pageable = paginationUtil.createPageable(page, pageSize, sorting);
-//        return imputationRepository.findAll(pageable).map(imputationMapper::toDTO);
-//    }
     //  GET ALL — يتبدل : page تبدأ من 1
     public PaginatedResponse<ImputationDTO> getAll(Integer page, Integer pageSize, String sortBy, String sortDir) {
         CustomSort customSort = null;
@@ -113,33 +103,6 @@ public class ImputationService {
         }
         imputationRepository.deleteById(id);
     }
-
-//    public Page<ImputationDTO> searchImputations(
-//            String comment,
-//            String title,
-//            String username,
-//            Long taskId,
-//            Long userId,
-//            LocalDateTime date,
-//            Double hours,
-//            Integer page,
-//            Integer pageSize,
-//            CustomSort sort
-//    ) {
-//        Sort sorting = paginationUtil.sortingCriteria(sort, Sort.Direction.ASC, "name");
-//        Pageable pageable = paginationUtil.createPageable(page, pageSize, sorting);
-//
-//        return imputationRepository.searchImputations(
-//                normalize(comment),
-//                normalize(title),
-//                normalize(username),
-//                taskId,
-//                userId,
-//                date,
-//                hours,
-//                pageable
-//        ).map(imputationMapper::toDTO);
-//    }
 
     // ✅ SEARCH — retourne PaginatedResponse au lieu de Page<ClientDTO>
     public PaginatedResponse<ImputationDTO> searchImputations(

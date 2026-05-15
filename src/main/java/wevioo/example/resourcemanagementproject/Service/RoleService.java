@@ -2,14 +2,10 @@ package wevioo.example.resourcemanagementproject.Service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import wevioo.example.resourcemanagementproject.DTO.DepartmentDTO;
-import wevioo.example.resourcemanagementproject.DTO.ProjectTimeLineDTO;
 import wevioo.example.resourcemanagementproject.DTO.RoleDTO;
-import wevioo.example.resourcemanagementproject.Entity.Department;
 import wevioo.example.resourcemanagementproject.Entity.Role;
 import wevioo.example.resourcemanagementproject.Exception.Custom.ResourceNotFoundException;
 import wevioo.example.resourcemanagementproject.Pagination.CustomSort;
@@ -65,13 +61,6 @@ public class RoleService {
         repository.deleteById(id);
     }
 
-//    //  GET ALL — يتبدل : page تبدأ من 1
-//    public Page<RoleDTO> getAll(Integer page, Integer pageSize, CustomSort sort) {
-//        Sort sorting = paginationUtil.sortingCriteria(sort, Sort.Direction.ASC, "name");
-//        Pageable pageable = paginationUtil.createPageable(page, pageSize, sorting);
-//        return repository.findAll(pageable).map(roleMapper::toDTO);
-//    }
-
     //  GET ALL — يتبدل : page تبدأ من 1
     public PaginatedResponse<RoleDTO> getAll(Integer page, Integer pageSize, String sortBy, String sortDir) {
         CustomSort customSort = null;
@@ -95,24 +84,6 @@ public class RoleService {
         return response;
     }
 
-
-//    // SEARCH
-//    public Page<RoleDTO> searchRoles(
-//            String name,
-//            String description,
-//            Integer page,
-//            Integer pageSize,
-//            CustomSort sort
-//    ) {
-//        Sort sorting = paginationUtil.sortingCriteria(sort, Sort.Direction.ASC, "name");
-//        Pageable pageable = paginationUtil.createPageable(page, pageSize, sorting);
-//
-//        return repository.searchRoles(
-//                normalize(name),
-//                normalize(description),
-//                pageable
-//        ).map(roleMapper::toDTO);
-//    }
     // ✅ SEARCH — retourne PaginatedResponse au lieu de Page<ClientDTO>
     public PaginatedResponse<RoleDTO> searchRoles(
             String name,

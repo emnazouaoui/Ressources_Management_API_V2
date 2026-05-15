@@ -15,8 +15,6 @@ import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
 import wevioo.example.resourcemanagementproject.Enums.ProjectField;
 
 import java.time.LocalDateTime;
@@ -43,11 +41,9 @@ public class ProjectHistory{
     @Column(columnDefinition = "TEXT")
     private String newValue;
 
-    //@CreatedDate
     @Column(name = "created_date", nullable = false, updatable = false)
     private LocalDateTime createdDate;
 
-    //@LastModifiedDate
     @Column(name = "updated_date")
     private LocalDateTime updatedDate;
 

@@ -3,11 +3,10 @@ package wevioo.example.resourcemanagementproject.Controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,14 +16,15 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import wevioo.example.resourcemanagementproject.DTO.DepartmentDTO;
 import wevioo.example.resourcemanagementproject.DTO.UserDTO;
 import wevioo.example.resourcemanagementproject.Entity.UserHistory;
 import wevioo.example.resourcemanagementproject.Enums.Level;
+import wevioo.example.resourcemanagementproject.Exception.ValidationHelper;
 import wevioo.example.resourcemanagementproject.Pagination.CustomSort;
 import wevioo.example.resourcemanagementproject.Pagination.PaginatedResponse;
 import wevioo.example.resourcemanagementproject.Repository.UserHistoryRepository;
 import wevioo.example.resourcemanagementproject.Service.UserService;
+import wevioo.example.resourcemanagementproject.Validator.Impl.UserValidator;
 
 import java.util.List;
 
@@ -36,12 +36,31 @@ public class UserController {
 
     private final UserService userService;
     private final UserHistoryRepository userHistoryRepository;
+    private final UserValidator userValidator;   // ← inject
 
 
     @PostMapping
     @Operation(summary = "Create user")
-    public UserDTO create(@Valid @RequestBody UserDTO dto) {
-        return userService.create(dto);
+    public ResponseEntity<UserDTO> create(@RequestBody UserDTO dto,
+                                          BindingResult bindingResult) {
+        // Lance la validation
+        userValidator.validate(dto, bindingResult);
+        ValidationHelper.validate(bindingResult);
+
+        return ResponseEntity.ok(userService.create(dto));
+    }
+
+
+    @PutMapping("/{id}")
+    @Operation(summary = "Update user")
+    public ResponseEntity<UserDTO> update(@PathVariable Long id,
+                                          @RequestBody UserDTO dto,
+                                          BindingResult bindingResult) {
+        //Lance la validation
+        userValidator.validate(dto, bindingResult);
+        ValidationHelper.validate(bindingResult);
+
+        return ResponseEntity.ok(userService.update(id, dto));
     }
 
     @GetMapping
@@ -60,12 +79,6 @@ public class UserController {
     @Operation(summary = "Get user by id")
     public UserDTO getById(@PathVariable Long id) {
         return userService.getById(id);
-    }
-
-    @PutMapping("/{id}")
-    @Operation(summary = "Update user")
-    public UserDTO update(@PathVariable Long id, @Valid @RequestBody UserDTO dto) {
-        return userService.update(id, dto);
     }
 
     @DeleteMapping("/{id}")
@@ -98,12 +111,6 @@ public class UserController {
         return userService.getUserTechnologies(id);
     }
 
-//    // 🔥 search users by technology
-//    @Operation(summary = "Search users by technology")
-//    @GetMapping("/by-technology/{techId}")
-//    public List<UserDTO> getUsersByTechnology(@PathVariable Long techId) {
-//        return userService.getUsersByTechnology(techId);
-//    }
 
     // 🔥 search users by technology name
     @Operation(summary = "Search users by technology")
@@ -225,16 +232,7 @@ public class UserController {
 //        }
 //    }
 
-    // -------------------------------------------------------------------------
-    // Helper — construit CustomSort uniquement si les deux params sont fournis
-    // -------------------------------------------------------------------------
-    private CustomSort buildSort(String sortBy, String sortDir) {
-        if (sortBy == null || sortDir == null) return null;
-        CustomSort sort = new CustomSort();
-        sort.setColumnKey(sortBy);
-        sort.setOrder(Sort.Direction.fromString(sortDir));
-        return sort;
-    }
+
 
 
 }

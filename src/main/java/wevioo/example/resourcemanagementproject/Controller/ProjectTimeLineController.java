@@ -3,11 +3,10 @@ package wevioo.example.resourcemanagementproject.Controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,12 +16,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import wevioo.example.resourcemanagementproject.DTO.DepartmentDTO;
 import wevioo.example.resourcemanagementproject.DTO.ProjectTimeLineDTO;
 import wevioo.example.resourcemanagementproject.Enums.ProjectTimeLineType;
+import wevioo.example.resourcemanagementproject.Exception.ValidationHelper;
 import wevioo.example.resourcemanagementproject.Pagination.CustomSort;
 import wevioo.example.resourcemanagementproject.Pagination.PaginatedResponse;
 import wevioo.example.resourcemanagementproject.Service.ProjectTimeLineService;
+import wevioo.example.resourcemanagementproject.Validator.Impl.ProjectTimeLineValidator;
 
 import java.util.List;
 
@@ -34,19 +34,30 @@ public class ProjectTimeLineController {
 
 
     private final ProjectTimeLineService service;
+    private final ProjectTimeLineValidator projectTimeLineValidator;  // ← inject
+
 
     @Operation(summary = "Create timeline")
     @PostMapping
-    public ProjectTimeLineDTO create(@Valid @RequestBody ProjectTimeLineDTO dto) {
-        return service.create(dto);
+    public ResponseEntity<ProjectTimeLineDTO> create(@RequestBody ProjectTimeLineDTO dto,
+                                            BindingResult bindingResult) {
+        // Lance la validation
+        projectTimeLineValidator.validate(dto, bindingResult);
+        ValidationHelper.validate(bindingResult);
+
+        return ResponseEntity.ok(service.create(dto));
     }
 
     @Operation(summary = "Update timeline")
     @PutMapping("/{id}")
-    public ProjectTimeLineDTO update(
-            @Parameter(description = "Timeline ID") @PathVariable Long id,
-            @Valid @RequestBody ProjectTimeLineDTO dto) {
-        return service.update(id, dto);
+    public ResponseEntity<ProjectTimeLineDTO> update(@PathVariable Long id,
+                                            @RequestBody ProjectTimeLineDTO dto,
+                                            BindingResult bindingResult) {
+        //Lance la validation
+        projectTimeLineValidator.validate(dto, bindingResult);
+        ValidationHelper.validate(bindingResult);
+
+        return ResponseEntity.ok(service.update(id, dto));
     }
 
     @Operation(summary = "Get all timelines with pagination")
@@ -66,12 +77,6 @@ public class ProjectTimeLineController {
     public List<ProjectTimeLineDTO> getByProject(@PathVariable Long projectId) {
         return service.getByProject(projectId);
     }
-
-//    @Operation(summary = "Search timelines")
-//    @GetMapping("/search")
-//    public List<ProjectTimeLineDTO> search(@RequestParam String keyword) {
-//        return service.search(keyword);
-//    }
 
     @Operation(
             summary = "Recherche paginée des project timelines",
@@ -132,17 +137,6 @@ public class ProjectTimeLineController {
     @DeleteMapping("/{id}")
     public void delete(@PathVariable Long id) {
         service.delete(id);
-    }
-
-    // -------------------------------------------------------------------------
-    // Helper — construit CustomSort uniquement si les deux params sont fournis
-    // -------------------------------------------------------------------------
-    private CustomSort buildSort(String sortBy, String sortDir) {
-        if (sortBy == null || sortDir == null) return null;
-        CustomSort sort = new CustomSort();
-        sort.setColumnKey(sortBy);
-        sort.setOrder(Sort.Direction.fromString(sortDir));
-        return sort;
     }
 
 

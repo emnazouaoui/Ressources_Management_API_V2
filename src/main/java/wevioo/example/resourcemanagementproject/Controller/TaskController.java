@@ -1,15 +1,13 @@
 package wevioo.example.resourcemanagementproject.Controller;
 
-
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,13 +17,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import wevioo.example.resourcemanagementproject.DTO.DepartmentDTO;
 import wevioo.example.resourcemanagementproject.DTO.TaskDTO;
 import wevioo.example.resourcemanagementproject.Enums.Priority;
 import wevioo.example.resourcemanagementproject.Enums.TaskStatus;
+import wevioo.example.resourcemanagementproject.Exception.ValidationHelper;
 import wevioo.example.resourcemanagementproject.Pagination.CustomSort;
 import wevioo.example.resourcemanagementproject.Pagination.PaginatedResponse;
 import wevioo.example.resourcemanagementproject.Service.TaskService;
+import wevioo.example.resourcemanagementproject.Validator.Impl.TaskValidator;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -37,11 +36,30 @@ import java.util.List;
 public class TaskController {
 
     private final TaskService taskService;
+    private final TaskValidator taskValidator;  // ← inject
+
 
     @Operation(summary = "Create Task")
     @PostMapping
-    public TaskDTO create(@Valid @RequestBody TaskDTO dto) {
-        return taskService.create(dto);
+    public ResponseEntity<TaskDTO> create(@RequestBody TaskDTO dto,
+                                            BindingResult bindingResult) {
+        // Lance la validation
+        taskValidator.validate(dto, bindingResult);
+        ValidationHelper.validate(bindingResult);
+
+        return ResponseEntity.ok(taskService.create(dto));
+    }
+
+    @Operation(summary = "Update Task")
+    @PutMapping("/{id}")
+    public ResponseEntity<TaskDTO> update(@PathVariable Long id,
+                                            @RequestBody TaskDTO dto,
+                                            BindingResult bindingResult) {
+        //Lance la validation
+        taskValidator.validate(dto, bindingResult);
+        ValidationHelper.validate(bindingResult);
+
+        return ResponseEntity.ok(taskService.update(id, dto));
     }
 
     @Operation(summary = "Get Task by ID")
@@ -50,11 +68,6 @@ public class TaskController {
         return taskService.getById(id);
     }
 
-    @Operation(summary = "Update Task")
-    @PutMapping("/{id}")
-    public TaskDTO update(@Valid @PathVariable Long id, @RequestBody TaskDTO dto) {
-        return taskService.update(id, dto);
-    }
 
     @Operation(summary = "Delete Task")
     @DeleteMapping("/{id}")
@@ -72,13 +85,6 @@ public class TaskController {
     ) {
         return ResponseEntity.ok(taskService.getAllTasks(page, pageSize, sortBy, sortDir));
     }
-
-//    @Operation(summary = "Search tasks by keyword ")
-//    @GetMapping("/search")
-//    public List<TaskDTO> search(
-//            @Parameter(description = "Keyword for search") @RequestParam String keyword) {
-//        return taskService.search(keyword);
-//    }
 
     @Operation(
             summary = "Recherche paginée des tâches",
@@ -173,14 +179,4 @@ public class TaskController {
         return taskService.removeImputationFromTask(taskId, imputationId);
     }
 
-    // -------------------------------------------------------------------------
-    // Helper — construit CustomSort uniquement si les deux params sont fournis
-    // -------------------------------------------------------------------------
-    private CustomSort buildSort(String sortBy, String sortDir) {
-        if (sortBy == null || sortDir == null) return null;
-        CustomSort sort = new CustomSort();
-        sort.setColumnKey(sortBy);
-        sort.setOrder(Sort.Direction.fromString(sortDir));
-        return sort;
-    }
 }

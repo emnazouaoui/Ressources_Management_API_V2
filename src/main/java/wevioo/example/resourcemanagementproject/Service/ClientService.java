@@ -26,11 +26,6 @@ public class ClientService {
     private final ClientMapper clientMapper;
     private final PaginationUtil paginationUtil;      // pour pagination
 
-
-//    public ClientService(ClientRepository repository) {
-//        this.clientRepository = repository;
-//    }
-
     // ✅ CREATE
     public ClientDTO create(ClientDTO dto) {
         Client client = clientMapper.toEntity(dto);
@@ -65,12 +60,6 @@ public class ClientService {
         return clientMapper.toDTO(client);
     }
 
-//    //  GET ALL — يتبدل : page تبدأ من 1
-//    public Page<ClientDTO> getAll(Integer page, Integer pageSize, CustomSort sort) {
-//        Sort sorting = paginationUtil.sortingCriteria(sort, Sort.Direction.ASC, "name");
-//        Pageable pageable = paginationUtil.createPageable(page, pageSize, sorting);
-//        return clientRepository.findAll(pageable).map(clientMapper::toDTO);
-//    }
 
     //  GET ALL — يتبدل : page تبدأ من 1
     public PaginatedResponse<ClientDTO> getAll(Integer page, Integer pageSize, String sortBy, String sortDir) {
@@ -105,28 +94,6 @@ public class ClientService {
         clientRepository.delete(client);
     }
 
-//    //  SEARCH with pagination
-//    public Page<ClientDTO> searchClients(
-//            String name,
-//            String email,
-//            String company,
-//            String address,
-//            String phone,
-//            ClientType typeClient,
-//            Integer  page,
-//            Integer  pageSize,
-//            CustomSort sort
-//    ) {
-//        Sort sorting = paginationUtil.sortingCriteria(sort, Sort.Direction.ASC, "name");
-//        Pageable pageable = paginationUtil.createPageable(page, pageSize, sorting);
-//
-//        return clientRepository.searchClients(
-//                        normalize(name), normalize(email), normalize(company),
-//                        normalize(address), normalize(phone), typeClient,
-//                        pageable
-//                )
-//                .map(clientMapper::toDTO);  // Page<Client> → Page<ClientDTO> directement
-//    }
 
     /** Retourne null si la chaîne est null ou vide après trim. */
     private String normalize(String value) {

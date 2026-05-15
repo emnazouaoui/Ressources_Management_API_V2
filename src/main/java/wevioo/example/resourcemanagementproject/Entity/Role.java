@@ -11,8 +11,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
 
 import java.time.LocalDateTime;
 
@@ -40,11 +38,9 @@ public class Role{
     //@Builder.Default
     private Boolean active = true;
 
-    //@CreatedDate
     @Column(name = "created_date", nullable = false, updatable = false)
     private LocalDateTime createdDate;
 
-    //@LastModifiedDate
     @Column(name = "updated_date")
     private LocalDateTime updatedDate;
 

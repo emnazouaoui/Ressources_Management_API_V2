@@ -3,16 +3,10 @@ package wevioo.example.resourcemanagementproject.Service;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import wevioo.example.resourcemanagementproject.DTO.ClientDTO;
-import wevioo.example.resourcemanagementproject.DTO.DepartmentDTO;
-import wevioo.example.resourcemanagementproject.DTO.ImputationDTO;
 import wevioo.example.resourcemanagementproject.DTO.LeaveRequestDTO;
-import wevioo.example.resourcemanagementproject.Entity.Department;
-import wevioo.example.resourcemanagementproject.Entity.Imputation;
 import wevioo.example.resourcemanagementproject.Entity.LeaveBalance;
 import wevioo.example.resourcemanagementproject.Entity.LeaveRequest;
 import wevioo.example.resourcemanagementproject.Entity.User;
@@ -83,36 +77,7 @@ public class LeaveRequestService {
         return mapper.toDTO(repository.save(lr));
     }
 
-//    public LeaveRequestDTO update(Long id, LeaveRequestDTO dto) {
-//
-//        LeaveRequest lr = repository.findById(id)
-//                .orElseThrow(() -> new RuntimeException("LeaveRequest not found"));
-//
-//        lr.setStartDate(dto.getStartDate());
-//        lr.setEndDate(dto.getEndDate());
-//        lr.setReason(dto.getReason());
-//        lr.setType(dto.getType());
-//
-//        if (dto.getUserId() != null) {
-//            lr.setUser(userRepository.findById(dto.getUserId())
-//                    .orElseThrow(() -> new RuntimeException("User not found")));
-//        }
-//
-//        if (dto.getProjectManagerId() != null) {
-//            lr.setProjectManager(userRepository.findById(dto.getProjectManagerId())
-//                    .orElseThrow(() -> new RuntimeException("Manager not found")));
-//        }
-//
-//        return mapper.toDTO(repository.save(lr));
-//    }
 
-
-//    //  GET ALL — يتبدل : page تبدأ من 1
-//    public Page<LeaveRequestDTO> getAll(Integer page, Integer pageSize, CustomSort sort) {
-//        Sort sorting = paginationUtil.sortingCriteria(sort, Sort.Direction.ASC, "name");
-//        Pageable pageable = paginationUtil.createPageable(page, pageSize, sorting);
-//        return repository.findAll(pageable).map(mapper::toDTO);
-//    }
     //  GET ALL — يتبدل : page تبدأ من 1
     public PaginatedResponse<LeaveRequestDTO> getAll(Integer page, Integer pageSize, String sortBy, String sortDir) {
         CustomSort customSort = null;
@@ -150,36 +115,6 @@ public class LeaveRequestService {
         repository.deleteById(id);
     }
 
-
-//    // ✅ SEARCH
-//    public Page<LeaveRequestDTO> searchLeaveRequests(
-//            String reason,
-//            LeaveRequestType type,
-//            LeaveRequestStatus status,
-//            Long userId,
-//            Long projectManagerId,
-//            String username,
-//            LocalDateTime startDate,
-//            LocalDateTime endDate,
-//            Integer page,
-//            Integer pageSize,
-//            CustomSort sort
-//    ) {
-//        Sort sorting = paginationUtil.sortingCriteria(sort, Sort.Direction.ASC, "name");
-//        Pageable pageable = paginationUtil.createPageable(page, pageSize, sorting);
-//
-//        return repository.searchLeaveRequests(
-//                normalize(reason),
-//                type,
-//                status,
-//                userId,
-//                projectManagerId,
-//                normalize(username),
-//                startDate,
-//                endDate,
-//                pageable
-//        ).map(mapper::toDTO);
-//    }
 
     // ✅ SEARCH — retourne PaginatedResponse au lieu de Page<ClientDTO>
     public PaginatedResponse<LeaveRequestDTO> searchLeaveRequests(

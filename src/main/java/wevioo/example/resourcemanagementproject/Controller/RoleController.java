@@ -3,11 +3,9 @@ package wevioo.example.resourcemanagementproject.Controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,11 +15,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import wevioo.example.resourcemanagementproject.DTO.DepartmentDTO;
 import wevioo.example.resourcemanagementproject.DTO.RoleDTO;
-import wevioo.example.resourcemanagementproject.Pagination.CustomSort;
+import wevioo.example.resourcemanagementproject.Exception.ValidationHelper;
 import wevioo.example.resourcemanagementproject.Pagination.PaginatedResponse;
 import wevioo.example.resourcemanagementproject.Service.RoleService;
+import wevioo.example.resourcemanagementproject.Validator.Impl.RoleValidator;
 
 import java.util.List;
 
@@ -32,11 +30,30 @@ import java.util.List;
 public class RoleController {
 
     private final RoleService service;
+    private final RoleValidator roleValidator;  // ← inject
+
 
     @PostMapping
     @Operation(summary = "Create role")
-    public RoleDTO create(@Valid @RequestBody RoleDTO dto) {
-        return service.create(dto);
+    public ResponseEntity<RoleDTO> create(@RequestBody RoleDTO dto,
+                                            BindingResult bindingResult) {
+        // Lance la validation
+        roleValidator.validate(dto, bindingResult);
+        ValidationHelper.validate(bindingResult);
+
+        return ResponseEntity.ok(service.create(dto));
+    }
+
+    @PutMapping("/{id}")
+    @Operation(summary = "Update role")
+    public ResponseEntity<RoleDTO> update(@PathVariable Long id,
+                                            @RequestBody RoleDTO dto,
+                                            BindingResult bindingResult) {
+        //Lance la validation
+        roleValidator.validate(dto, bindingResult);
+        ValidationHelper.validate(bindingResult);
+
+        return ResponseEntity.ok(service.update(id, dto));
     }
 
     @GetMapping("/{id}")
@@ -45,11 +62,6 @@ public class RoleController {
         return service.getById(id);
     }
 
-    @PutMapping("/{id}")
-    @Operation(summary = "Update role")
-    public RoleDTO update(@Valid @PathVariable Long id, @RequestBody RoleDTO dto) {
-        return service.update(id, dto);
-    }
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete role")
@@ -57,18 +69,6 @@ public class RoleController {
         service.delete(id);
     }
 
-    // 📄 PAGINATION
-//    @GetMapping
-//    @Operation(summary = "Get all roles with pagination")
-//    public Page<RoleDTO> getAll(
-//            @RequestParam(defaultValue = "1") Integer page,
-//            @RequestParam(defaultValue = "5") Integer pageSize,
-//            @RequestParam(required = false) String sortBy,
-//            @RequestParam(required = false) String sortDir
-//    ) {
-//        CustomSort sort = buildSort(sortBy, sortDir);
-//        return service.getAll(page, pageSize,sort);
-//    }
 
     @Operation(summary = "Get all roles with pagination")
     @GetMapping
@@ -114,14 +114,5 @@ public class RoleController {
         );
     }
 
-//    // -------------------------------------------------------------------------
-//    // Helper — construit CustomSort uniquement si les deux params sont fournis
-//    // -------------------------------------------------------------------------
-//    private CustomSort buildSort(String sortBy, String sortDir) {
-//        if (sortBy == null || sortDir == null) return null;
-//        CustomSort sort = new CustomSort();
-//        sort.setColumnKey(sortBy);
-//        sort.setOrder(Sort.Direction.fromString(sortDir));
-//        return sort;
-//    }
+
 }

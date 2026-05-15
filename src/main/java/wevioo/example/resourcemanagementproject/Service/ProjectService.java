@@ -3,22 +3,29 @@ package wevioo.example.resourcemanagementproject.Service;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import wevioo.example.resourcemanagementproject.DTO.ClientDTO;
-import wevioo.example.resourcemanagementproject.DTO.DepartmentDTO;
 import wevioo.example.resourcemanagementproject.DTO.ProjectDTO;
-import wevioo.example.resourcemanagementproject.Entity.*;
-import wevioo.example.resourcemanagementproject.Enums.ProjectField;
+import wevioo.example.resourcemanagementproject.Entity.Project;
+import wevioo.example.resourcemanagementproject.Entity.ProjectTimeLine;
+import wevioo.example.resourcemanagementproject.Entity.Technology;
+import wevioo.example.resourcemanagementproject.Entity.User;
+import wevioo.example.resourcemanagementproject.Entity.Task;
+import wevioo.example.resourcemanagementproject.Entity.UserProject;
 import wevioo.example.resourcemanagementproject.Enums.ProjectStatus;
 import wevioo.example.resourcemanagementproject.Exception.Custom.ResourceNotFoundException;
 import wevioo.example.resourcemanagementproject.Pagination.CustomSort;
 import wevioo.example.resourcemanagementproject.Pagination.PaginatedResponse;
 import wevioo.example.resourcemanagementproject.Pagination.PaginationUtil;
-import wevioo.example.resourcemanagementproject.Repository.*;
 import wevioo.example.resourcemanagementproject.Mapper.ProjectMapper;
+import wevioo.example.resourcemanagementproject.Repository.ClientRepository;
+import wevioo.example.resourcemanagementproject.Repository.ProjectRepository;
+import wevioo.example.resourcemanagementproject.Repository.ProjectTimeLineRepository;
+import wevioo.example.resourcemanagementproject.Repository.TaskRepository;
+import wevioo.example.resourcemanagementproject.Repository.TechnologyRepository;
+import wevioo.example.resourcemanagementproject.Repository.UserProjectRepository;
+import wevioo.example.resourcemanagementproject.Repository.UserRepository;
 
 
 import java.time.LocalDateTime;
@@ -42,8 +49,6 @@ public class ProjectService {
     private final PaginationUtil paginationUtil;      // pour pagination
 
     private final ProjectMapper mapper;
-
-    private final ProjectHistoryService projectHistoryService;
 
 
     // 🔥 CREATE
@@ -69,133 +74,33 @@ public class ProjectService {
         return mapper.toDTO(saved);
     }
 
-//    // 🔥 UPDATE
-//    public ProjectDTO update(Long id, ProjectDTO dto) {
-//
-//        Project p = projectRepository.findById(id)
-//                .orElseThrow(() -> new RuntimeException("Project not found"));
-//
-//        mapper.updateEntity(dto, p);
-//
-//        p.setStatus(ProjectStatus.valueOf(dto.getStatus()));
-//
-//        p.setProjectManager(userRepository.findById(dto.getProjectManagerId())
-//                .orElseThrow(() -> new RuntimeException("Manager not found")));
-//
-//        p.setClient(clientRepository.findById(dto.getClientId())
-//                .orElseThrow(() -> new RuntimeException("Client not found")));
-//
-//        Project saved = projectRepository.save(p);
-//
-//        return mapper.toDTO(saved);
-//    }
-//public ProjectDTO update(Long id, ProjectDTO dto) {
-//
-//    Project p = projectRepository.findById(id)
-//            .orElseThrow(() -> new ResourceNotFoundException("Project not found"));
-//
-//    // =========================
-//    // 🔥 HISTORY (OLD VALUES)
-//    // =========================
-//    String oldName = p.getName();
-//    String oldDescription = p.getDescription();
-//    String oldStatus = p.getStatus() != null ? p.getStatus().name() : null;
-//    String oldStartDate = String.valueOf(p.getStartDate());
-//    String oldEndDate = String.valueOf(p.getEndDate());
-//    String oldProgress = String.valueOf(p.getProgressPercent());
-//
-//    String oldManager = p.getProjectManager() != null
-//            ? String.valueOf(p.getProjectManager().getId())
-//            : null;
-//
-//    String oldClient = p.getClient() != null
-//            ? String.valueOf(p.getClient().getId())
-//            : null;
-//
-//    // =========================
-//    // 🔥 UPDATE FIELDS
-//    // =========================
-//    mapper.updateEntity(dto, p);
-//
-//    if (dto.getStatus() != null) {
-//        p.setStatus(ProjectStatus.valueOf(dto.getStatus()));
-//    }
-//
-//    p.setUpdatedDate(LocalDateTime.now());
-//
-//    p.setProjectManager(userRepository.findById(dto.getProjectManagerId())
-//            .orElseThrow(() -> new ResourceNotFoundException("Manager not found")));
-//
-//    p.setClient(clientRepository.findById(dto.getClientId())
-//            .orElseThrow(() -> new ResourceNotFoundException("Client not found")));
-//
-//    Project saved = projectRepository.save(p);
-//
-//    // =========================
-//    // 🔥 HISTORY (NEW VALUES)
-//    // =========================
-//    projectHistoryService.saveHistory(p, ProjectField.NAME,
-//            oldName, saved.getName());
-//
-//    projectHistoryService.saveHistory(p, ProjectField.DESCRIPTION,
-//            oldDescription, saved.getDescription());
-//
-//    projectHistoryService.saveHistory(p, ProjectField.STATUS,
-//            oldStatus, saved.getStatus().name());
-//
-//    projectHistoryService.saveHistory(p, ProjectField.START_DATE,
-//            oldStartDate, String.valueOf(saved.getStartDate()));
-//
-//    projectHistoryService.saveHistory(p, ProjectField.END_DATE,
-//            oldEndDate, String.valueOf(saved.getEndDate()));
-//
-//    projectHistoryService.saveHistory(p, ProjectField.PROGRESS,
-//            oldProgress, String.valueOf(saved.getProgressPercent()));
-//
-//    projectHistoryService.saveHistory(p, ProjectField.PROJECT_MANAGER,
-//            oldManager,
-//            dto.getProjectManagerId() != null ? dto.getProjectManagerId().toString() : null);
-//
-//    projectHistoryService.saveHistory(p, ProjectField.CLIENT,
-//            oldClient,
-//            dto.getClientId() != null ? dto.getClientId().toString() : null);
-//
-//    return mapper.toDTO(saved);
-//}
-// ✅ Après — plus de code history manuel !
-public ProjectDTO update(Long id, ProjectDTO dto) {
+    // ✅ Après — plus de code history manuel !
+    public ProjectDTO update(Long id, ProjectDTO dto) {
 
-    Project p = projectRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Project not found"));
+        Project p = projectRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Project not found"));
 
-    mapper.updateEntity(dto, p);
+        mapper.updateEntity(dto, p);
 
-    if (dto.getStatus() != null) {
-        p.setStatus(ProjectStatus.valueOf(dto.getStatus()));
+        if (dto.getStatus() != null) {
+            p.setStatus(ProjectStatus.valueOf(dto.getStatus()));
+        }
+
+       // p.setUpdatedDate(LocalDateTime.now());
+
+        p.setProjectManager(userRepository.findById(dto.getProjectManagerId())
+                .orElseThrow(() -> new ResourceNotFoundException("Manager not found")));
+
+        p.setClient(clientRepository.findById(dto.getClientId())
+                .orElseThrow(() -> new ResourceNotFoundException("Client not found")));
+
+        // ← @PreUpdate يتكفل بالـ history تلقائياً !
+        // ✅ Listener يتكفل بالـ history تلقائياً
+        Project saved = projectRepository.save(p);
+
+        return mapper.toDTO(saved);
+        //return mapper.toDTO(projectRepository.save(p));
     }
-
-   // p.setUpdatedDate(LocalDateTime.now());
-
-    p.setProjectManager(userRepository.findById(dto.getProjectManagerId())
-            .orElseThrow(() -> new ResourceNotFoundException("Manager not found")));
-
-    p.setClient(clientRepository.findById(dto.getClientId())
-            .orElseThrow(() -> new ResourceNotFoundException("Client not found")));
-
-    // ← @PreUpdate يتكفل بالـ history تلقائياً !
-    // ✅ Listener يتكفل بالـ history تلقائياً
-    Project saved = projectRepository.save(p);
-
-    return mapper.toDTO(saved);
-    //return mapper.toDTO(projectRepository.save(p));
-}
-//
-//    //  GET ALL — يتبدل : page تبدأ من 1
-//    public Page<ProjectDTO> getAll(Integer page, Integer pageSize, CustomSort sort) {
-//        Sort sorting = paginationUtil.sortingCriteria(sort, Sort.Direction.ASC, "name");
-//        Pageable pageable = paginationUtil.createPageable(page, pageSize, sorting);
-//        return projectRepository.findAll(pageable).map(mapper::toDTO);
-//    }
 
     //  GET ALL — يتبدل : page تبدأ من 1
     public PaginatedResponse<ProjectDTO> getAll(Integer page, Integer pageSize, String sortBy, String sortDir) {
@@ -219,40 +124,6 @@ public ProjectDTO update(Long id, ProjectDTO dto) {
         response.setTotalPage(ProjectPage.getTotalPages());
         return response;
     }
-
-//    //  SEARCH
-//    public Page<ProjectDTO> searchProjects(
-//            String name,
-//            String description,
-//            ProjectStatus status,
-//            Long projectManagerId,
-//            String projectManagerUsername,
-//            Long clientId,
-//            String clientName,
-//            LocalDateTime startDate,
-//            LocalDateTime endDate,
-//            Double progressPercent,
-//            Integer page,
-//            Integer pageSize,
-//            CustomSort sort
-//    ) {
-//        Sort sorting = paginationUtil.sortingCriteria(sort, Sort.Direction.ASC, "name");
-//        Pageable pageable = paginationUtil.createPageable(page, pageSize, sorting);
-//
-//        return projectRepository.searchProjects(
-//                normalize(name),
-//                normalize(description),
-//                status,
-//                projectManagerId,
-//                normalize(projectManagerUsername),
-//                clientId,
-//                normalize(clientName),
-//                startDate,
-//                endDate,
-//                progressPercent,
-//                pageable
-//        ).map(mapper::toDTO);
-//    }
 
     // ✅ SEARCH — retourne PaginatedResponse au lieu de Page<ClientDTO>
     public PaginatedResponse<ProjectDTO> searchProjects(
@@ -331,28 +202,6 @@ public ProjectDTO update(Long id, ProjectDTO dto) {
     // 🔥 RELATIONS
     // =========================
 
-//    public void assignTechnologies(Long projectId, List<Long> techIds) {
-//        if (techIds == null) return;
-//
-//        for (Long techId : techIds) {
-//
-//            if (projectTechnologyRepository.existsByProjectIdAndTechnologyId(projectId, techId))
-//                continue;
-//
-//            ProjectTechnology pt = new ProjectTechnology();
-//
-//            Project p = new Project();
-//            p.setId(projectId);
-//
-//            Technology t = technologyRepository.findById(techId)
-//                    .orElseThrow(() -> new RuntimeException("Tech not found"));
-//
-//            pt.setProject(p);
-//            pt.setTechnology(t);
-//
-//            projectTechnologyRepository.save(pt);
-//        }
-//    }
 
     // ✅ Après
     public void assignTechnologies(Long projectId, List<Long> techIds) {

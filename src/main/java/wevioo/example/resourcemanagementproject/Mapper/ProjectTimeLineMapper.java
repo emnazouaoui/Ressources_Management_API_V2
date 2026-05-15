@@ -20,4 +20,7 @@ public interface ProjectTimeLineMapper {
     // pour update
     @Mapping(target = "project", ignore = true)
     void updateEntity(ProjectTimeLineDTO dto, @MappingTarget ProjectTimeLine entity);
+
+//    @Mapping(target = "project", ignore = true)
+//    void update(ProjectTimeLineDTO dto, @MappingTarget ProjectTimeLine entity);
 }

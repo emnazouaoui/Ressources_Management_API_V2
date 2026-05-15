@@ -2,15 +2,11 @@ package wevioo.example.resourcemanagementproject.Service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import wevioo.example.resourcemanagementproject.DTO.ClientDTO;
 import wevioo.example.resourcemanagementproject.DTO.DepartmentDTO;
-import wevioo.example.resourcemanagementproject.Entity.Client;
 import wevioo.example.resourcemanagementproject.Entity.Department;
-import wevioo.example.resourcemanagementproject.Enums.ClientType;
 import wevioo.example.resourcemanagementproject.Exception.Custom.ResourceNotFoundException;
 import wevioo.example.resourcemanagementproject.Pagination.CustomSort;
 import wevioo.example.resourcemanagementproject.Pagination.PaginatedResponse;
@@ -18,9 +14,7 @@ import wevioo.example.resourcemanagementproject.Pagination.PaginationUtil;
 import wevioo.example.resourcemanagementproject.Repository.DepartmentRepository;
 import wevioo.example.resourcemanagementproject.Mapper.DepartmentMapper;
 
-
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -38,12 +32,6 @@ public class DepartmentService {
         return departmentMapper.toDTO(saved);
     }
 
-//    //  GET ALL — يتبدل : page تبدأ من 1
-//    public Page<DepartmentDTO> getAll(Integer page, Integer pageSize, CustomSort sort) {
-//        Sort sorting = paginationUtil.sortingCriteria(sort, Sort.Direction.ASC, "name");
-//        Pageable pageable = paginationUtil.createPageable(page, pageSize, sorting);
-//        return repository.findAll(pageable).map(departmentMapper::toDTO);
-//    }
 //  GET ALL — يتبدل : page تبدأ من 1
     public PaginatedResponse<DepartmentDTO> getAll(Integer page, Integer pageSize, String sortBy, String sortDir) {
         CustomSort customSort = null;
@@ -96,24 +84,6 @@ public class DepartmentService {
         repository.deleteById(id);
     }
 
-
-//    // SEARCH
-//    public Page<DepartmentDTO> searchDepartments(
-//            String name,
-//            String description,
-//            Integer  page,
-//            Integer  pageSize,
-//            CustomSort sort
-//    ) {
-//        Sort sorting = paginationUtil.sortingCriteria(sort, Sort.Direction.ASC, "name");
-//        Pageable pageable = paginationUtil.createPageable(page, pageSize, sorting);
-//
-//        return repository.searchDepartments(
-//                normalize(name),
-//                normalize(description),
-//                pageable
-//        ).map(departmentMapper::toDTO);
-//    }
     // ✅ SEARCH — retourne PaginatedResponse au lieu de Page<ClientDTO>
     public PaginatedResponse<DepartmentDTO> searchDepartments(
             String name,

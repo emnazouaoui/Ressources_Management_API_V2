@@ -2,14 +2,10 @@ package wevioo.example.resourcemanagementproject.Service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import wevioo.example.resourcemanagementproject.DTO.RoleDTO;
-import wevioo.example.resourcemanagementproject.DTO.TaskDTO;
 import wevioo.example.resourcemanagementproject.DTO.TechnologyDTO;
-import wevioo.example.resourcemanagementproject.Entity.Role;
 import wevioo.example.resourcemanagementproject.Entity.Technology;
 import wevioo.example.resourcemanagementproject.Exception.Custom.ResourceNotFoundException;
 import wevioo.example.resourcemanagementproject.Pagination.CustomSort;
@@ -96,21 +92,6 @@ public class TechnologyService {
     }
 
 
-//    // SEARCH
-//    public Page<TechnologyDTO> searchTechnologies(
-//            String name,
-//            Integer page,
-//            Integer pageSize,
-//            CustomSort sort
-//    ) {
-//        Sort sorting = paginationUtil.sortingCriteria(sort, Sort.Direction.ASC, "name");
-//        Pageable pageable = paginationUtil.createPageable(page, pageSize, sorting);
-//
-//        return repository.searchTechnologies(
-//                normalize(name),
-//                pageable
-//        ).map(technologyMapper::toDTO);
-//    }
 
     // ✅ SEARCH — retourne PaginatedResponse au lieu de Page<ClientDTO>
     public PaginatedResponse<TechnologyDTO> searchTechnologies(

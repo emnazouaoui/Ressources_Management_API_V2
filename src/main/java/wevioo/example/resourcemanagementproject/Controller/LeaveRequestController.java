@@ -5,10 +5,10 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,13 +18,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import wevioo.example.resourcemanagementproject.DTO.ImputationDTO;
 import wevioo.example.resourcemanagementproject.DTO.LeaveRequestDTO;
 import wevioo.example.resourcemanagementproject.Enums.LeaveRequestStatus;
 import wevioo.example.resourcemanagementproject.Enums.LeaveRequestType;
+import wevioo.example.resourcemanagementproject.Exception.ValidationHelper;
 import wevioo.example.resourcemanagementproject.Pagination.CustomSort;
 import wevioo.example.resourcemanagementproject.Pagination.PaginatedResponse;
 import wevioo.example.resourcemanagementproject.Service.LeaveRequestService;
+import wevioo.example.resourcemanagementproject.Validator.Impl.LeaveRequestValidator;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -36,18 +37,30 @@ import java.util.List;
 public class LeaveRequestController {
 
     private final LeaveRequestService service;
+    private final LeaveRequestValidator leaveRequestValidator;  // ← inject
+
 
     @PostMapping
     @Operation(summary = "Create a new leave request")
-    public LeaveRequestDTO create(@Valid @RequestBody LeaveRequestDTO dto) {
-        return service.create(dto);
+    public ResponseEntity<LeaveRequestDTO> create(@RequestBody LeaveRequestDTO dto,
+                                            BindingResult bindingResult) {
+        // Lance la validation
+        leaveRequestValidator.validate(dto, bindingResult);
+        ValidationHelper.validate(bindingResult);
+
+        return ResponseEntity.ok(service.create(dto));
     }
 
     @PutMapping("/{id}")
     @Operation(summary = "Update an existing leave request")
-    public LeaveRequestDTO update(@PathVariable Long id,
-                                  @Valid @RequestBody LeaveRequestDTO dto) {
-        return service.update(id, dto);
+    public ResponseEntity<LeaveRequestDTO> update(@PathVariable Long id,
+                                            @RequestBody LeaveRequestDTO dto,
+                                            BindingResult bindingResult) {
+        //Lance la validation
+        leaveRequestValidator.validate(dto, bindingResult);
+        ValidationHelper.validate(bindingResult);
+
+        return ResponseEntity.ok(service.update(id, dto));
     }
 
     @GetMapping
@@ -141,18 +154,5 @@ public class LeaveRequestController {
     ) {
         return service.updateStatus(id, status);
     }
-
-
-    // -------------------------------------------------------------------------
-    // Helper — construit CustomSort uniquement si les deux params sont fournis
-    // -------------------------------------------------------------------------
-    private CustomSort buildSort(String sortBy, String sortDir) {
-        if (sortBy == null || sortDir == null) return null;
-        CustomSort sort = new CustomSort();
-        sort.setColumnKey(sortBy);
-        sort.setOrder(Sort.Direction.fromString(sortDir));
-        return sort;
-    }
-
 
 }

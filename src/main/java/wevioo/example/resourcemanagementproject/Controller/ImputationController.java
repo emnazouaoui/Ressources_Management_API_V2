@@ -3,12 +3,11 @@ package wevioo.example.resourcemanagementproject.Controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,11 +17,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import wevioo.example.resourcemanagementproject.DTO.DepartmentDTO;
 import wevioo.example.resourcemanagementproject.DTO.ImputationDTO;
+import wevioo.example.resourcemanagementproject.Exception.ValidationHelper;
 import wevioo.example.resourcemanagementproject.Pagination.CustomSort;
 import wevioo.example.resourcemanagementproject.Pagination.PaginatedResponse;
 import wevioo.example.resourcemanagementproject.Service.ImputationService;
+import wevioo.example.resourcemanagementproject.Validator.Impl.ImputationValidator;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -35,11 +35,30 @@ public class ImputationController {
 
 
     private final ImputationService imputationService;
+    private final ImputationValidator imputationValidator;  // ← inject
+
 
     @PostMapping
     @Operation(summary = "Create imputation")
-    public ImputationDTO create(@Valid @RequestBody ImputationDTO dto) {
-        return imputationService.create(dto);
+    public ResponseEntity<ImputationDTO> create(@RequestBody ImputationDTO dto,
+                                            BindingResult bindingResult) {
+        // Lance la validation
+        imputationValidator.validate(dto, bindingResult);
+        ValidationHelper.validate(bindingResult);
+
+        return ResponseEntity.ok(imputationService.create(dto));
+    }
+
+    @PutMapping("/{id}")
+    @Operation(summary = "Update an existing imputation")
+    public ResponseEntity<ImputationDTO> update(@PathVariable Long id,
+                                            @RequestBody ImputationDTO dto,
+                                            BindingResult bindingResult) {
+        //Lance la validation
+        imputationValidator.validate(dto, bindingResult);
+        ValidationHelper.validate(bindingResult);
+
+        return ResponseEntity.ok(imputationService.update(id, dto));
     }
 
     @GetMapping("/{id}")
@@ -59,11 +78,6 @@ public class ImputationController {
         return ResponseEntity.ok(imputationService.getAll(page, pageSize, sortBy, sortDir));
     }
 
-    @PutMapping("/{id}")
-    @Operation(summary = "Update an existing imputation")
-    public ImputationDTO update(@PathVariable Long id, @Valid @RequestBody ImputationDTO dto) {
-        return imputationService.update(id, dto);
-    }
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete an imputation")
@@ -122,17 +136,5 @@ public class ImputationController {
                 )
         );
     }
-
-    // -------------------------------------------------------------------------
-    // Helper — construit CustomSort uniquement si les deux params sont fournis
-    // -------------------------------------------------------------------------
-    private CustomSort buildSort(String sortBy, String sortDir) {
-        if (sortBy == null || sortDir == null) return null;
-        CustomSort sort = new CustomSort();
-        sort.setColumnKey(sortBy);
-        sort.setOrder(Sort.Direction.fromString(sortDir));
-        return sort;
-    }
-
 
 }
