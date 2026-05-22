@@ -13,10 +13,10 @@ public interface TaskMapper {
     @Mapping(source = "project.name",          target = "projectName")
     @Mapping(source = "assignedUser.id",       target = "assignedUserId")
     @Mapping(source = "assignedUser.username", target = "assignedUserUsername")
-    TaskDTO toDTO(Task entity);
+    TaskDTO TaskToTaskDTO(Task entity);
 
     @Mapping(target = "project",      ignore = true)
     @Mapping(target = "assignedUser", ignore = true)
     @Mapping(target = "imputations",  ignore = true)
-    Task toEntity(TaskDTO dto);
+    Task TaskDTOtoTaskEntity(TaskDTO dto);
 }

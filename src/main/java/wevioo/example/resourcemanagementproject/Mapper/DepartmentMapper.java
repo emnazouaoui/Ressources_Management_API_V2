@@ -8,6 +8,6 @@ import wevioo.example.resourcemanagementproject.Entity.Department;
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface DepartmentMapper {
 
-    DepartmentDTO toDTO(Department entity);
-    Department toEntity(DepartmentDTO dto);
+    DepartmentDTO DepartmentToDepartmentDTO(Department entity);
+    Department DepartmentDTOtoDepartmentEntity(DepartmentDTO dto);
 }

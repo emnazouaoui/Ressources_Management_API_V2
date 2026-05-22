@@ -5,6 +5,8 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -20,12 +22,15 @@ import wevioo.example.resourcemanagementproject.DTO.UserDTO;
 import wevioo.example.resourcemanagementproject.Entity.UserHistory;
 import wevioo.example.resourcemanagementproject.Enums.Level;
 import wevioo.example.resourcemanagementproject.Exception.ValidationHelper;
+import wevioo.example.resourcemanagementproject.Export.UserExportService;
 import wevioo.example.resourcemanagementproject.Pagination.CustomSort;
 import wevioo.example.resourcemanagementproject.Pagination.PaginatedResponse;
 import wevioo.example.resourcemanagementproject.Repository.UserHistoryRepository;
 import wevioo.example.resourcemanagementproject.Service.UserService;
 import wevioo.example.resourcemanagementproject.Validator.Impl.UserValidator;
 
+import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -37,6 +42,7 @@ public class UserController {
     private final UserService userService;
     private final UserHistoryRepository userHistoryRepository;
     private final UserValidator userValidator;   // ← inject
+    private final UserExportService userExportService;
 
 
     @PostMapping
@@ -198,6 +204,44 @@ public class UserController {
                 .filter(h -> h.getUser().getId() == id)
                 .toList();
     }
+
+
+    @Operation(summary = "Export users to Excel")
+    @GetMapping("/export")
+    public ResponseEntity<byte[]> exportUsers(
+            @RequestParam(required = false) String username,
+            @RequestParam(required = false) String firstName,
+            @RequestParam(required = false) String lastName,
+            @RequestParam(required = false) String email,
+            @RequestParam(required = false) Boolean active,
+            @RequestParam(required = false) Level level,
+            @RequestParam(required = false) Long roleId,
+            @RequestParam(required = false) String roleName,
+            @RequestParam(required = false) Long departmentId,
+            @RequestParam(required = false) String departmentName,
+            @RequestParam(required = false) Long managerId,
+            @RequestParam(required = false) String managerUsername,
+            @RequestParam(required = false) String phone
+    ) throws IOException {
+
+        byte[] excelFile = userExportService.exportUsers(
+                username, firstName, lastName, email,
+                active, level, roleId, roleName,
+                departmentId, departmentName,
+                managerId, managerUsername, phone
+        );
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=users_" + LocalDateTime.now() + ".xlsx")
+                .contentType(MediaType.parseMediaType(
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .body(excelFile);
+    }
+
+
+
+
 
 //    //------------------------- Upload photo user-----------------------------//
 //

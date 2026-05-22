@@ -7,6 +7,6 @@ import wevioo.example.resourcemanagementproject.Entity.Client;
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface ClientMapper {
-    ClientDTO toDTO(Client entity);
-    Client toEntity(ClientDTO dto);
+    ClientDTO ClientToClientDTO(Client entity);
+    Client ClientDtoToClientEntity(ClientDTO dto);
 }

@@ -8,6 +8,6 @@ import wevioo.example.resourcemanagementproject.Entity.Technology;
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface TechnologyMapper {
 
-    TechnologyDTO toDTO(Technology entity);
-    Technology toEntity(TechnologyDTO dto);
+    TechnologyDTO TechnologyToTechnologyDTO(Technology entity);
+    Technology TechnologyDTOtoTechnologyEntity(TechnologyDTO dto);
 }

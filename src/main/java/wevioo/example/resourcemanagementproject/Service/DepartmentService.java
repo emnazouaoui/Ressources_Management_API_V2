@@ -27,9 +27,9 @@ public class DepartmentService {
 
     // CREATE
     public DepartmentDTO create(DepartmentDTO dto) {
-        Department saved = repository.save(departmentMapper.toEntity(dto));
+        Department saved = repository.save(departmentMapper.DepartmentDTOtoDepartmentEntity(dto));
 
-        return departmentMapper.toDTO(saved);
+        return departmentMapper.DepartmentToDepartmentDTO(saved);
     }
 
 //  GET ALL — يتبدل : page تبدأ من 1
@@ -47,7 +47,7 @@ public class DepartmentService {
         Page<Department> DepartmentPage = repository.findAll(pageable);
 
         PaginatedResponse<DepartmentDTO> response = new PaginatedResponse<>();
-        response.setContent(DepartmentPage.getContent().stream().map(departmentMapper::toDTO).toList());
+        response.setContent(DepartmentPage.getContent().stream().map(departmentMapper::DepartmentToDepartmentDTO).toList());
         response.setPage(DepartmentPage.getNumber() + 1);
         response.setPageSize(DepartmentPage.getSize());
         response.setTotalElement(DepartmentPage.getTotalElements());
@@ -61,7 +61,7 @@ public class DepartmentService {
         Department d = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Department not found: " + id));
 
-        return departmentMapper.toDTO(d);
+        return departmentMapper.DepartmentToDepartmentDTO(d);
     }
 
     // UPDATE
@@ -73,7 +73,7 @@ public class DepartmentService {
         d.setDescription(dto.getDescription());
         d.setUpdatedDate(LocalDateTime.now());
 
-        return departmentMapper.toDTO(repository.save(d));
+        return departmentMapper.DepartmentToDepartmentDTO(repository.save(d));
     }
 
     // DELETE
@@ -118,7 +118,7 @@ public class DepartmentService {
         // ← البناء الجديد للـ response
         PaginatedResponse<DepartmentDTO> response = new PaginatedResponse<>();
         response.setContent(departmentPage.getContent().stream()
-                .map(departmentMapper::toDTO)
+                .map(departmentMapper::DepartmentToDepartmentDTO)
                 .toList());
         response.setPage(departmentPage.getNumber() + 1);   // Spring 0-indexed → on remet à 1
         response.setPageSize(departmentPage.getSize());

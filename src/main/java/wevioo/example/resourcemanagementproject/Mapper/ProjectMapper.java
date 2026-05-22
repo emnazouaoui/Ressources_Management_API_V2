@@ -26,7 +26,7 @@ public interface ProjectMapper {
     @Mapping(source = "userProjects",            target = "userIds",         qualifiedByName = "userProjectsToIds")
     @Mapping(source = "tasksList",               target = "taskIds",         qualifiedByName = "tasksToIds")
     @Mapping(source = "projectsTimelineList", target = "timelines")
-    ProjectDTO toDTO(Project entity);
+    ProjectDTO ProjectToProjectDTO(Project entity);
 
     @Mapping(target = "projectManager",       ignore = true)
     @Mapping(target = "client",               ignore = true)
@@ -34,7 +34,7 @@ public interface ProjectMapper {
     @Mapping(target = "userProjects",         ignore = true)
     @Mapping(target = "tasksList",            ignore = true)
     @Mapping(target = "projectsTimelineList", ignore = true)  // fil toEntity
-    Project toEntity(ProjectDTO dto);
+    Project ProjectDTOtoProjectEntity(ProjectDTO dto);
 
     @Mapping(target = "projectManager",       ignore = true)
     @Mapping(target = "client",               ignore = true)
@@ -42,7 +42,7 @@ public interface ProjectMapper {
     @Mapping(target = "userProjects",         ignore = true)
     @Mapping(target = "tasksList",            ignore = true)
     @Mapping(target = "projectsTimelineList", ignore = true)  // fil updateEntity
-    void updateEntity(ProjectDTO dto, @MappingTarget Project project);
+    void updateProjectEntity(ProjectDTO dto, @MappingTarget Project project);
 
     @Named("techsToIds")
     default List<Long> techsToIds(List<Technology> technologies) {

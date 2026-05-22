@@ -24,7 +24,7 @@ public interface UserMapper {
     @Mapping(source = "manager.username",  target = "managerUsername")
     @Mapping(source = "technologies",      target = "technologyIds",   qualifiedByName = "techsToIds")
     @Mapping(source = "technologies",      target = "technologyNames", qualifiedByName = "techsToNames")
-    UserDTO toDTO(User entity);
+    UserDTO UserToUserDTO(User entity);
 
     @Mapping(target = "role",         ignore = true)
     @Mapping(target = "department",   ignore = true)
@@ -33,7 +33,7 @@ public interface UserMapper {
     @Mapping(target = "userProjects", ignore = true)
     @Mapping(target = "password",     ignore = true)
     @Mapping(source = "phone",        target = "phone")  // ← زيد هاذي
-    User toEntity(UserDTO dto);
+    User UserDTOtoUserEntity(UserDTO dto);
 
     @Mapping(target = "role",         ignore = true)
     @Mapping(target = "department",   ignore = true)
@@ -41,8 +41,9 @@ public interface UserMapper {
     @Mapping(target = "technologies", ignore = true)
     @Mapping(target = "userProjects", ignore = true)
     @Mapping(target = "password",     ignore = true)
+
     @Mapping(source = "phone",        target = "phone")  // ← زيد هاذي
-    void updateEntityFromDTO(UserDTO dto, @MappingTarget User user);
+    void updateUserEntityFromUserDTO(UserDTO dto, @MappingTarget User user);
 
     @Named("techsToIds")
     default List<Long> techsToIds(List<Technology> technologies) {

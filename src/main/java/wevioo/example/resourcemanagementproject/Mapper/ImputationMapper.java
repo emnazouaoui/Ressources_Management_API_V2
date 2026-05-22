@@ -15,22 +15,23 @@ public interface ImputationMapper {
     @Mapping(source = "task.title",    target = "title")
     @Mapping(source = "user.id",       target = "userId")
     @Mapping(source = "user.username", target = "username")
-    ImputationDTO toDTO(Imputation entity);
+    ImputationDTO ImputationToImputationDTO(Imputation entity);
 
+    //ignore لازمة — task و user يتحطوا manually في default method
     @Mapping(target = "task", ignore = true)
     @Mapping(target = "user", ignore = true)
-    Imputation toEntity(ImputationDTO dto);
+    Imputation ImputationDTOtoImputationEntity(ImputationDTO dto);
 
     // ← default method pour 3 paramètres
-    default Imputation toEntity(ImputationDTO dto, Task task, User user) {
-        Imputation entity = toEntity(dto);
+    default Imputation ImputationDTOtoImputationEntity(ImputationDTO dto, Task task, User user) {
+        Imputation entity = ImputationDTOtoImputationEntity(dto);
         entity.setTask(task);
         entity.setUser(user);
         return entity;
     }
 
     // ← default method pour update
-    default void updateEntity(Imputation entity, ImputationDTO dto, Task task, User user) {
+    default void updateImputationEntity(Imputation entity, ImputationDTO dto, Task task, User user) {
         entity.setDate(dto.getDate());
         entity.setHours(dto.getHours());
         entity.setComment(dto.getComment());

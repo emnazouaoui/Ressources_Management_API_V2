@@ -12,14 +12,14 @@ public interface ProjectTimeLineMapper {
 
     @Mapping(source = "project.id",   target = "projectId")
     @Mapping(source = "project.name", target = "name")
-    ProjectTimeLineDTO toDTO(ProjectTimeLine entity);
+    ProjectTimeLineDTO ProjectTimeLineToProjectTimeLineDTO(ProjectTimeLine entity);
 
     @Mapping(target = "project", ignore = true)
-    ProjectTimeLine toEntity(ProjectTimeLineDTO dto);
+    ProjectTimeLine ProjectTimeLineDTOtoProjectTimeLineEntity(ProjectTimeLineDTO dto);
 
     // pour update
     @Mapping(target = "project", ignore = true)
-    void updateEntity(ProjectTimeLineDTO dto, @MappingTarget ProjectTimeLine entity);
+    void updateProjectTimeLineEntity(ProjectTimeLineDTO dto, @MappingTarget ProjectTimeLine entity);
 
 //    @Mapping(target = "project", ignore = true)
 //    void update(ProjectTimeLineDTO dto, @MappingTarget ProjectTimeLine entity);

@@ -29,8 +29,8 @@ public class TechnologyService {
 
     // CREATE
     public TechnologyDTO create(TechnologyDTO dto) {
-        Technology saved = repository.save(technologyMapper.toEntity(dto));
-        return technologyMapper.toDTO(saved);
+        Technology saved = repository.save(technologyMapper.TechnologyDTOtoTechnologyEntity(dto));
+        return technologyMapper.TechnologyToTechnologyDTO(saved);
     }
 
     // GET BY ID
@@ -38,7 +38,7 @@ public class TechnologyService {
         Technology t = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Technology not found: " + id));
 
-        return technologyMapper.toDTO(t);
+        return technologyMapper.TechnologyToTechnologyDTO(t);
     }
 
     // UPDATE
@@ -50,7 +50,7 @@ public class TechnologyService {
         t.setUpdatedDate(LocalDateTime.now());
 
 
-        return technologyMapper.toDTO(repository.save(t));
+        return technologyMapper.TechnologyToTechnologyDTO(repository.save(t));
     }
 
     // DELETE
@@ -65,7 +65,7 @@ public class TechnologyService {
     public Page<TechnologyDTO> getAll(Integer page, Integer pageSize, CustomSort sort) {
         Sort sorting = paginationUtil.sortingCriteria(sort, Sort.Direction.ASC, "name");
         Pageable pageable = paginationUtil.createPageable(page, pageSize, sorting);
-        return repository.findAll(pageable).map(technologyMapper::toDTO);
+        return repository.findAll(pageable).map(technologyMapper::TechnologyToTechnologyDTO);
     }
 
     //  GET ALL — يتبدل : page تبدأ من 1
@@ -83,7 +83,7 @@ public class TechnologyService {
         Page<Technology> TechnologyPage = repository.findAll(pageable);
 
         PaginatedResponse<TechnologyDTO> response = new PaginatedResponse<>();
-        response.setContent(TechnologyPage.getContent().stream().map(technologyMapper::toDTO).toList());
+        response.setContent(TechnologyPage.getContent().stream().map(technologyMapper::TechnologyToTechnologyDTO).toList());
         response.setPage(TechnologyPage.getNumber() + 1);
         response.setPageSize(TechnologyPage.getSize());
         response.setTotalElement(TechnologyPage.getTotalElements());
@@ -125,7 +125,7 @@ public class TechnologyService {
         // ← البناء الجديد للـ response
         PaginatedResponse<TechnologyDTO> response = new PaginatedResponse<>();
         response.setContent(TechnologyPage.getContent().stream()
-                .map(technologyMapper::toDTO)
+                .map(technologyMapper::TechnologyToTechnologyDTO)
                 .toList());
         response.setPage(TechnologyPage.getNumber() + 1);   // Spring 0-indexed → on remet à 1
         response.setPageSize(TechnologyPage.getSize());

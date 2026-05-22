@@ -41,9 +41,9 @@ public class ImputationService {
         User user = userRepository.findById(dto.getUserId())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        Imputation imputation = imputationMapper.toEntity(dto, task, user);
+        Imputation imputation = imputationMapper.ImputationDTOtoImputationEntity(dto, task, user);
 
-        return imputationMapper.toDTO(imputationRepository.save(imputation));
+        return imputationMapper.ImputationToImputationDTO(imputationRepository.save(imputation));
     }
 
     // GET BY ID
@@ -51,7 +51,7 @@ public class ImputationService {
         Imputation imputation = imputationRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Imputation not found"));
 
-        return imputationMapper.toDTO(imputation);
+        return imputationMapper.ImputationToImputationDTO(imputation);
     }
 
     //  GET ALL — يتبدل : page تبدأ من 1
@@ -69,7 +69,7 @@ public class ImputationService {
         Page<Imputation> ImputationPage = imputationRepository.findAll(pageable);
 
         PaginatedResponse<ImputationDTO> response = new PaginatedResponse<>();
-        response.setContent(ImputationPage.getContent().stream().map(imputationMapper::toDTO).toList());
+        response.setContent(ImputationPage.getContent().stream().map(imputationMapper::ImputationToImputationDTO).toList());
         response.setPage(ImputationPage.getNumber() + 1);
         response.setPageSize(ImputationPage.getSize());
         response.setTotalElement(ImputationPage.getTotalElements());
@@ -89,11 +89,11 @@ public class ImputationService {
         User user = userRepository.findById(dto.getUserId())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        imputationMapper.updateEntity(imputation, dto, task, user);
+        imputationMapper.updateImputationEntity(imputation, dto, task, user);
 
         imputation.setUpdatedDate(LocalDateTime.now());
 
-        return imputationMapper.toDTO(imputationRepository.save(imputation));
+        return imputationMapper.ImputationToImputationDTO(imputationRepository.save(imputation));
     }
 
     // DELETE
@@ -149,7 +149,7 @@ public class ImputationService {
         // ← البناء الجديد للـ response
         PaginatedResponse<ImputationDTO> response = new PaginatedResponse<>();
         response.setContent(ImputationPage.getContent().stream()
-                .map(imputationMapper::toDTO)
+                .map(imputationMapper::ImputationToImputationDTO)
                 .toList());
         response.setPage(ImputationPage.getNumber() + 1);   // Spring 0-indexed → on remet à 1
         response.setPageSize(ImputationPage.getSize());

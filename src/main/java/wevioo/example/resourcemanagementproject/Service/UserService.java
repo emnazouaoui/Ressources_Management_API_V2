@@ -22,7 +22,6 @@ import wevioo.example.resourcemanagementproject.Repository.UserRepository;
 import wevioo.example.resourcemanagementproject.Mapper.UserMapper;
 
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -42,7 +41,7 @@ public class UserService {
 
     // CREATE
     public UserDTO create(UserDTO dto) {
-        User user = userMapper.toEntity(dto);
+        User user = userMapper.UserDTOtoUserEntity(dto);
 
         // 🔥 CRYPT PASSWORD
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
@@ -58,7 +57,7 @@ public class UserService {
                   .orElseThrow(() -> new ResourceNotFoundException("Manager not found")));
        }
 
-        return userMapper.toDTO(userRepository.save(user));
+        return userMapper.UserToUserDTO(userRepository.save(user));
     }
 
     //  GET ALL — يتبدل : page تبدأ من 1
@@ -76,7 +75,7 @@ public class UserService {
         Page<User> UserPage = userRepository.findAll(pageable);
 
         PaginatedResponse<UserDTO> response = new PaginatedResponse<>();
-        response.setContent(UserPage.getContent().stream().map(userMapper::toDTO).toList());
+        response.setContent(UserPage.getContent().stream().map(userMapper::UserToUserDTO).toList());
         response.setPage(UserPage.getNumber() + 1);
         response.setPageSize(UserPage.getSize());
         response.setTotalElement(UserPage.getTotalElements());
@@ -87,7 +86,7 @@ public class UserService {
 
     // GET BY ID
     public UserDTO getById(Long id) {
-        return userMapper.toDTO(
+        return userMapper.UserToUserDTO(
                 userRepository.findById(id)
                         .orElseThrow(() -> new ResourceNotFoundException("User not found"))
         );
@@ -102,7 +101,7 @@ public class UserService {
 
         // ✅ @PreUpdate يتكفل بالـ history تلقائياً — supprime tout le bloc HISTORY
 
-        userMapper.updateEntityFromDTO(dto, user);
+        userMapper.updateUserEntityFromUserDTO(dto, user);
 
         if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
             user.setPassword(passwordEncoder.encode(dto.getPassword()));
@@ -121,7 +120,7 @@ public class UserService {
             user.setManager(null);
         }
 
-        return userMapper.toDTO(userRepository.save(user));
+        return userMapper.UserToUserDTO(userRepository.save(user));
     }
 
     // DELETE
@@ -190,7 +189,7 @@ public class UserService {
         // ← البناء الجديد للـ response
         PaginatedResponse<UserDTO> response = new PaginatedResponse<>();
         response.setContent(UserPage.getContent().stream()
-                .map(userMapper::toDTO)
+                .map(userMapper::UserToUserDTO)
                 .toList());
         response.setPage(UserPage.getNumber() + 1);   // Spring 0-indexed → on remet à 1
         response.setPageSize(UserPage.getSize());
@@ -208,7 +207,7 @@ public class UserService {
 
         return userRepository.findUsersByTechnologyName(name)
                 .stream()
-                .map(userMapper::toDTO)
+                .map(userMapper::UserToUserDTO)
                 .toList();
     }
 

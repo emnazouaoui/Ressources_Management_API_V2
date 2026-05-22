@@ -28,8 +28,8 @@ public class RoleService {
 
     // CREATE
     public RoleDTO create(RoleDTO dto) {
-        Role saved = repository.save(roleMapper.toEntity(dto));
-        return roleMapper.toDTO(saved);
+        Role saved = repository.save(roleMapper.RoleDTOtoRoleEntity(dto));
+        return roleMapper.RoleToRoleDTO(saved);
     }
 
     // GET BY ID
@@ -37,7 +37,7 @@ public class RoleService {
         Role r = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Role not found: " + id));
 
-        return roleMapper.toDTO(r);
+        return roleMapper.RoleToRoleDTO(r);
     }
 
     // UPDATE
@@ -50,7 +50,7 @@ public class RoleService {
         r.setActive(dto.getActive());
         r.setUpdatedDate(LocalDateTime.now());
 
-        return roleMapper.toDTO(repository.save(r));
+        return roleMapper.RoleToRoleDTO(repository.save(r));
     }
 
     // DELETE
@@ -76,7 +76,7 @@ public class RoleService {
         Page<Role> RolePage = repository.findAll(pageable);
 
         PaginatedResponse<RoleDTO> response = new PaginatedResponse<>();
-        response.setContent(RolePage.getContent().stream().map(roleMapper::toDTO).toList());
+        response.setContent(RolePage.getContent().stream().map(roleMapper::RoleToRoleDTO).toList());
         response.setPage(RolePage.getNumber() + 1);
         response.setPageSize(RolePage.getSize());
         response.setTotalElement(RolePage.getTotalElements());
@@ -118,7 +118,7 @@ public class RoleService {
         // ← البناء الجديد للـ response
         PaginatedResponse<RoleDTO> response = new PaginatedResponse<>();
         response.setContent(RolePage.getContent().stream()
-                .map(roleMapper::toDTO)
+                .map(roleMapper::RoleToRoleDTO)
                 .toList());
         response.setPage(RolePage.getNumber() + 1);   // Spring 0-indexed → on remet à 1
         response.setPageSize(RolePage.getSize());

@@ -41,7 +41,7 @@ public class LeaveRequestService {
     public LeaveRequestDTO create(LeaveRequestDTO dto) {
 
         LeaveRequest lr = new LeaveRequest();
-        mapper.toEntity(dto, lr);
+        mapper.LeaveRequestDTOtoLeaveRequestEntity(dto, lr);
 
         lr.setStatus(LeaveRequestStatus.PENDING);// add for leaveBalance
 
@@ -51,7 +51,7 @@ public class LeaveRequestService {
         lr.setProjectManager(userRepository.findById(dto.getProjectManagerId())
                 .orElseThrow(() -> new ResourceNotFoundException("Manager not found")));
 
-        return mapper.toDTO(repository.save(lr));
+        return mapper.LeaveRequestToLeaveRequestDTO(repository.save(lr));
     }
 
     // UPDATE
@@ -60,7 +60,7 @@ public class LeaveRequestService {
         LeaveRequest lr = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("LeaveRequest not found"));
 
-        mapper.toEntity(dto, lr);
+        mapper.LeaveRequestDTOtoLeaveRequestEntity(dto, lr);
 
         lr.setUpdatedDate(LocalDateTime.now());
 
@@ -74,7 +74,7 @@ public class LeaveRequestService {
                     .orElseThrow(() -> new ResourceNotFoundException("Manager not found")));
         }
 
-        return mapper.toDTO(repository.save(lr));
+        return mapper.LeaveRequestToLeaveRequestDTO(repository.save(lr));
     }
 
 
@@ -93,7 +93,7 @@ public class LeaveRequestService {
         Page<LeaveRequest> LeaveRequestPage = repository.findAll(pageable);
 
         PaginatedResponse<LeaveRequestDTO> response = new PaginatedResponse<>();
-        response.setContent(LeaveRequestPage.getContent().stream().map(mapper::toDTO).toList());
+        response.setContent(LeaveRequestPage.getContent().stream().map(mapper::LeaveRequestToLeaveRequestDTO).toList());
         response.setPage(LeaveRequestPage.getNumber() + 1);
         response.setPageSize(LeaveRequestPage.getSize());
         response.setTotalElement(LeaveRequestPage.getTotalElements());
@@ -104,7 +104,7 @@ public class LeaveRequestService {
 
     // GET BY ID
     public LeaveRequestDTO getById(Long id) {
-        return mapper.toDTO(
+        return mapper.LeaveRequestToLeaveRequestDTO(
                 repository.findById(id)
                         .orElseThrow(() -> new ResourceNotFoundException("LeaveRequest not found"))
         );
@@ -163,7 +163,7 @@ public class LeaveRequestService {
         // ← البناء الجديد للـ response
         PaginatedResponse<LeaveRequestDTO> response = new PaginatedResponse<>();
         response.setContent(LeaveRequestPage.getContent().stream()
-                .map(mapper::toDTO)
+                .map(mapper::LeaveRequestToLeaveRequestDTO)
                 .toList());
         response.setPage(LeaveRequestPage.getNumber() + 1);   // Spring 0-indexed → on remet à 1
         response.setPageSize(LeaveRequestPage.getSize());
@@ -196,7 +196,7 @@ public class LeaveRequestService {
 
 
 
-        return mapper.toDTO(repository.save(lr));
+        return mapper.LeaveRequestToLeaveRequestDTO(repository.save(lr));
     }
    //------------------------------------- Validation Type -------------------//
 

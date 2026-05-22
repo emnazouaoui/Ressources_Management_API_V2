@@ -55,7 +55,7 @@ public class ProjectService {
     public ProjectDTO create(ProjectDTO dto) {
 
         Project p = new Project();
-        mapper.updateEntity(dto, p);
+        mapper.updateProjectEntity(dto, p);
 
         p.setStatus(ProjectStatus.valueOf(dto.getStatus()));
 
@@ -71,7 +71,7 @@ public class ProjectService {
         assignUsers(saved.getId(), dto.getUserIds());
         assignTechnologies(saved.getId(), dto.getTechnologyIds());
 
-        return mapper.toDTO(saved);
+        return mapper.ProjectToProjectDTO(saved);
     }
 
     // ✅ Après — plus de code history manuel !
@@ -80,7 +80,7 @@ public class ProjectService {
         Project p = projectRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Project not found"));
 
-        mapper.updateEntity(dto, p);
+        mapper.updateProjectEntity(dto, p);
 
         if (dto.getStatus() != null) {
             p.setStatus(ProjectStatus.valueOf(dto.getStatus()));
@@ -98,7 +98,7 @@ public class ProjectService {
         // ✅ Listener يتكفل بالـ history تلقائياً
         Project saved = projectRepository.save(p);
 
-        return mapper.toDTO(saved);
+        return mapper.ProjectToProjectDTO(saved);
         //return mapper.toDTO(projectRepository.save(p));
     }
 
@@ -117,7 +117,7 @@ public class ProjectService {
         Page<Project> ProjectPage = projectRepository.findAll(pageable);
 
         PaginatedResponse<ProjectDTO> response = new PaginatedResponse<>();
-        response.setContent(ProjectPage.getContent().stream().map(mapper::toDTO).toList());
+        response.setContent(ProjectPage.getContent().stream().map(mapper::ProjectToProjectDTO).toList());
         response.setPage(ProjectPage.getNumber() + 1);
         response.setPageSize(ProjectPage.getSize());
         response.setTotalElement(ProjectPage.getTotalElements());
@@ -176,7 +176,7 @@ public class ProjectService {
         // ← البناء الجديد للـ response
         PaginatedResponse<ProjectDTO> response = new PaginatedResponse<>();
         response.setContent(ProjectPage.getContent().stream()
-                .map(mapper::toDTO)
+                .map(mapper::ProjectToProjectDTO)
                 .toList());
         response.setPage(ProjectPage.getNumber() + 1);   // Spring 0-indexed → on remet à 1
         response.setPageSize(ProjectPage.getSize());

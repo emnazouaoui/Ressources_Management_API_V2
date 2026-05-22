@@ -40,12 +40,12 @@ public class ProjectTimeLineService {
                 .orElseThrow(() -> new ResourceNotFoundException("Project not found"));
 
         ProjectTimeLine t = new ProjectTimeLine();
-        mapper.updateEntity(dto, t);
+        mapper.updateProjectTimeLineEntity(dto, t);
 //        ProjectTimeLine t = mapper.toEntity(dto);
 
         t.setProject(project);
 
-        return mapper.toDTO(repository.save(t));
+        return mapper.ProjectTimeLineToProjectTimeLineDTO(repository.save(t));
     }
 
     // UPDATE
@@ -54,7 +54,7 @@ public class ProjectTimeLineService {
         ProjectTimeLine t = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Timeline not found"));
 
-        mapper.updateEntity(dto, t);
+        mapper.updateProjectTimeLineEntity(dto, t);
 
         t.setUpdatedDate(LocalDateTime.now());
 
@@ -63,7 +63,7 @@ public class ProjectTimeLineService {
                     .orElseThrow(() -> new ResourceNotFoundException("Project not found")));
         }
 
-        return mapper.toDTO(repository.save(t));
+        return mapper.ProjectTimeLineToProjectTimeLineDTO(repository.save(t));
     }
 
     //  GET ALL — يتبدل : page تبدأ من 1
@@ -81,7 +81,7 @@ public class ProjectTimeLineService {
         Page<ProjectTimeLine> ProjectTimeLinePage = repository.findAll(pageable);
 
         PaginatedResponse<ProjectTimeLineDTO> response = new PaginatedResponse<>();
-        response.setContent(ProjectTimeLinePage.getContent().stream().map(mapper::toDTO).toList());
+        response.setContent(ProjectTimeLinePage.getContent().stream().map(mapper::ProjectTimeLineToProjectTimeLineDTO).toList());
         response.setPage(ProjectTimeLinePage.getNumber() + 1);
         response.setPageSize(ProjectTimeLinePage.getSize());
         response.setTotalElement(ProjectTimeLinePage.getTotalElements());
@@ -94,7 +94,7 @@ public class ProjectTimeLineService {
     public List<ProjectTimeLineDTO> getByProject(Long projectId) {
         return repository.findByProjectId(projectId)
                 .stream()
-                .map(mapper::toDTO)
+                .map(mapper::ProjectTimeLineToProjectTimeLineDTO)
                 .toList();
     }
 
@@ -146,7 +146,7 @@ public class ProjectTimeLineService {
         // ← البناء الجديد للـ response
         PaginatedResponse<ProjectTimeLineDTO> response = new PaginatedResponse<>();
         response.setContent(ProjectTimeLinePage.getContent().stream()
-                .map(mapper::toDTO)
+                .map(mapper::ProjectTimeLineToProjectTimeLineDTO)
                 .toList());
         response.setPage(ProjectTimeLinePage.getNumber() + 1);   // Spring 0-indexed → on remet à 1
         response.setPageSize(ProjectTimeLinePage.getSize());

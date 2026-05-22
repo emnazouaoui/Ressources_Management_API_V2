@@ -28,9 +28,9 @@ public class ClientService {
 
     // ✅ CREATE
     public ClientDTO create(ClientDTO dto) {
-        Client client = clientMapper.toEntity(dto);
+        Client client = clientMapper.ClientDtoToClientEntity(dto);
         Client saved = clientRepository.save(client);
-        return clientMapper.toDTO(saved);
+        return clientMapper.ClientToClientDTO(saved);
     }
 
     // ✅ UPDATE
@@ -49,7 +49,7 @@ public class ClientService {
 
         Client updated = clientRepository.save(existing);
 
-        return clientMapper.toDTO(updated);
+        return clientMapper.ClientToClientDTO(updated);
     }
 
     // ✅ GET BY ID
@@ -57,7 +57,7 @@ public class ClientService {
         Client client = clientRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Client not found with id: " + id));
 
-        return clientMapper.toDTO(client);
+        return clientMapper.ClientToClientDTO(client);
     }
 
 
@@ -76,7 +76,7 @@ public class ClientService {
         Page<Client> clientPage = clientRepository.findAll(pageable);
 
         PaginatedResponse<ClientDTO> response = new PaginatedResponse<>();
-        response.setContent(clientPage.getContent().stream().map(clientMapper::toDTO).toList());
+        response.setContent(clientPage.getContent().stream().map(clientMapper::ClientToClientDTO).toList());
         response.setPage(clientPage.getNumber() + 1);
         response.setPageSize(clientPage.getSize());
         response.setTotalElement(clientPage.getTotalElements());
@@ -139,7 +139,7 @@ public class ClientService {
         // ← البناء الجديد للـ response
         PaginatedResponse<ClientDTO> response = new PaginatedResponse<>();
         response.setContent(clientPage.getContent().stream()
-                .map(clientMapper::toDTO)
+                .map(clientMapper::ClientToClientDTO)
                 .toList());
         response.setPage(clientPage.getNumber() + 1);   // Spring 0-indexed → on remet à 1
         response.setPageSize(clientPage.getSize());

@@ -44,7 +44,7 @@ public class TaskService {
     // ================= CREATE =================
     public TaskDTO create(TaskDTO dto) {
 
-        Task task = taskMapper.toEntity(dto);
+        Task task = taskMapper.TaskDTOtoTaskEntity(dto);
 
         Project project = projectRepository.findById(dto.getProjectId())
                 .orElseThrow(() -> new ResourceNotFoundException("Project not found"));
@@ -55,7 +55,7 @@ public class TaskService {
         task.setProject(project);
         task.setAssignedUser(user);
 
-        return taskMapper.toDTO(taskRepository.save(task));
+        return taskMapper.TaskToTaskDTO(taskRepository.save(task));
     }
 
     // ================= GET BY ID =================
@@ -64,7 +64,7 @@ public class TaskService {
         Task task = taskRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
 
-        return taskMapper.toDTO(task);
+        return taskMapper.TaskToTaskDTO(task);
     }
 
     public TaskDTO update(Long id, TaskDTO dto) {
@@ -94,7 +94,7 @@ public class TaskService {
         }
 
         // ✅ @PostUpdate يتكالى تلقائياً بعد save
-        return taskMapper.toDTO(taskRepository.save(task));
+        return taskMapper.TaskToTaskDTO(taskRepository.save(task));
     }
 
     // ================= DELETE =================
@@ -118,7 +118,7 @@ public class TaskService {
         Page<Task> TaskPage = taskRepository.findAll(pageable);
 
         PaginatedResponse<TaskDTO> response = new PaginatedResponse<>();
-        response.setContent(TaskPage.getContent().stream().map(taskMapper::toDTO).toList());
+        response.setContent(TaskPage.getContent().stream().map(taskMapper::TaskToTaskDTO).toList());
         response.setPage(TaskPage.getNumber() + 1);
         response.setPageSize(TaskPage.getSize());
         response.setTotalElement(TaskPage.getTotalElements());
@@ -181,7 +181,7 @@ public class TaskService {
         // ← البناء الجديد للـ response
         PaginatedResponse<TaskDTO> response = new PaginatedResponse<>();
         response.setContent(TaskPage.getContent().stream()
-                .map(taskMapper::toDTO)
+                .map(taskMapper::TaskToTaskDTO)
                 .toList());
         response.setPage(TaskPage.getNumber() + 1);   // Spring 0-indexed → on remet à 1
         response.setPageSize(TaskPage.getSize());
@@ -217,7 +217,7 @@ public class TaskService {
         // recalcul consumedHours
         recalculateConsumedHours(task);
 
-        return taskMapper.toDTO(taskRepository.save(task));
+        return taskMapper.TaskToTaskDTO(taskRepository.save(task));
     }
 
     // ➖ REMOVE IMPUTATION FROM TASK
@@ -235,7 +235,7 @@ public class TaskService {
 
         recalculateConsumedHours(task);
 
-        return taskMapper.toDTO(taskRepository.save(task));
+        return taskMapper.TaskToTaskDTO(taskRepository.save(task));
     }
 
     // 🔥 recalcul propre

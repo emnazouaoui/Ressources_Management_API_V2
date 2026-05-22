@@ -8,6 +8,6 @@ import wevioo.example.resourcemanagementproject.Entity.Role;
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface RoleMapper {
 
-    RoleDTO toDTO(Role entity);
-    Role toEntity(RoleDTO dto);
+    RoleDTO RoleToRoleDTO(Role entity);
+    Role RoleDTOtoRoleEntity(RoleDTO dto);
 }

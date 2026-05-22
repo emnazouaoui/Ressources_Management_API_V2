@@ -6,6 +6,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -20,11 +22,13 @@ import org.springframework.web.bind.annotation.RestController;
 import wevioo.example.resourcemanagementproject.DTO.ProjectDTO;
 import wevioo.example.resourcemanagementproject.Enums.ProjectStatus;
 import wevioo.example.resourcemanagementproject.Exception.ValidationHelper;
+import wevioo.example.resourcemanagementproject.Export.ProjectExportService;
 import wevioo.example.resourcemanagementproject.Pagination.CustomSort;
 import wevioo.example.resourcemanagementproject.Pagination.PaginatedResponse;
 import wevioo.example.resourcemanagementproject.Service.ProjectService;
 import wevioo.example.resourcemanagementproject.Validator.Impl.ProjectValidator;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -37,6 +41,7 @@ public class ProjectController {
 
     private final ProjectService service;
     private final ProjectValidator projectValidator;  // ← inject
+    private final ProjectExportService projectExportService;
 
 
     // ================= CRUD =================
@@ -214,6 +219,39 @@ public class ProjectController {
                            @PathVariable Long taskId) {
 
         service.removeTask(projectId, taskId);
+    }
+
+
+    @Operation(summary = "Export projects to Excel")
+    @GetMapping("/export")
+    public ResponseEntity<byte[]> exportProjects(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String description,
+            @RequestParam(required = false) ProjectStatus status,
+            @RequestParam(required = false) Long projectManagerId,
+            @RequestParam(required = false) String projectManagerUsername,
+            @RequestParam(required = false) Long clientId,
+            @RequestParam(required = false) String clientName,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate,
+            @RequestParam(required = false) Double progressPercent
+    ) throws IOException {
+
+        byte[] excelFile = projectExportService.exportProjects(
+                name, description, status,
+                projectManagerId, projectManagerUsername,
+                clientId, clientName,
+                startDate, endDate, progressPercent
+        );
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=projects_" + LocalDateTime.now() + ".xlsx")
+                .contentType(MediaType.parseMediaType(
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .body(excelFile);
     }
 
 }
