@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import wevioo.example.resourcemanagementproject.DTO.UserDTO;
 import wevioo.example.resourcemanagementproject.Entity.Technology;
@@ -35,8 +36,8 @@ public class UserService {
     private final TechnologyRepository technologyRepository;
     private final PaginationUtil paginationUtil;      // pour pagination
 
-
-    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    private final PasswordEncoder passwordEncoder;
+    //private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
 
     // CREATE
@@ -250,6 +251,11 @@ public class UserService {
                 .map(Technology::getId)
                 .toList();
     }
+
+
+
+
+
 
     // =========================
     // 🔥 Upload photo

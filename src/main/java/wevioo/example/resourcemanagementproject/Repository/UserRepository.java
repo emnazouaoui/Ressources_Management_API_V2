@@ -10,9 +10,13 @@ import wevioo.example.resourcemanagementproject.Entity.User;
 import wevioo.example.resourcemanagementproject.Enums.Level;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
+
+    //pour Login and security, for CustomUserDetailsService
+    Optional<User> findByEmail(String email);
 
     //  find users by technology name
     @Query("SELECT u FROM User u JOIN u.technologies t WHERE t.name = :name")
