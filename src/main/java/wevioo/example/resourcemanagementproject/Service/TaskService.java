@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import wevioo.example.resourcemanagementproject.Config.SecurityUtils;
 import wevioo.example.resourcemanagementproject.DTO.TaskDTO;
 import wevioo.example.resourcemanagementproject.Entity.Imputation;
 import wevioo.example.resourcemanagementproject.Entity.Project;
@@ -22,6 +23,7 @@ import wevioo.example.resourcemanagementproject.Repository.ProjectRepository;
 import wevioo.example.resourcemanagementproject.Repository.TaskRepository;
 import wevioo.example.resourcemanagementproject.Repository.UserRepository;
 import wevioo.example.resourcemanagementproject.Mapper.TaskMapper;
+import wevioo.example.resourcemanagementproject.Validator.Impl.TaskValidator;
 
 
 import java.time.LocalDateTime;
@@ -37,12 +39,15 @@ public class TaskService {
     private final ImputationRepository imputationRepository;
     private final TaskMapper taskMapper;
     private final PaginationUtil paginationUtil;      // pour pagination
-
-
+    private final SecurityUtils securityUtils;
+    private final TaskValidator taskValidator;  // ← inject
 
 
     // ================= CREATE =================
     public TaskDTO create(TaskDTO dto) {
+
+        securityUtils.requireAdminOrManager();
+        taskValidator.validateCreate(dto);
 
         Task task = taskMapper.TaskDTOtoTaskEntity(dto);
 
@@ -58,21 +63,52 @@ public class TaskService {
         return taskMapper.TaskToTaskDTO(taskRepository.save(task));
     }
 
-    // ================= GET BY ID =================
+//    // ================= GET BY ID =================
+//    public TaskDTO getById(Long id) {
+//
+//        Task task = taskRepository.findById(id)
+//                .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
+//
+//        return taskMapper.TaskToTaskDTO(task);
+//    }
+    // ─── GET BY ID ───────────────────────────────────────
     public TaskDTO getById(Long id) {
-
         Task task = taskRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
+
+        User currentUser = securityUtils.getCurrentUser();
+
+        // User → seulement ses tasks assignées
+        if (securityUtils.isUser() &&
+                task.getAssignedUser().getId() != currentUser.getId()) {
+            throw new ResourceNotFoundException("Task not found");
+        }
+
+        // Manager → seulement tasks de ses projects
+        if (securityUtils.isManager() &&
+                task.getProject() != null &&
+                task.getProject().getProjectManager().getId() != currentUser.getId()) {
+            throw new ResourceNotFoundException("Task not found");
+        }
 
         return taskMapper.TaskToTaskDTO(task);
     }
 
     public TaskDTO update(Long id, TaskDTO dto) {
 
+        securityUtils.requireAdminOrManager();
+        taskValidator.validateUpdate(dto);
+
         Task task = taskRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
 
-        // ✅ @PreUpdate يتكفل بالـ history تلقائياً — supprime tout le bloc HISTORY
+        //  @PreUpdate يتكفل بالـ history تلقائياً — supprime tout le bloc HISTORY
+        // Manager → seulement tasks de ses projects
+        if (securityUtils.isManager() &&
+                task.getProject() != null &&
+                task.getProject().getProjectManager().getId() != securityUtils.getCurrentUserId()) {
+            throw new ResourceNotFoundException("Task not found");
+        }
 
         task.setTitle(dto.getTitle());
         task.setDescription(dto.getDescription());
@@ -93,12 +129,28 @@ public class TaskService {
                     .orElseThrow(() -> new ResourceNotFoundException("User not found")));
         }
 
-        // ✅ @PostUpdate يتكالى تلقائياً بعد save
+        //  @PostUpdate يتكالى تلقائياً بعد save
         return taskMapper.TaskToTaskDTO(taskRepository.save(task));
     }
 
-    // ================= DELETE =================
+//    // ================= DELETE =================
+//    public void delete(Long id) {
+//        taskRepository.deleteById(id);
+//    }
+
+    // ─── DELETE ──────────────────────────────────────────
     public void delete(Long id) {
+        securityUtils.requireAdminOrManager();
+        Task task = taskRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
+
+        // Manager → seulement tasks de ses projects
+        if (securityUtils.isManager() &&
+                task.getProject() != null &&
+                task.getProject().getProjectManager().getId() != securityUtils.getCurrentUserId()) {
+            throw new ResourceNotFoundException("Task not found");
+        }
+
         taskRepository.deleteById(id);
     }
 
@@ -115,35 +167,38 @@ public class TaskService {
         Sort sorting = paginationUtil.sortingCriteria(customSort, Sort.Direction.ASC, "createdDate");
         Pageable pageable = paginationUtil.createPageable(page, pageSize, sorting);
 
-        Page<Task> TaskPage = taskRepository.findAll(pageable);
+        //Page<Task> TaskPage = taskRepository.findAll(pageable);
+        User currentUser = securityUtils.getCurrentUser();
+        Page<Task> taskPage;
+
+        if (securityUtils.isAdmin()) {
+            taskPage = taskRepository.findAll(pageable);
+
+        } else if (securityUtils.isManager()) {
+            //  Manager → tasks des projects qu'il manage
+            taskPage = taskRepository
+                    .findByProject_ProjectManagerId(currentUser.getId(), pageable);
+
+        } else {
+            //  User → tasks assignées à lui
+            taskPage = taskRepository
+                    .findByAssignedUserId(currentUser.getId(), pageable);
+        }
 
         PaginatedResponse<TaskDTO> response = new PaginatedResponse<>();
-        response.setContent(TaskPage.getContent().stream().map(taskMapper::TaskToTaskDTO).toList());
-        response.setPage(TaskPage.getNumber() + 1);
-        response.setPageSize(TaskPage.getSize());
-        response.setTotalElement(TaskPage.getTotalElements());
-        response.setTotalPage(TaskPage.getTotalPages());
+        response.setContent(taskPage.getContent().stream().map(taskMapper::TaskToTaskDTO).toList());
+        response.setPage(taskPage.getNumber() + 1);
+        response.setPageSize(taskPage.getSize());
+        response.setTotalElement(taskPage.getTotalElements());
+        response.setTotalPage(taskPage.getTotalPages());
         return response;
     }
 
-    // ✅ SEARCH — retourne PaginatedResponse au lieu de Page<ClientDTO>
-    public PaginatedResponse<TaskDTO> searchTasks(
-            String title,
-            String description,
-            TaskStatus status,
-            Priority priority,
-            Long projectId,
-            String projectName,
-            Long assignedUserId,
-            String assignedUserUsername,
-            LocalDateTime startDate,
-            LocalDateTime endDate,
-            Double estimatedHours,
-            Double consumedHours,
-            Integer page,
-            Integer pageSize,
-            String sortBy,
-            String sortDir
+    //  SEARCH — retourne PaginatedResponse au lieu de Page<ClientDTO>
+    public PaginatedResponse<TaskDTO> searchTasks(String title, String description, TaskStatus status,
+            Priority priority, Long projectId, String projectName, Long assignedUserId, String assignedUserUsername,
+            LocalDateTime startDate, LocalDateTime endDate, Double estimatedHours, Double consumedHours,
+            Integer page, Integer pageSize, String sortBy, String sortDir
     ) {
         // ← بدل Sort.by(sortBy).ascending() مباشرة
         // نبني CustomSort ونمرروه لـ PaginationUtil بش يvalidiha
@@ -162,31 +217,39 @@ public class TaskService {
 
         Pageable pageable = paginationUtil.createPageable(page, pageSize, sorting);
 
-        Page<Task> TaskPage = taskRepository.searchTasks(
-                normalize(title),
-                normalize(description),
-                status,
-                priority,
-                projectId,
-                normalize(projectName),
-                assignedUserId,
-                normalize(assignedUserUsername),
-                startDate,
-                endDate,
-                estimatedHours,
-                consumedHours,
-                pageable
-        );
+//        Page<Task> TaskPage = taskRepository.searchTasks(normalize(title), normalize(description), status,
+//                priority, projectId, normalize(projectName), assignedUserId, normalize(assignedUserUsername),
+//                startDate, endDate, estimatedHours, consumedHours, pageable
+//        );
+        User currentUser = securityUtils.getCurrentUser();
+        Page<Task> taskPage;
+
+        if (securityUtils.isAdmin()) {
+            taskPage = taskRepository.searchTasks(
+                    normalize(title), normalize(description), status, priority,
+                    projectId, normalize(projectName), assignedUserId,
+                    normalize(assignedUserUsername), startDate, endDate,
+                    estimatedHours, consumedHours, pageable
+            );
+        } else if (securityUtils.isManager()) {
+            //  Manager → tasks de ses projects
+            taskPage = taskRepository
+                    .findByProject_ProjectManagerId(currentUser.getId(), pageable);
+        } else {
+            //  User → tasks assignées à lui
+            taskPage = taskRepository
+                    .findByAssignedUserId(currentUser.getId(), pageable);
+        }
 
         // ← البناء الجديد للـ response
         PaginatedResponse<TaskDTO> response = new PaginatedResponse<>();
-        response.setContent(TaskPage.getContent().stream()
+        response.setContent(taskPage.getContent().stream()
                 .map(taskMapper::TaskToTaskDTO)
                 .toList());
-        response.setPage(TaskPage.getNumber() + 1);   // Spring 0-indexed → on remet à 1
-        response.setPageSize(TaskPage.getSize());
-        response.setTotalElement(TaskPage.getTotalElements());
-        response.setTotalPage(TaskPage.getTotalPages());
+        response.setPage(taskPage.getNumber() + 1);   // Spring 0-indexed → on remet à 1
+        response.setPageSize(taskPage.getSize());
+        response.setTotalElement(taskPage.getTotalElements());
+        response.setTotalPage(taskPage.getTotalPages());
 
         return response;
     }

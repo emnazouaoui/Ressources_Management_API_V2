@@ -34,16 +34,11 @@ public class ProjectTimeLineController {
 
 
     private final ProjectTimeLineService service;
-    private final ProjectTimeLineValidator projectTimeLineValidator;  // ← inject
 
 
     @Operation(summary = "Create timeline")
     @PostMapping
-    public ResponseEntity<ProjectTimeLineDTO> create(@RequestBody ProjectTimeLineDTO dto,
-                                            BindingResult bindingResult) {
-        // Lance la validation
-        projectTimeLineValidator.validate(dto, bindingResult);
-        ValidationHelper.validate(bindingResult);
+    public ResponseEntity<ProjectTimeLineDTO> create(@RequestBody ProjectTimeLineDTO dto) {
 
         return ResponseEntity.ok(service.create(dto));
     }
@@ -51,11 +46,7 @@ public class ProjectTimeLineController {
     @Operation(summary = "Update timeline")
     @PutMapping("/{id}")
     public ResponseEntity<ProjectTimeLineDTO> update(@PathVariable Long id,
-                                            @RequestBody ProjectTimeLineDTO dto,
-                                            BindingResult bindingResult) {
-        //Lance la validation
-        projectTimeLineValidator.validate(dto, bindingResult);
-        ValidationHelper.validate(bindingResult);
+                                            @RequestBody ProjectTimeLineDTO dto) {
 
         return ResponseEntity.ok(service.update(id, dto));
     }

@@ -18,6 +18,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
     //pour Login and security, for CustomUserDetailsService
     Optional<User> findByEmail(String email);
 
+    Page<User> findByManagerId(Long managerId, Pageable pageable);
+
     //  find users by technology name
     @Query("SELECT u FROM User u JOIN u.technologies t WHERE t.name = :name")
     List<User> findUsersByTechnologyName(@Param("name") String name);

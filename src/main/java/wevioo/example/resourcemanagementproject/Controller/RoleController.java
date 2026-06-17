@@ -30,28 +30,17 @@ import java.util.List;
 public class RoleController {
 
     private final RoleService service;
-    private final RoleValidator roleValidator;  // ← inject
-
 
     @PostMapping
     @Operation(summary = "Create role")
-    public ResponseEntity<RoleDTO> create(@RequestBody RoleDTO dto,
-                                            BindingResult bindingResult) {
-        // Lance la validation
-        roleValidator.validate(dto, bindingResult);
-        ValidationHelper.validate(bindingResult);
-
+    public ResponseEntity<RoleDTO> create(@RequestBody RoleDTO dto) {
         return ResponseEntity.ok(service.create(dto));
     }
 
     @PutMapping("/{id}")
     @Operation(summary = "Update role")
     public ResponseEntity<RoleDTO> update(@PathVariable Long id,
-                                            @RequestBody RoleDTO dto,
-                                            BindingResult bindingResult) {
-        //Lance la validation
-        roleValidator.validate(dto, bindingResult);
-        ValidationHelper.validate(bindingResult);
+                                            @RequestBody RoleDTO dto) {
 
         return ResponseEntity.ok(service.update(id, dto));
     }

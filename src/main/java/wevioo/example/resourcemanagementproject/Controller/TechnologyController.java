@@ -32,28 +32,18 @@ import java.util.List;
 public class TechnologyController {
 
     private final TechnologyService service;
-    private final TechnologyValidator technologyValidator;  // ← inject
 
 
     @PostMapping
     @Operation(summary = "Create technology")
-    public ResponseEntity<TechnologyDTO> create(@RequestBody TechnologyDTO dto,
-                                            BindingResult bindingResult) {
-        // Lance la validation
-        technologyValidator.validate(dto, bindingResult);
-        ValidationHelper.validate(bindingResult);
-
+    public ResponseEntity<TechnologyDTO> create(@RequestBody TechnologyDTO dto) {
         return ResponseEntity.ok(service.create(dto));
     }
 
     @PutMapping("/{id}")
     @Operation(summary = "Update technology")
     public ResponseEntity<TechnologyDTO> update(@PathVariable Long id,
-                                            @RequestBody TechnologyDTO dto,
-                                            BindingResult bindingResult) {
-        //Lance la validation
-        technologyValidator.validate(dto, bindingResult);
-        ValidationHelper.validate(bindingResult);
+                                            @RequestBody TechnologyDTO dto) {
 
         return ResponseEntity.ok(service.update(id, dto));
     }

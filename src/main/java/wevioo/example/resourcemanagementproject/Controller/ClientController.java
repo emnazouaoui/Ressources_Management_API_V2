@@ -31,29 +31,17 @@ import java.util.List;
 public class ClientController {
 
     private final ClientService clientService;
-    private final ClientValidator clientValidator;   // ← inject
-
 
     @Operation(summary = "Create new client")
     @PostMapping
-    public ResponseEntity<ClientDTO> create(@RequestBody ClientDTO dto,
-                                          BindingResult bindingResult) {
-        // Lance la validation
-        clientValidator.validate(dto, bindingResult);
-        ValidationHelper.validate(bindingResult);   // ← lance ValidationException si errors
-
+    public ResponseEntity<ClientDTO> create(@RequestBody ClientDTO dto) {
         return ResponseEntity.ok(clientService.create(dto));
     }
 
     @Operation(summary = "Update client")
     @PutMapping("/{id}")
     public ResponseEntity<ClientDTO> update(@PathVariable Long id,
-                                          @RequestBody ClientDTO dto,
-                                          BindingResult bindingResult) {
-        //Lance la validation
-        clientValidator.validate(dto, bindingResult);
-        ValidationHelper.validate(bindingResult);
-
+                                          @RequestBody ClientDTO dto) {
         return ResponseEntity.ok(clientService.update(id, dto));
     }
 

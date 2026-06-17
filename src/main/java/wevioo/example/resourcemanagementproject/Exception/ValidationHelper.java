@@ -1,6 +1,7 @@
 package wevioo.example.resourcemanagementproject.Exception;
 
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.Errors;
 import wevioo.example.resourcemanagementproject.Exception.Custom.ValidationException;
 
 import java.util.LinkedHashMap;
@@ -15,6 +16,16 @@ public class ValidationHelper {
             bindingResult.getFieldErrors()
                     .forEach(e -> errors.put(e.getField(), e.getDefaultMessage()));
             throw new ValidationException(errors);
+        }
+    }
+
+    // ← للـ Validator classes (Errors)
+    public static void validate(Errors errors) {
+        if (errors.hasErrors()) {
+            Map<String, String> fieldErrors = new LinkedHashMap<>();
+            errors.getFieldErrors()
+                    .forEach(e -> fieldErrors.put(e.getField(), e.getDefaultMessage()));
+            throw new ValidationException(fieldErrors);
         }
     }
 

@@ -47,12 +47,7 @@ public class UserController {
 
     @PostMapping
     @Operation(summary = "Create user")
-    public ResponseEntity<UserDTO> create(@RequestBody UserDTO dto,
-                                          BindingResult bindingResult) {
-        // Lance la validation
-        userValidator.validate(dto, bindingResult);
-        ValidationHelper.validate(bindingResult);
-
+    public ResponseEntity<UserDTO> create(@RequestBody UserDTO dto) {
         return ResponseEntity.ok(userService.create(dto));
     }
 
@@ -60,12 +55,7 @@ public class UserController {
     @PutMapping("/{id}")
     @Operation(summary = "Update user")
     public ResponseEntity<UserDTO> update(@PathVariable Long id,
-                                          @RequestBody UserDTO dto,
-                                          BindingResult bindingResult) {
-        //Lance la validation
-        userValidator.validate(dto, bindingResult);
-        ValidationHelper.validate(bindingResult);
-
+                                          @RequestBody UserDTO dto) {
         return ResponseEntity.ok(userService.update(id, dto));
     }
 

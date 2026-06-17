@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import wevioo.example.resourcemanagementproject.Config.SecurityUtils;
 import wevioo.example.resourcemanagementproject.DTO.DepartmentDTO;
 import wevioo.example.resourcemanagementproject.Entity.Department;
 import wevioo.example.resourcemanagementproject.Exception.Custom.ResourceNotFoundException;
@@ -13,6 +14,7 @@ import wevioo.example.resourcemanagementproject.Pagination.PaginatedResponse;
 import wevioo.example.resourcemanagementproject.Pagination.PaginationUtil;
 import wevioo.example.resourcemanagementproject.Repository.DepartmentRepository;
 import wevioo.example.resourcemanagementproject.Mapper.DepartmentMapper;
+import wevioo.example.resourcemanagementproject.Validator.Impl.DepartmentValidator;
 
 import java.time.LocalDateTime;
 
@@ -23,17 +25,24 @@ public class DepartmentService {
     private final DepartmentRepository repository;
     private final DepartmentMapper departmentMapper;
     private final PaginationUtil paginationUtil;      // pour pagination
+    private final DepartmentValidator departmentValidator;  // ← inject
+    private final SecurityUtils securityUtils;
+
+
 
 
     // CREATE
     public DepartmentDTO create(DepartmentDTO dto) {
+        securityUtils.requireAdmin();
+        departmentValidator.validateCreate(dto);
         Department saved = repository.save(departmentMapper.DepartmentDTOtoDepartmentEntity(dto));
 
         return departmentMapper.DepartmentToDepartmentDTO(saved);
     }
 
-//  GET ALL — يتبدل : page تبدأ من 1
+//  GET ALL — يتبدل : page تبدأ من 1 — Admin + Manager
     public PaginatedResponse<DepartmentDTO> getAll(Integer page, Integer pageSize, String sortBy, String sortDir) {
+        securityUtils.requireAdminOrManager();
         CustomSort customSort = null;
         if (sortBy != null && sortDir != null) {
             customSort = new CustomSort();
@@ -56,8 +65,9 @@ public class DepartmentService {
     }
 
 
-    // GET BY ID
+    // GET BY ID — Admin + Manager
     public DepartmentDTO getById(Long id) {
+        securityUtils.requireAdminOrManager();
         Department d = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Department not found: " + id));
 
@@ -66,6 +76,8 @@ public class DepartmentService {
 
     // UPDATE
     public DepartmentDTO update(Long id, DepartmentDTO dto) {
+        securityUtils.requireAdmin();
+        departmentValidator.validateUpdate(dto);
         Department d = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Department not found: " + id));
 
@@ -76,15 +88,16 @@ public class DepartmentService {
         return departmentMapper.DepartmentToDepartmentDTO(repository.save(d));
     }
 
-    // DELETE
+    // DELETE -     Admin
     public void delete(Long id) {
+        securityUtils.requireAdmin();
         if (!repository.existsById(id)) {
             throw new ResourceNotFoundException("Department not found: " + id);
         }
         repository.deleteById(id);
     }
 
-    // ✅ SEARCH — retourne PaginatedResponse au lieu de Page<ClientDTO>
+    //  SEARCH — retourne PaginatedResponse au lieu de Page<ClientDTO> — Admin + Manager
     public PaginatedResponse<DepartmentDTO> searchDepartments(
             String name,
             String description,
@@ -93,6 +106,7 @@ public class DepartmentService {
             String sortBy,
             String sortDir
     ) {
+        securityUtils.requireAdminOrManager();
         // ← بدل Sort.by(sortBy).ascending() مباشرة
         // نبني CustomSort ونمرروه لـ PaginationUtil بش يvalidiha
         CustomSort customSort = null;

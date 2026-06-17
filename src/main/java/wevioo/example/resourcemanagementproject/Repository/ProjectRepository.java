@@ -15,6 +15,9 @@ import java.util.List;
 @Repository
 public interface ProjectRepository extends JpaRepository<Project, Long> {
 
+    Page<Project> findByProjectManagerId(Long managerId, Pageable pageable);
+    Page<Project> findByUserProjects_UserId(Long userId, Pageable pageable);
+
     @Query("SELECT p FROM Project p "
             + "LEFT JOIN p.projectManager pm "
             + "LEFT JOIN p.client c "

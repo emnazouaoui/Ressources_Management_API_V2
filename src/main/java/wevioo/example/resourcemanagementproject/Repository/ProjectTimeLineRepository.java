@@ -14,18 +14,8 @@ import java.util.List;
 @Repository
 public interface ProjectTimeLineRepository extends JpaRepository<ProjectTimeLine, Long> {
 
-//    // search
-//    @Query("""
-//    SELECT t FROM ProjectTimeLine t
-//    LEFT JOIN t.project p
-//    WHERE LOWER(t.title) LIKE LOWER(CONCAT('%', :keyword, '%'))
-//       OR LOWER(t.description) LIKE LOWER(CONCAT('%', :keyword, '%'))
-//       OR LOWER(t.version) LIKE LOWER(CONCAT('%', :keyword, '%'))
-//       OR LOWER(t.type) LIKE LOWER(CONCAT('%', :keyword, '%'))
-//        OR LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%'))
-//
-//    """)
-//    List<ProjectTimeLine> search(@Param("keyword") String keyword);
+    Page<ProjectTimeLine> findByProject_ProjectManagerId(Long managerId, Pageable pageable);
+    Page<ProjectTimeLine> findByProject_UserProjects_UserId(Long userId, Pageable pageable);
 
     @Query("SELECT pt FROM ProjectTimeLine pt "
             + "JOIN pt.project p "

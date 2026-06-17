@@ -3,15 +3,17 @@ package wevioo.example.resourcemanagementproject.Service;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import wevioo.example.resourcemanagementproject.Config.SecurityUtils;
 import wevioo.example.resourcemanagementproject.DTO.UserDTO;
 import wevioo.example.resourcemanagementproject.Entity.Technology;
 import wevioo.example.resourcemanagementproject.Entity.User;
 import wevioo.example.resourcemanagementproject.Enums.Level;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import java.util.List;
 import wevioo.example.resourcemanagementproject.Exception.Custom.ResourceNotFoundException;
 import wevioo.example.resourcemanagementproject.Pagination.CustomSort;
 import wevioo.example.resourcemanagementproject.Pagination.PaginatedResponse;
@@ -21,9 +23,8 @@ import wevioo.example.resourcemanagementproject.Repository.RoleRepository;
 import wevioo.example.resourcemanagementproject.Repository.TechnologyRepository;
 import wevioo.example.resourcemanagementproject.Repository.UserRepository;
 import wevioo.example.resourcemanagementproject.Mapper.UserMapper;
-
-
-import java.util.List;
+import wevioo.example.resourcemanagementproject.Validator.Impl.ClientValidator;
+import wevioo.example.resourcemanagementproject.Validator.Impl.UserValidator;
 
 @Service
 @RequiredArgsConstructor
@@ -35,6 +36,8 @@ public class UserService {
     private final UserMapper userMapper;
     private final TechnologyRepository technologyRepository;
     private final PaginationUtil paginationUtil;      // pour pagination
+    private final SecurityUtils securityUtils;
+    private final UserValidator userValidator;
 
     private final PasswordEncoder passwordEncoder;
     //private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
@@ -42,6 +45,10 @@ public class UserService {
 
     // CREATE
     public UserDTO create(UserDTO dto) {
+
+        securityUtils.requireAdminOrManager();
+        userValidator.validateCreate(dto);
+
         User user = userMapper.UserDTOtoUserEntity(dto);
 
         // 🔥 CRYPT PASSWORD
@@ -73,34 +80,87 @@ public class UserService {
         Sort sorting = paginationUtil.sortingCriteria(customSort, Sort.Direction.ASC, "createdDate");
         Pageable pageable = paginationUtil.createPageable(page, pageSize, sorting);
 
-        Page<User> UserPage = userRepository.findAll(pageable);
+        User currentUser = securityUtils.getCurrentUser();
+        Page<User> userPage;
+
+        if (securityUtils.isAdmin()) {
+            //  Admin → tous les users
+            userPage = userRepository.findAll(pageable);
+
+        } else if (securityUtils.isManager()) {
+            //  Manager → seulement son équipe
+            userPage = userRepository.findByManagerId(currentUser.getId(), pageable);
+
+        } else {
+            //  User → seulement lui-même
+            userPage = userRepository.findById(currentUser.getId())
+                    .map(u -> new PageImpl<>(List.of(u), pageable, 1))
+                    .orElse(new PageImpl<>(List.of(), pageable, 0));
+        }
+
+        //Page<User> UserPage = userRepository.findAll(pageable);
 
         PaginatedResponse<UserDTO> response = new PaginatedResponse<>();
-        response.setContent(UserPage.getContent().stream().map(userMapper::UserToUserDTO).toList());
-        response.setPage(UserPage.getNumber() + 1);
-        response.setPageSize(UserPage.getSize());
-        response.setTotalElement(UserPage.getTotalElements());
-        response.setTotalPage(UserPage.getTotalPages());
+        response.setContent(userPage.getContent().stream().map(userMapper::UserToUserDTO).toList());
+        response.setPage(userPage.getNumber() + 1);
+        response.setPageSize(userPage.getSize());
+        response.setTotalElement(userPage.getTotalElements());
+        response.setTotalPage(userPage.getTotalPages());
         return response;
     }
 
 
     // GET BY ID
     public UserDTO getById(Long id) {
-        return userMapper.UserToUserDTO(
-                userRepository.findById(id)
-                        .orElseThrow(() -> new ResourceNotFoundException("User not found"))
-        );
+//        return userMapper.UserToUserDTO(
+//                userRepository.findById(id)
+//                        .orElseThrow(() -> new ResourceNotFoundException("User not found"))
+//        );
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        User currentUser = securityUtils.getCurrentUser();
+
+        //  User → seulement lui-même
+        if (securityUtils.isUser() && user.getId() != currentUser.getId()) {
+            throw new ResourceNotFoundException("User not found");
+        }
+
+        //  Manager → seulement son équipe
+        if (securityUtils.isManager() &&
+                user.getManager() != null &&
+                user.getManager().getId() != currentUser.getId() &&
+                user.getId() != currentUser.getId()) {
+            throw new ResourceNotFoundException("User not found");
+        }
+        return userMapper.UserToUserDTO(user);
+
     }
 
 
     @Transactional
     public UserDTO update(Long id, UserDTO dto) {
+        userValidator.validateUpdate(dto);
 
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        // ✅ @PreUpdate يتكفل بالـ history تلقائياً — supprime tout le bloc HISTORY
+        User currentUser = securityUtils.getCurrentUser();
+
+        //  User → seulement lui-même
+        if (securityUtils.isUser() && user.getId() != currentUser.getId()) {
+            throw new ResourceNotFoundException("User not found");
+        }
+
+        //  Manager → seulement son équipe
+        if (securityUtils.isManager() &&
+                user.getManager() != null &&
+                user.getManager().getId() != currentUser.getId() &&
+                user.getId() != currentUser.getId()) {
+            throw new ResourceNotFoundException("User not found");
+        }
+
+        //  @PreUpdate يتكفل بالـ history تلقائياً — supprime tout le bloc HISTORY
 
         userMapper.updateUserEntityFromUserDTO(dto, user);
 
@@ -126,32 +186,31 @@ public class UserService {
 
     // DELETE
     public void delete(Long id) {
-        if (!userRepository.existsById(id)) {
+//        if (!userRepository.existsById(id)) {
+//            throw new ResourceNotFoundException("User not found");
+//        }
+//        userRepository.deleteById(id);
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        User currentUser = securityUtils.getCurrentUser();
+
+        //  Manager → seulement son équipe
+        if (securityUtils.isManager() &&
+                user.getManager() != null &&
+                user.getManager().getId() != currentUser.getId()) {
             throw new ResourceNotFoundException("User not found");
         }
+
         userRepository.deleteById(id);
     }
 
 
-    // ✅ SEARCH — retourne PaginatedResponse au lieu de Page<ClientDTO>
-    public PaginatedResponse<UserDTO> searchUsers(
-            String username,
-            String firstName,
-            String lastName,
-            String email,
-            Boolean active,
-            Level level,
-            String phone,
-            Long roleId,
-            String roleName,
-            Long departmentId,
-            String departmentName,
-            Long managerId,
-            String managerUsername,
-            Integer page,
-            Integer pageSize,
-            String sortBy,
-            String sortDir
+    //  SEARCH — retourne PaginatedResponse au lieu de Page<ClientDTO>
+    public PaginatedResponse<UserDTO> searchUsers(String username, String firstName, String lastName,
+            String email, Boolean active, Level level, String phone, Long roleId, String roleName,
+            Long departmentId, String departmentName, Long managerId, String managerUsername,
+            Integer page, Integer pageSize, String sortBy, String sortDir
     ) {
         // ← بدل Sort.by(sortBy).ascending() مباشرة
         // نبني CustomSort ونمرروه لـ PaginationUtil بش يvalidiha
@@ -170,32 +229,47 @@ public class UserService {
 
         Pageable pageable = paginationUtil.createPageable(page, pageSize, sorting);
 
-        Page<User> UserPage = userRepository.searchUsers(
-                normalize(username),
-                normalize(firstName),
-                normalize(lastName),
-                normalize(email),
-                active,
-                level,
-                normalize(phone),
-                roleId,
-                normalize(roleName),
-                departmentId,
-                normalize(departmentName),
-                managerId,
-                normalize(managerUsername),
-                pageable
-        );
+//        Page<User> UserPage = userRepository.searchUsers(normalize(username), normalize(firstName),
+//                normalize(lastName), normalize(email), active, level, normalize(phone), roleId,
+//                normalize(roleName), departmentId, normalize(departmentName),
+//                managerId, normalize(managerUsername), pageable);
+        User currentUser = securityUtils.getCurrentUser();
+        Page<User> userPage;
+
+        if (securityUtils.isAdmin()) {
+            userPage = userRepository.searchUsers(
+                    normalize(username), normalize(firstName), normalize(lastName),
+                    normalize(email), active, level, normalize(phone),
+                    roleId, normalize(roleName), departmentId,
+                    normalize(departmentName), managerId, normalize(managerUsername),
+                    pageable
+            );
+        } else if (securityUtils.isManager()) {
+            //  Manager → force managerId = lui-même
+            userPage = userRepository.searchUsers(
+                    normalize(username), normalize(firstName), normalize(lastName),
+                    normalize(email), active, level, normalize(phone),
+                    roleId, normalize(roleName), departmentId,
+                    normalize(departmentName), currentUser.getId(),  // ← force
+                    normalize(managerUsername),
+                    pageable
+            );
+        } else {
+            //  User → seulement lui-même
+            userPage = userRepository.findById(currentUser.getId())
+                    .map(u -> (Page<User>) new PageImpl<>(List.of(u), pageable, 1))
+                    .orElse(new PageImpl<>(List.of(), pageable, 0));
+        }
 
         // ← البناء الجديد للـ response
         PaginatedResponse<UserDTO> response = new PaginatedResponse<>();
-        response.setContent(UserPage.getContent().stream()
+        response.setContent(userPage.getContent().stream()
                 .map(userMapper::UserToUserDTO)
                 .toList());
-        response.setPage(UserPage.getNumber() + 1);   // Spring 0-indexed → on remet à 1
-        response.setPageSize(UserPage.getSize());
-        response.setTotalElement(UserPage.getTotalElements());
-        response.setTotalPage(UserPage.getTotalPages());
+        response.setPage(userPage.getNumber() + 1);   // Spring 0-indexed → on remet à 1
+        response.setPageSize(userPage.getSize());
+        response.setTotalElement(userPage.getTotalElements());
+        response.setTotalPage(userPage.getTotalPages());
 
         return response;
     }
@@ -231,7 +305,7 @@ public class UserService {
     }
 
 
-    // ✅ remove technology
+    //  remove technology
     @Transactional
     public void removeTechnology(Long userId, Long techId) {
         User user = userRepository.findById(userId)

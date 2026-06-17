@@ -15,6 +15,13 @@ import java.time.LocalDateTime;
 @Repository
 public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long> {
 
+    Page<LeaveRequest> findByUserId(Long userId, Pageable pageable);
+
+    @Query("SELECT lr FROM LeaveRequest lr WHERE lr.user.id = :userId OR lr.projectManager.id = :managerId")
+    Page<LeaveRequest> findByUserIdOrProjectManagerId(
+            @Param("userId") Long userId,
+            @Param("managerId") Long managerId,
+            Pageable pageable);
 
     @Query("SELECT lr FROM LeaveRequest lr "
             + "JOIN lr.user u "

@@ -40,7 +40,6 @@ public class ProjectController {
 
 
     private final ProjectService service;
-    private final ProjectValidator projectValidator;  // ← inject
     private final ProjectExportService projectExportService;
 
 
@@ -48,11 +47,7 @@ public class ProjectController {
 
     @Operation(summary = "Create a new project")
     @PostMapping
-    public ResponseEntity<ProjectDTO> create(@RequestBody ProjectDTO dto,
-                                            BindingResult bindingResult) {
-        // Lance la validation
-        projectValidator.validate(dto, bindingResult);
-        ValidationHelper.validate(bindingResult);
+    public ResponseEntity<ProjectDTO> create(@RequestBody ProjectDTO dto) {
 
         return ResponseEntity.ok(service.create(dto));
     }
@@ -60,11 +55,7 @@ public class ProjectController {
     @Operation(summary = "Update an existing project")
     @PutMapping("/{id}")
     public ResponseEntity<ProjectDTO> update(@PathVariable Long id,
-                                            @RequestBody ProjectDTO dto,
-                                            BindingResult bindingResult) {
-        //Lance la validation
-        projectValidator.validate(dto, bindingResult);
-        ValidationHelper.validate(bindingResult);
+                                            @RequestBody ProjectDTO dto) {
 
         return ResponseEntity.ok(service.update(id, dto));
     }

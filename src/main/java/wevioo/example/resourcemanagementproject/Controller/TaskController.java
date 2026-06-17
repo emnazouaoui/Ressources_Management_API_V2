@@ -36,28 +36,18 @@ import java.util.List;
 public class TaskController {
 
     private final TaskService taskService;
-    private final TaskValidator taskValidator;  // ← inject
 
 
     @Operation(summary = "Create Task")
     @PostMapping
-    public ResponseEntity<TaskDTO> create(@RequestBody TaskDTO dto,
-                                            BindingResult bindingResult) {
-        // Lance la validation
-        taskValidator.validate(dto, bindingResult);
-        ValidationHelper.validate(bindingResult);
-
+    public ResponseEntity<TaskDTO> create(@RequestBody TaskDTO dto) {
         return ResponseEntity.ok(taskService.create(dto));
     }
 
     @Operation(summary = "Update Task")
     @PutMapping("/{id}")
     public ResponseEntity<TaskDTO> update(@PathVariable Long id,
-                                            @RequestBody TaskDTO dto,
-                                            BindingResult bindingResult) {
-        //Lance la validation
-        taskValidator.validate(dto, bindingResult);
-        ValidationHelper.validate(bindingResult);
+                                            @RequestBody TaskDTO dto) {
 
         return ResponseEntity.ok(taskService.update(id, dto));
     }

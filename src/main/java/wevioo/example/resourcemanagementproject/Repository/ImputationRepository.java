@@ -13,6 +13,9 @@ import java.time.LocalDateTime;
 @Repository
 public interface ImputationRepository extends JpaRepository<Imputation, Long> {
 
+    Page<Imputation> findByUserId(Long userId, Pageable pageable);
+    Page<Imputation> findByTask_Project_ProjectManagerId(Long managerId, Pageable pageable);
+
     @Query("SELECT i FROM Imputation i "
             + "JOIN i.task t "
             + "JOIN i.user u "

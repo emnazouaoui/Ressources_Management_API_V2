@@ -30,16 +30,11 @@ import java.util.List;
 public class DepartmentController {
 
     private final DepartmentService service;
-    private final DepartmentValidator departmentValidator;  // ← inject
 
 
     @PostMapping
     @Operation(summary = "Create department")
-    public ResponseEntity<DepartmentDTO> create(@RequestBody DepartmentDTO dto,
-                                            BindingResult bindingResult) {
-        // Lance la validation
-        departmentValidator.validate(dto, bindingResult);
-        ValidationHelper.validate(bindingResult);
+    public ResponseEntity<DepartmentDTO> create(@RequestBody DepartmentDTO dto) {
 
         return ResponseEntity.ok(service.create(dto));
     }
@@ -47,12 +42,7 @@ public class DepartmentController {
     @PutMapping("/{id}")
     @Operation(summary = "Update department")
     public ResponseEntity<DepartmentDTO> update(@PathVariable Long id,
-                                            @RequestBody DepartmentDTO dto,
-                                            BindingResult bindingResult) {
-        //Lance la validation
-        departmentValidator.validate(dto, bindingResult);
-        ValidationHelper.validate(bindingResult);
-
+                                            @RequestBody DepartmentDTO dto) {
         return ResponseEntity.ok(service.update(id, dto));
     }
 

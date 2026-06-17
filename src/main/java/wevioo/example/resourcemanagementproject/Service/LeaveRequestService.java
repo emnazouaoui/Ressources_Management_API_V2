@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import wevioo.example.resourcemanagementproject.Config.SecurityUtils;
 import wevioo.example.resourcemanagementproject.DTO.LeaveRequestDTO;
 import wevioo.example.resourcemanagementproject.Entity.LeaveBalance;
 import wevioo.example.resourcemanagementproject.Entity.LeaveRequest;
@@ -20,6 +21,7 @@ import wevioo.example.resourcemanagementproject.Repository.LeaveBalanceRepositor
 import wevioo.example.resourcemanagementproject.Repository.LeaveRequestRepository;
 import wevioo.example.resourcemanagementproject.Repository.UserRepository;
 import wevioo.example.resourcemanagementproject.Mapper.LeaveRequestMapper;
+import wevioo.example.resourcemanagementproject.Validator.Impl.LeaveRequestValidator;
 
 
 import java.time.LocalDateTime;
@@ -35,18 +37,29 @@ public class LeaveRequestService {
     private final LeaveBalanceRepository leaveBalanceRepository;
     private final PaginationUtil paginationUtil;      // pour pagination
     private final LeavePolicyService policyService;
+    private final SecurityUtils securityUtils;
+    private final LeaveRequestValidator leaveRequestValidator;  // ← inject
 
 
     // CREATE
     public LeaveRequestDTO create(LeaveRequestDTO dto) {
+
+        leaveRequestValidator.validateCreate(dto);
 
         LeaveRequest lr = new LeaveRequest();
         mapper.LeaveRequestDTOtoLeaveRequestEntity(dto, lr);
 
         lr.setStatus(LeaveRequestStatus.PENDING);// add for leaveBalance
 
-        lr.setUser(userRepository.findById(dto.getUserId())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found")));
+        //  Si User → force userId = lui-même
+        if (securityUtils.isUser()) {
+            lr.setUser(userRepository.findById(securityUtils.getCurrentUserId())
+                    .orElseThrow(() -> new ResourceNotFoundException("User not found")));
+        } else {
+            // Admin ou Manager → userId depuis le DTO
+            lr.setUser(userRepository.findById(dto.getUserId())
+                    .orElseThrow(() -> new ResourceNotFoundException("User not found")));
+        }
 
         lr.setProjectManager(userRepository.findById(dto.getProjectManagerId())
                 .orElseThrow(() -> new ResourceNotFoundException("Manager not found")));
@@ -57,23 +70,39 @@ public class LeaveRequestService {
     // UPDATE
     public LeaveRequestDTO update(Long id, LeaveRequestDTO dto) {
 
+        leaveRequestValidator.validateUpdate(dto);
+
         LeaveRequest lr = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("LeaveRequest not found"));
+        User currentUser = securityUtils.getCurrentUser();
+
+        //  User → seulement ses propres + seulement si PENDING
+        if (securityUtils.isUser()) {
+            if (lr.getUser().getId() != currentUser.getId()) {
+                throw new ResourceNotFoundException("LeaveRequest not found");
+            }
+            if (lr.getStatus() != LeaveRequestStatus.PENDING) {
+                throw new RuntimeException("Cannot update a non-pending leave request");
+            }
+        }
+
+        //  Manager → ses leave requests + celles de son équipe
+        if (securityUtils.isManager() &&
+                lr.getUser().getId() != currentUser.getId() &&
+                lr.getProjectManager().getId() != currentUser.getId()) {
+            throw new ResourceNotFoundException("LeaveRequest not found");
+        }
 
         mapper.LeaveRequestDTOtoLeaveRequestEntity(dto, lr);
-
         lr.setUpdatedDate(LocalDateTime.now());
-
         if (dto.getUserId() != null) {
             lr.setUser(userRepository.findById(dto.getUserId())
                     .orElseThrow(() -> new ResourceNotFoundException("User not found")));
         }
-
         if (dto.getProjectManagerId() != null) {
             lr.setProjectManager(userRepository.findById(dto.getProjectManagerId())
                     .orElseThrow(() -> new ResourceNotFoundException("Manager not found")));
         }
-
         return mapper.LeaveRequestToLeaveRequestDTO(repository.save(lr));
     }
 
@@ -90,46 +119,93 @@ public class LeaveRequestService {
         Sort sorting = paginationUtil.sortingCriteria(customSort, Sort.Direction.ASC, "createdDate");
         Pageable pageable = paginationUtil.createPageable(page, pageSize, sorting);
 
-        Page<LeaveRequest> LeaveRequestPage = repository.findAll(pageable);
+        //Page<LeaveRequest> LeaveRequestPage = repository.findAll(pageable);
+
+        User currentUser = securityUtils.getCurrentUser();
+        Page<LeaveRequest> leaveRequestPage;
+
+        if (securityUtils.isAdmin()) {
+            //  Admin → toutes les leave requests
+            leaveRequestPage = repository.findAll(pageable);
+
+        } else if (securityUtils.isManager()) {
+            //  Manager → ses leave requests + celles de son équipe
+            leaveRequestPage = repository
+                    .findByUserIdOrProjectManagerId(currentUser.getId(),
+                            currentUser.getId(), pageable);
+        } else {
+            //  User → seulement ses propres leave requests
+            leaveRequestPage = repository.findByUserId(currentUser.getId(), pageable);
+        }
 
         PaginatedResponse<LeaveRequestDTO> response = new PaginatedResponse<>();
-        response.setContent(LeaveRequestPage.getContent().stream().map(mapper::LeaveRequestToLeaveRequestDTO).toList());
-        response.setPage(LeaveRequestPage.getNumber() + 1);
-        response.setPageSize(LeaveRequestPage.getSize());
-        response.setTotalElement(LeaveRequestPage.getTotalElements());
-        response.setTotalPage(LeaveRequestPage.getTotalPages());
+        response.setContent(leaveRequestPage.getContent().stream().map(mapper::LeaveRequestToLeaveRequestDTO).toList());
+        response.setPage(leaveRequestPage.getNumber() + 1);
+        response.setPageSize(leaveRequestPage.getSize());
+        response.setTotalElement(leaveRequestPage.getTotalElements());
+        response.setTotalPage(leaveRequestPage.getTotalPages());
         return response;
     }
 
 
     // GET BY ID
     public LeaveRequestDTO getById(Long id) {
-        return mapper.LeaveRequestToLeaveRequestDTO(
-                repository.findById(id)
-                        .orElseThrow(() -> new ResourceNotFoundException("LeaveRequest not found"))
-        );
+//        return mapper.LeaveRequestToLeaveRequestDTO(
+//                repository.findById(id)
+//                        .orElseThrow(() -> new ResourceNotFoundException("LeaveRequest not found"))
+//        );
+        LeaveRequest lr = repository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("LeaveRequest not found"));
+
+        User currentUser = securityUtils.getCurrentUser();
+
+        // User → seulement ses propres
+        if (securityUtils.isUser() && lr.getUser().getId() != currentUser.getId()) {
+            throw new ResourceNotFoundException("LeaveRequest not found");
+        }
+
+        // Manager → ses leave requests + celles de son équipe
+        if (securityUtils.isManager() &&
+                lr.getUser().getId() != currentUser.getId() &&
+                lr.getProjectManager().getId() != currentUser.getId()) {
+            throw new ResourceNotFoundException("LeaveRequest not found");
+        }
+
+        return mapper.LeaveRequestToLeaveRequestDTO(lr);
     }
 
     // DELETE
     public void delete(Long id) {
+
+        //repository.deleteById(id);
+        LeaveRequest lr = repository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("LeaveRequest not found"));
+
+        User currentUser = securityUtils.getCurrentUser();
+
+        //  User → seulement ses propres + seulement si PENDING
+        if (securityUtils.isUser()) {
+            if (lr.getUser().getId() != currentUser.getId()) {
+                throw new ResourceNotFoundException("LeaveRequest not found");
+            }
+            if (lr.getStatus() != LeaveRequestStatus.PENDING) {
+                throw new RuntimeException("Cannot delete a non-pending leave request");
+            }
+        }
+
+        //  Manager → ne peut pas delete (Admin seulement)
+        if (securityUtils.isManager()) {
+            throw new RuntimeException("Manager cannot delete leave requests");
+        }
+
         repository.deleteById(id);
     }
 
 
-    // ✅ SEARCH — retourne PaginatedResponse au lieu de Page<ClientDTO>
-    public PaginatedResponse<LeaveRequestDTO> searchLeaveRequests(
-            String reason,
-            LeaveRequestType type,
-            LeaveRequestStatus status,
-            Long userId,
-            Long projectManagerId,
-            String username,
-            LocalDateTime startDate,
-            LocalDateTime endDate,
-            Integer page,
-            Integer pageSize,
-            String sortBy,
-            String sortDir
+    //  SEARCH — retourne PaginatedResponse au lieu de Page<ClientDTO>
+    public PaginatedResponse<LeaveRequestDTO> searchLeaveRequests(String reason, LeaveRequestType type,
+            LeaveRequestStatus status, Long userId, Long projectManagerId, String username, LocalDateTime startDate,
+            LocalDateTime endDate, Integer page, Integer pageSize, String sortBy, String sortDir
     ) {
         // ← بدل Sort.by(sortBy).ascending() مباشرة
         // نبني CustomSort ونمرروه لـ PaginationUtil بش يvalidiha
@@ -148,27 +224,35 @@ public class LeaveRequestService {
 
         Pageable pageable = paginationUtil.createPageable(page, pageSize, sorting);
 
-        Page<LeaveRequest> LeaveRequestPage = repository.searchLeaveRequests(
-                normalize(reason),
-                type,
-                status,
-                userId,
-                projectManagerId,
-                normalize(username),
-                startDate,
-                endDate,
-                pageable
-        );
+//        Page<LeaveRequest> LeaveRequestPage = repository.searchLeaveRequests(normalize(reason), type, status,
+//                userId, projectManagerId, normalize(username), startDate, endDate, pageable
+//        );
+        User currentUser = securityUtils.getCurrentUser();
+        Page<LeaveRequest> leaveRequestPage;
+
+        if (securityUtils.isAdmin()) {
+            leaveRequestPage = repository.searchLeaveRequests(
+                    normalize(reason), type, status, userId,
+                    projectManagerId, normalize(username), startDate, endDate, pageable
+            );
+        } else if (securityUtils.isManager()) {
+            leaveRequestPage = repository
+                    .findByUserIdOrProjectManagerId(currentUser.getId(),
+                            currentUser.getId(), pageable);
+        } else {
+            //  User → seulement ses propres
+            leaveRequestPage = repository.findByUserId(currentUser.getId(), pageable);
+        }
 
         // ← البناء الجديد للـ response
         PaginatedResponse<LeaveRequestDTO> response = new PaginatedResponse<>();
-        response.setContent(LeaveRequestPage.getContent().stream()
+        response.setContent(leaveRequestPage.getContent().stream()
                 .map(mapper::LeaveRequestToLeaveRequestDTO)
                 .toList());
-        response.setPage(LeaveRequestPage.getNumber() + 1);   // Spring 0-indexed → on remet à 1
-        response.setPageSize(LeaveRequestPage.getSize());
-        response.setTotalElement(LeaveRequestPage.getTotalElements());
-        response.setTotalPage(LeaveRequestPage.getTotalPages());
+        response.setPage(leaveRequestPage.getNumber() + 1);   // Spring 0-indexed → on remet à 1
+        response.setPageSize(leaveRequestPage.getSize());
+        response.setTotalElement(leaveRequestPage.getTotalElements());
+        response.setTotalPage(leaveRequestPage.getTotalPages());
 
         return response;
     }

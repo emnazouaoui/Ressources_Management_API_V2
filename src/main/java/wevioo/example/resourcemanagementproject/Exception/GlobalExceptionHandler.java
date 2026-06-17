@@ -2,6 +2,7 @@ package wevioo.example.resourcemanagementproject.Exception;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -12,6 +13,8 @@ import wevioo.example.resourcemanagementproject.Exception.Custom.ResourceNotFoun
 import wevioo.example.resourcemanagementproject.Exception.Custom.UnauthorizedException;
 import wevioo.example.resourcemanagementproject.Exception.Custom.ValidationException;
 
+import javax.naming.AuthenticationException;
+import java.nio.file.AccessDeniedException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -108,6 +111,42 @@ public class GlobalExceptionHandler {
                 401,
                 "Unauthorized",
                 ex.getMessage(),
+                request.getRequestURI());
+    }
+
+    // ================= 403 FORBIDDEN  =================
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    @ExceptionHandler(AccessDeniedException.class)
+    public ApiError handleAccessDenied(
+            AccessDeniedException ex,
+            HttpServletRequest request) {
+
+        return new ApiError(403, "Forbidden",
+                "You don't have permission to access this resource",
+                request.getRequestURI());
+    }
+
+    // ================= 401 AUTHENTICATION ← NOUVEAU =================
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    @ExceptionHandler(AuthenticationException.class)
+    public ApiError handleAuthenticationException(
+            AuthenticationException ex,
+            HttpServletRequest request) {
+
+        return new ApiError(401, "Unauthorized",
+                "Authentication failed: " + ex.getMessage(),
+                request.getRequestURI());
+    }
+
+    // ================= BAD CREDENTIALS  =================
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    @ExceptionHandler(BadCredentialsException.class)
+    public ApiError handleBadCredentials(
+            BadCredentialsException ex,
+            HttpServletRequest request) {
+
+        return new ApiError(401, "Unauthorized",
+                "Invalid email or password",
                 request.getRequestURI());
     }
 

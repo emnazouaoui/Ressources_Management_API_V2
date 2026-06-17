@@ -12,6 +12,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import wevioo.example.resourcemanagementproject.Service.TokenBlacklist;
 
 import java.io.IOException;
 
@@ -21,6 +22,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
+    private final TokenBlacklist tokenBlacklist;   // ← injecté
+
 
     @Override
     protected void doFilterInternal(
@@ -37,8 +40,16 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             return;
         }
 
-        // ─── Extrait le token ────────────────────────────────
         final String jwt = authHeader.substring(7);
+
+        //  Bloque les tokens logout - Vérifie si token est blacklisté
+        if (tokenBlacklist.isBlacklisted(jwt)) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("Token has been invalidated");
+            return;
+        }
+
+        // ─── Extrait le token ────────────────────────────────
         final String email = jwtService.extractEmail(jwt);
 
         // ─── Valide et authentifie ───────────────────────────
@@ -48,9 +59,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             if (jwtService.isTokenValid(jwt, userDetails)) {
                 UsernamePasswordAuthenticationToken authToken =
                         new UsernamePasswordAuthenticationToken(
-                                userDetails,
-                                null,
-                                userDetails.getAuthorities()
+                                userDetails, null, userDetails.getAuthorities()
                         );
                 authToken.setDetails(
                         new WebAuthenticationDetailsSource().buildDetails(request)
@@ -61,5 +70,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         filterChain.doFilter(request, response);
     }
+
+
 
 }

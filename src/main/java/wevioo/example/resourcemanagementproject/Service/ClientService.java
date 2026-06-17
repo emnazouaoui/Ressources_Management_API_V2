@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import wevioo.example.resourcemanagementproject.Config.SecurityUtils;
 import wevioo.example.resourcemanagementproject.DTO.ClientDTO;
 import wevioo.example.resourcemanagementproject.Entity.Client;
 import wevioo.example.resourcemanagementproject.Enums.ClientType;
@@ -14,6 +15,7 @@ import wevioo.example.resourcemanagementproject.Pagination.PaginatedResponse;
 import wevioo.example.resourcemanagementproject.Pagination.PaginationUtil;
 import wevioo.example.resourcemanagementproject.Repository.ClientRepository;
 import wevioo.example.resourcemanagementproject.Mapper.ClientMapper;
+import wevioo.example.resourcemanagementproject.Validator.Impl.ClientValidator;
 
 import java.time.LocalDateTime;
 
@@ -25,17 +27,24 @@ public class ClientService {
     private final ClientRepository clientRepository;
     private final ClientMapper clientMapper;
     private final PaginationUtil paginationUtil;      // pour pagination
+    private final ClientValidator clientValidator;
+    private final SecurityUtils securityUtils;
 
-    // ✅ CREATE
+
+    //  CREATE - Admin
     public ClientDTO create(ClientDTO dto) {
+        securityUtils.requireAdmin();
+        clientValidator.validateCreate(dto);
         Client client = clientMapper.ClientDtoToClientEntity(dto);
         Client saved = clientRepository.save(client);
         return clientMapper.ClientToClientDTO(saved);
     }
 
-    // ✅ UPDATE
+    //  UPDATE
     public ClientDTO update(Long id, ClientDTO dto) {
 
+        securityUtils.requireAdmin();
+        clientValidator.validateUpdate(dto);
         Client existing = clientRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Client not found with id: " + id));
 
@@ -52,8 +61,10 @@ public class ClientService {
         return clientMapper.ClientToClientDTO(updated);
     }
 
-    // ✅ GET BY ID
+    //  GET BY ID — Admin + Manager
     public ClientDTO getById(Long id) {
+        securityUtils.requireAdminOrManager();
+        // Géré par SecurityConfig → rien à changer ici
         Client client = clientRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Client not found with id: " + id));
 
@@ -61,8 +72,9 @@ public class ClientService {
     }
 
 
-    //  GET ALL — يتبدل : page تبدأ من 1
+    //  GET ALL — يتبدل : page تبدأ من 1  — Admin + Manager
     public PaginatedResponse<ClientDTO> getAll(Integer page, Integer pageSize, String sortBy, String sortDir) {
+        securityUtils.requireAdminOrManager();
         CustomSort customSort = null;
         if (sortBy != null && sortDir != null) {
             customSort = new CustomSort();
@@ -73,6 +85,8 @@ public class ClientService {
         Sort sorting = paginationUtil.sortingCriteria(customSort, Sort.Direction.ASC, "createdDate");
         Pageable pageable = paginationUtil.createPageable(page, pageSize, sorting);
 
+        // Manager + Admin → voient tous les clients
+        // Géré par SecurityConfig → rien à changer ici
         Page<Client> clientPage = clientRepository.findAll(pageable);
 
         PaginatedResponse<ClientDTO> response = new PaginatedResponse<>();
@@ -88,6 +102,7 @@ public class ClientService {
 
     //  DELETE
     public void delete(Long id) {
+        securityUtils.requireAdmin();
         Client client = clientRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Client not found with id: " + id));
 
@@ -100,7 +115,7 @@ public class ClientService {
         return (value == null || value.isBlank()) ? null : value.trim();
     }
 
-    // ✅ SEARCH — retourne PaginatedResponse au lieu de Page<ClientDTO>
+    //  SEARCH — retourne PaginatedResponse au lieu de Page<ClientDTO>
     public PaginatedResponse<ClientDTO> searchClients(
             String name,
             String email,
@@ -113,6 +128,7 @@ public class ClientService {
             String sortBy,
             String sortDir
     ) {
+        securityUtils.requireAdminOrManager();
         // ← بدل Sort.by(sortBy).ascending() مباشرة
         // نبني CustomSort ونمرروه لـ PaginationUtil بش يvalidiha
         CustomSort customSort = null;

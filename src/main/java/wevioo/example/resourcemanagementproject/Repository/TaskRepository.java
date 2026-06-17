@@ -16,6 +16,8 @@ import java.util.Optional;
 @Repository
 public interface TaskRepository extends JpaRepository<Task, Long> {
 
+    Page<Task> findByAssignedUserId(Long userId, Pageable pageable);
+    Page<Task> findByProject_ProjectManagerId(Long managerId, Pageable pageable);
 
     @Query("SELECT t FROM Task t LEFT JOIN FETCH t.imputations WHERE t.id = :id")
     Optional<Task> findByIdWithImputations(Long id);

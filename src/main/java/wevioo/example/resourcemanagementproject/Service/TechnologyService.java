@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import wevioo.example.resourcemanagementproject.Config.SecurityUtils;
 import wevioo.example.resourcemanagementproject.DTO.TechnologyDTO;
 import wevioo.example.resourcemanagementproject.Entity.Technology;
 import wevioo.example.resourcemanagementproject.Exception.Custom.ResourceNotFoundException;
@@ -13,6 +14,7 @@ import wevioo.example.resourcemanagementproject.Pagination.PaginatedResponse;
 import wevioo.example.resourcemanagementproject.Pagination.PaginationUtil;
 import wevioo.example.resourcemanagementproject.Repository.TechnologyRepository;
 import wevioo.example.resourcemanagementproject.Mapper.TechnologyMapper;
+import wevioo.example.resourcemanagementproject.Validator.Impl.TechnologyValidator;
 
 import java.time.LocalDateTime;
 
@@ -24,16 +26,19 @@ public class TechnologyService {
     private final TechnologyRepository repository;
     private final TechnologyMapper technologyMapper;
     private final PaginationUtil paginationUtil;      // pour pagination
-
+    private final TechnologyValidator technologyValidator;  // ← inject
+    private final SecurityUtils securityUtils;
 
 
     // CREATE
     public TechnologyDTO create(TechnologyDTO dto) {
+        securityUtils.requireAdmin();
+        technologyValidator.validateCreate(dto);
         Technology saved = repository.save(technologyMapper.TechnologyDTOtoTechnologyEntity(dto));
         return technologyMapper.TechnologyToTechnologyDTO(saved);
     }
 
-    // GET BY ID
+    // GET BY ID — Admin + Manager + User
     public TechnologyDTO getById(Long id) {
         Technology t = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Technology not found: " + id));
@@ -43,6 +48,8 @@ public class TechnologyService {
 
     // UPDATE
     public TechnologyDTO update(Long id, TechnologyDTO dto) {
+        securityUtils.requireAdmin();
+        technologyValidator.validateUpdate(dto);
         Technology t = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Technology not found: " + id));
 
@@ -55,20 +62,21 @@ public class TechnologyService {
 
     // DELETE
     public void delete(Long id) {
+        securityUtils.requireAdmin();
         if (!repository.existsById(id)) {
             throw new ResourceNotFoundException("Technology not found: " + id);
         }
         repository.deleteById(id);
     }
 
-    //  GET ALL — يتبدل : page تبدأ من 1
-    public Page<TechnologyDTO> getAll(Integer page, Integer pageSize, CustomSort sort) {
-        Sort sorting = paginationUtil.sortingCriteria(sort, Sort.Direction.ASC, "name");
-        Pageable pageable = paginationUtil.createPageable(page, pageSize, sorting);
-        return repository.findAll(pageable).map(technologyMapper::TechnologyToTechnologyDTO);
-    }
+//    //  GET ALL — يتبدل : page تبدأ من 1
+//    public Page<TechnologyDTO> getAll(Integer page, Integer pageSize, CustomSort sort) {
+//        Sort sorting = paginationUtil.sortingCriteria(sort, Sort.Direction.ASC, "name");
+//        Pageable pageable = paginationUtil.createPageable(page, pageSize, sorting);
+//        return repository.findAll(pageable).map(technologyMapper::TechnologyToTechnologyDTO);
+//    }
 
-    //  GET ALL — يتبدل : page تبدأ من 1
+    //  GET ALL — يتبدل : page تبدأ من 1  — Admin + Manager + User
     public PaginatedResponse<TechnologyDTO> getAll(Integer page, Integer pageSize, String sortBy, String sortDir) {
         CustomSort customSort = null;
         if (sortBy != null && sortDir != null) {
@@ -93,7 +101,7 @@ public class TechnologyService {
 
 
 
-    // ✅ SEARCH — retourne PaginatedResponse au lieu de Page<ClientDTO>
+    //  SEARCH — retourne PaginatedResponse au lieu de Page<ClientDTO> — Admin + Manager + User
     public PaginatedResponse<TechnologyDTO> searchTechnologies(
             String name,
             Integer page,

@@ -19,7 +19,7 @@ public class CustomUserDetailsService implements UserDetailsService{
     private final UserRepository userRepository;
 
     @Override
-    @Transactional   // ← زيد هاذي — تخلي الـ session مفتوحة بش يقدر يجيب الـ role
+    @Transactional   //  تخلي الـ session مفتوحة بش يقدر يجيب الـ role
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         // ─── 1. جيب الـ user من الـ DB ──────────────────────
         User user = userRepository.findByEmail(email)

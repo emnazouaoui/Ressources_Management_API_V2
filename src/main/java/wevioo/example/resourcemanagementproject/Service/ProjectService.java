@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import wevioo.example.resourcemanagementproject.Config.SecurityUtils;
 import wevioo.example.resourcemanagementproject.DTO.ProjectDTO;
 import wevioo.example.resourcemanagementproject.Entity.Project;
 import wevioo.example.resourcemanagementproject.Entity.ProjectTimeLine;
@@ -15,6 +16,7 @@ import wevioo.example.resourcemanagementproject.Entity.Task;
 import wevioo.example.resourcemanagementproject.Entity.UserProject;
 import wevioo.example.resourcemanagementproject.Enums.ProjectStatus;
 import wevioo.example.resourcemanagementproject.Exception.Custom.ResourceNotFoundException;
+import wevioo.example.resourcemanagementproject.Export.ProjectExportService;
 import wevioo.example.resourcemanagementproject.Pagination.CustomSort;
 import wevioo.example.resourcemanagementproject.Pagination.PaginatedResponse;
 import wevioo.example.resourcemanagementproject.Pagination.PaginationUtil;
@@ -26,6 +28,7 @@ import wevioo.example.resourcemanagementproject.Repository.TaskRepository;
 import wevioo.example.resourcemanagementproject.Repository.TechnologyRepository;
 import wevioo.example.resourcemanagementproject.Repository.UserProjectRepository;
 import wevioo.example.resourcemanagementproject.Repository.UserRepository;
+import wevioo.example.resourcemanagementproject.Validator.Impl.ProjectValidator;
 
 
 import java.time.LocalDateTime;
@@ -45,14 +48,43 @@ public class ProjectService {
     private final UserProjectRepository userProjectRepository;
     private final ProjectTimeLineRepository projectTimeLineRepository;
     private final TaskRepository taskRepository;
+    private final SecurityUtils securityUtils;
 
     private final PaginationUtil paginationUtil;      // pour pagination
 
     private final ProjectMapper mapper;
 
+    private final ProjectValidator projectValidator;  // ← inject
+
+
+    // ─── GET BY ID ───────────────────────────────────────
+    public ProjectDTO getById(Long id) {
+        Project project = projectRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Project not found"));
+
+        User currentUser = securityUtils.getCurrentUser();
+
+        // User → seulement ses projects assignés
+        if (securityUtils.isUser()) {
+            boolean isAssigned = project.getUserProjects().stream()
+                    .anyMatch(up -> up.getUser().getId() == currentUser.getId());
+            if (!isAssigned)
+                throw new ResourceNotFoundException("Project not found");
+        }
+
+        // Manager → seulement ses projects
+        if (securityUtils.isManager() && project.getProjectManager().getId() != currentUser.getId()) {
+            throw new ResourceNotFoundException("Project not found");
+        }
+
+        return mapper.ProjectToProjectDTO(project);
+    }
 
     // 🔥 CREATE
     public ProjectDTO create(ProjectDTO dto) {
+
+        securityUtils.requireAdminOrManager();
+        projectValidator.validateCreate(dto);
 
         Project p = new Project();
         mapper.updateProjectEntity(dto, p);
@@ -74,19 +106,26 @@ public class ProjectService {
         return mapper.ProjectToProjectDTO(saved);
     }
 
-    // ✅ Après — plus de code history manuel !
+    //  Après — plus de code history manuel !
     public ProjectDTO update(Long id, ProjectDTO dto) {
+
+        securityUtils.requireAdminOrManager();
+        projectValidator.validateUpdate(dto);
 
         Project p = projectRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Project not found"));
+
+        // Manager → seulement ses projects
+        if (securityUtils.isManager() &&
+                p.getProjectManager().getId() != securityUtils.getCurrentUserId()) {
+            throw new ResourceNotFoundException("Project not found");
+        }
 
         mapper.updateProjectEntity(dto, p);
 
         if (dto.getStatus() != null) {
             p.setStatus(ProjectStatus.valueOf(dto.getStatus()));
         }
-
-       // p.setUpdatedDate(LocalDateTime.now());
 
         p.setProjectManager(userRepository.findById(dto.getProjectManagerId())
                 .orElseThrow(() -> new ResourceNotFoundException("Manager not found")));
@@ -95,7 +134,7 @@ public class ProjectService {
                 .orElseThrow(() -> new ResourceNotFoundException("Client not found")));
 
         // ← @PreUpdate يتكفل بالـ history تلقائياً !
-        // ✅ Listener يتكفل بالـ history تلقائياً
+        //  Listener يتكفل بالـ history تلقائياً
         Project saved = projectRepository.save(p);
 
         return mapper.ProjectToProjectDTO(saved);
@@ -114,33 +153,39 @@ public class ProjectService {
         Sort sorting = paginationUtil.sortingCriteria(customSort, Sort.Direction.ASC, "createdDate");
         Pageable pageable = paginationUtil.createPageable(page, pageSize, sorting);
 
-        Page<Project> ProjectPage = projectRepository.findAll(pageable);
+        //Page<Project> ProjectPage = projectRepository.findAll(pageable);
+        User currentUser = securityUtils.getCurrentUser();
+        Page<Project> projectPage;
+
+        if (securityUtils.isAdmin()) {
+            //  Admin → tous les projects
+            projectPage = projectRepository.findAll(pageable);
+
+        } else if (securityUtils.isManager()) {
+            //  Manager → projects où il est manager
+            projectPage = projectRepository
+                    .findByProjectManagerId(currentUser.getId(), pageable);
+
+        } else {
+            //  User → projects où il est assigné
+            projectPage = projectRepository
+                    .findByUserProjects_UserId(currentUser.getId(), pageable);
+        }
 
         PaginatedResponse<ProjectDTO> response = new PaginatedResponse<>();
-        response.setContent(ProjectPage.getContent().stream().map(mapper::ProjectToProjectDTO).toList());
-        response.setPage(ProjectPage.getNumber() + 1);
-        response.setPageSize(ProjectPage.getSize());
-        response.setTotalElement(ProjectPage.getTotalElements());
-        response.setTotalPage(ProjectPage.getTotalPages());
+        response.setContent(projectPage.getContent().stream().map(mapper::ProjectToProjectDTO).toList());
+        response.setPage(projectPage.getNumber() + 1);
+        response.setPageSize(projectPage.getSize());
+        response.setTotalElement(projectPage.getTotalElements());
+        response.setTotalPage(projectPage.getTotalPages());
         return response;
     }
 
-    // ✅ SEARCH — retourne PaginatedResponse au lieu de Page<ClientDTO>
-    public PaginatedResponse<ProjectDTO> searchProjects(
-            String name,
-            String description,
-            ProjectStatus status,
-            Long projectManagerId,
-            String projectManagerUsername,
-            Long clientId,
-            String clientName,
-            LocalDateTime startDate,
-            LocalDateTime endDate,
-            Double progressPercent,
-            Integer page,
-            Integer pageSize,
-            String sortBy,
-            String sortDir
+    //  SEARCH — retourne PaginatedResponse au lieu de Page<ClientDTO>
+    public PaginatedResponse<ProjectDTO> searchProjects(String name, String description, ProjectStatus status,
+            Long projectManagerId, String projectManagerUsername, Long clientId, String clientName,
+            LocalDateTime startDate, LocalDateTime endDate, Double progressPercent,
+            Integer page, Integer pageSize, String sortBy, String sortDir
     ) {
         // ← بدل Sort.by(sortBy).ascending() مباشرة
         // نبني CustomSort ونمرروه لـ PaginationUtil بش يvalidiha
@@ -159,29 +204,44 @@ public class ProjectService {
 
         Pageable pageable = paginationUtil.createPageable(page, pageSize, sorting);
 
-        Page<Project> ProjectPage = projectRepository.searchProjects(
-                normalize(name),
-                normalize(description),
-                status,
-                projectManagerId,
-                normalize(projectManagerUsername),
-                clientId,
-                normalize(clientName),
-                startDate,
-                endDate,
-                progressPercent,
-                pageable
-        );
+//        Page<Project> ProjectPage = projectRepository.searchProjects(normalize(name), normalize(description),
+//                status, projectManagerId, normalize(projectManagerUsername), clientId, normalize(clientName),
+//                startDate, endDate, progressPercent, pageable
+//        );
+        User currentUser = securityUtils.getCurrentUser();
+        Page<Project> projectPage;
+
+        if (securityUtils.isAdmin()) {
+            projectPage = projectRepository.searchProjects(
+                    normalize(name), normalize(description), status,
+                    projectManagerId, normalize(projectManagerUsername),
+                    clientId, normalize(clientName), startDate, endDate,
+                    progressPercent, pageable
+            );
+        } else if (securityUtils.isManager()) {
+            //  Manager → force projectManagerId = lui-même
+            projectPage = projectRepository.searchProjects(
+                    normalize(name), normalize(description), status,
+                    currentUser.getId(),  // ← force
+                    normalize(projectManagerUsername),
+                    clientId, normalize(clientName), startDate, endDate,
+                    progressPercent, pageable
+            );
+        } else {
+            //  User → projects assignés seulement
+            projectPage = projectRepository
+                    .findByUserProjects_UserId(currentUser.getId(), pageable);
+        }
 
         // ← البناء الجديد للـ response
         PaginatedResponse<ProjectDTO> response = new PaginatedResponse<>();
-        response.setContent(ProjectPage.getContent().stream()
+        response.setContent(projectPage.getContent().stream()
                 .map(mapper::ProjectToProjectDTO)
                 .toList());
-        response.setPage(ProjectPage.getNumber() + 1);   // Spring 0-indexed → on remet à 1
-        response.setPageSize(ProjectPage.getSize());
-        response.setTotalElement(ProjectPage.getTotalElements());
-        response.setTotalPage(ProjectPage.getTotalPages());
+        response.setPage(projectPage.getNumber() + 1);   // Spring 0-indexed → on remet à 1
+        response.setPageSize(projectPage.getSize());
+        response.setTotalElement(projectPage.getTotalElements());
+        response.setTotalPage(projectPage.getTotalPages());
 
         return response;
     }
@@ -193,17 +253,22 @@ public class ProjectService {
         return (value == null || value.isBlank()) ? null : value.trim();
     }
 
-    // 🔥 DELETE
+    //  DELETE
     public void delete(Long id) {
+        securityUtils.requireAdmin();
+
+        if (!projectRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Project not found");
+        }
         projectRepository.deleteById(id);
     }
 
     // =========================
-    // 🔥 RELATIONS
+    //  RELATIONS
     // =========================
 
 
-    // ✅ Après
+    //  Après
     public void assignTechnologies(Long projectId, List<Long> techIds) {
         if (techIds == null) return;
         Project project = projectRepository.findById(projectId)
@@ -310,7 +375,7 @@ public class ProjectService {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
 
-        // ✅ check task belongs to project
+        //  check task belongs to project
         if (task.getProject() == null || task.getProject().getId() != projectId) {
             throw new RuntimeException("Task does not belong to this project");
         }

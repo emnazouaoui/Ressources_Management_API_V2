@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import wevioo.example.resourcemanagementproject.Config.SecurityUtils;
 import wevioo.example.resourcemanagementproject.DTO.RoleDTO;
 import wevioo.example.resourcemanagementproject.Entity.Role;
 import wevioo.example.resourcemanagementproject.Exception.Custom.ResourceNotFoundException;
@@ -13,6 +14,7 @@ import wevioo.example.resourcemanagementproject.Pagination.PaginatedResponse;
 import wevioo.example.resourcemanagementproject.Pagination.PaginationUtil;
 import wevioo.example.resourcemanagementproject.Repository.RoleRepository;
 import wevioo.example.resourcemanagementproject.Mapper.RoleMapper;
+import wevioo.example.resourcemanagementproject.Validator.Impl.RoleValidator;
 
 import java.time.LocalDateTime;
 
@@ -24,16 +26,21 @@ public class RoleService {
     private final RoleRepository repository;
     private final RoleMapper roleMapper;
     private final PaginationUtil paginationUtil;      // pour pagination
+    private final RoleValidator roleValidator;  // ← inject
+    private final SecurityUtils securityUtils;       // ← زيد
 
 
     // CREATE
     public RoleDTO create(RoleDTO dto) {
+        securityUtils.requireAdmin();
+        roleValidator.validateCreate(dto);
         Role saved = repository.save(roleMapper.RoleDTOtoRoleEntity(dto));
         return roleMapper.RoleToRoleDTO(saved);
     }
 
     // GET BY ID
     public RoleDTO getById(Long id) {
+        securityUtils.requireAdmin();
         Role r = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Role not found: " + id));
 
@@ -42,6 +49,8 @@ public class RoleService {
 
     // UPDATE
     public RoleDTO update(Long id, RoleDTO dto) {
+        securityUtils.requireAdmin();
+        roleValidator.validateUpdate(dto);
         Role r = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Role not found: " + id));
 
@@ -55,6 +64,7 @@ public class RoleService {
 
     // DELETE
     public void delete(Long id) {
+        securityUtils.requireAdmin();
         if (!repository.existsById(id)) {
             throw new ResourceNotFoundException("Role not found: " + id);
         }
@@ -63,6 +73,7 @@ public class RoleService {
 
     //  GET ALL — يتبدل : page تبدأ من 1
     public PaginatedResponse<RoleDTO> getAll(Integer page, Integer pageSize, String sortBy, String sortDir) {
+        securityUtils.requireAdmin();
         CustomSort customSort = null;
         if (sortBy != null && sortDir != null) {
             customSort = new CustomSort();
@@ -84,7 +95,7 @@ public class RoleService {
         return response;
     }
 
-    // ✅ SEARCH — retourne PaginatedResponse au lieu de Page<ClientDTO>
+    //  SEARCH — retourne PaginatedResponse au lieu de Page<ClientDTO>
     public PaginatedResponse<RoleDTO> searchRoles(
             String name,
             String description,
@@ -93,6 +104,7 @@ public class RoleService {
             String sortBy,
             String sortDir
     ) {
+        securityUtils.requireAdmin();
         // ← بدل Sort.by(sortBy).ascending() مباشرة
         // نبني CustomSort ونمرروه لـ PaginationUtil بش يvalidiha
         CustomSort customSort = null;

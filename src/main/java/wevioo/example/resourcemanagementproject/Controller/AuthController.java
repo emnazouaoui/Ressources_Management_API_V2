@@ -1,59 +1,65 @@
 package wevioo.example.resourcemanagementproject.Controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import wevioo.example.resourcemanagementproject.Entity.User;
-import wevioo.example.resourcemanagementproject.Exception.Custom.UnauthorizedException;
-import wevioo.example.resourcemanagementproject.Repository.UserRepository;
+import wevioo.example.resourcemanagementproject.DTO.ForgetPasswordRequest;
+import wevioo.example.resourcemanagementproject.DTO.RegisterRequest;
 import wevioo.example.resourcemanagementproject.DTO.LoginRequest;
 import wevioo.example.resourcemanagementproject.DTO.LoginResponse;
-import wevioo.example.resourcemanagementproject.JWT.JwtService;
+import wevioo.example.resourcemanagementproject.Service.AuthService;
 
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
+@Tag(name = "Auth API", description = "Authentication endpoints")
 public class AuthController {
 
-    private final AuthenticationManager authenticationManager;
-    private final JwtService jwtService;
-    private final UserRepository userRepository;
+    private final AuthService authService;   // ← seule dépendance !
 
+
+    // ─── LOGIN ───────────────────────────────────────────────
+    @Operation(summary = "Login with email and password")
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request) {
-        try {
-            Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            request.getEmail(),
-                            request.getPassword()
-                    )
-            );
+        return ResponseEntity.ok(authService.login(request));
+    }
 
-            User user = userRepository.findByEmail(request.getEmail())
-                    .orElseThrow(() -> new UnauthorizedException("User not found"));
+    // ─── REGISTER ────────────────────────────────────────────
+    @Operation(summary = "Register new user")
+    @PostMapping("/register")
+    public ResponseEntity<LoginResponse> register(@RequestBody RegisterRequest request) {
+        return ResponseEntity.ok(authService.register(request));
+    }
 
-            String token = jwtService.generateToken(user);
+    // ─── LOGOUT ──────────────────────────────────────────────
+    @Operation(summary = "Logout — invalidate current token")
+    @PostMapping("/logout")
+    public ResponseEntity<String> logout(HttpServletRequest request) {
 
-            return ResponseEntity.ok(LoginResponse.builder()
-                    .token(token)
-                    .tokenType("Bearer")
-                    .userId(user.getId())
-                    .username(user.getUsername())
-                    .email(user.getEmail())
-                    .role(user.getRole() != null ? user.getRole().getName() : null)
-                    .expiresIn(jwtService.getExpiration())
-                    .build());
+        //  Extrait le token du header Authorization
+        String authHeader = request.getHeader("Authorization");
 
-        } catch (BadCredentialsException e) {
-            throw new UnauthorizedException("Invalid email or password");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
+            authService.logout(token);
         }
+
+        return ResponseEntity.ok("Logged out successfully");
+    }
+
+    // ─── FORGET PASSWORD ─────────────────────────────────────
+    @Operation(summary = "Reset password by email")
+    @PostMapping("/forget-password")
+    public ResponseEntity<String> forgetPassword(@RequestBody ForgetPasswordRequest request) {
+        authService.forgetPassword(request);
+        return ResponseEntity.ok("Password updated successfully");
     }
 
 }

@@ -37,16 +37,11 @@ import java.util.List;
 public class LeaveRequestController {
 
     private final LeaveRequestService service;
-    private final LeaveRequestValidator leaveRequestValidator;  // ← inject
 
 
     @PostMapping
     @Operation(summary = "Create a new leave request")
-    public ResponseEntity<LeaveRequestDTO> create(@RequestBody LeaveRequestDTO dto,
-                                            BindingResult bindingResult) {
-        // Lance la validation
-        leaveRequestValidator.validate(dto, bindingResult);
-        ValidationHelper.validate(bindingResult);
+    public ResponseEntity<LeaveRequestDTO> create(@RequestBody LeaveRequestDTO dto) {
 
         return ResponseEntity.ok(service.create(dto));
     }
@@ -54,12 +49,7 @@ public class LeaveRequestController {
     @PutMapping("/{id}")
     @Operation(summary = "Update an existing leave request")
     public ResponseEntity<LeaveRequestDTO> update(@PathVariable Long id,
-                                            @RequestBody LeaveRequestDTO dto,
-                                            BindingResult bindingResult) {
-        //Lance la validation
-        leaveRequestValidator.validate(dto, bindingResult);
-        ValidationHelper.validate(bindingResult);
-
+                                            @RequestBody LeaveRequestDTO dto) {
         return ResponseEntity.ok(service.update(id, dto));
     }
 

@@ -35,29 +35,18 @@ public class ImputationController {
 
 
     private final ImputationService imputationService;
-    private final ImputationValidator imputationValidator;  // ← inject
 
 
     @PostMapping
     @Operation(summary = "Create imputation")
-    public ResponseEntity<ImputationDTO> create(@RequestBody ImputationDTO dto,
-                                            BindingResult bindingResult) {
-        // Lance la validation
-        imputationValidator.validate(dto, bindingResult);
-        ValidationHelper.validate(bindingResult);
-
+    public ResponseEntity<ImputationDTO> create(@RequestBody ImputationDTO dto) {
         return ResponseEntity.ok(imputationService.create(dto));
     }
 
     @PutMapping("/{id}")
     @Operation(summary = "Update an existing imputation")
     public ResponseEntity<ImputationDTO> update(@PathVariable Long id,
-                                            @RequestBody ImputationDTO dto,
-                                            BindingResult bindingResult) {
-        //Lance la validation
-        imputationValidator.validate(dto, bindingResult);
-        ValidationHelper.validate(bindingResult);
-
+                                            @RequestBody ImputationDTO dto) {
         return ResponseEntity.ok(imputationService.update(id, dto));
     }
 
